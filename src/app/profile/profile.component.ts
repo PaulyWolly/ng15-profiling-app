@@ -1,9 +1,11 @@
-﻿import { Component, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { AccountService } from '@app/_services';
 import { Account } from '@app/_models';
 
-@Component({ templateUrl: 'home.component.html' })
-export class HomeComponent implements OnInit {
+@Component({
+    templateUrl: './profile.component.html'
+})
+export class ProfileComponent implements OnInit {
     account: Account | null = null;
 
     constructor(private accountService: AccountService) { }
@@ -13,4 +15,4 @@ export class HomeComponent implements OnInit {
             this.account = x;
         });
     }
-}
+} 

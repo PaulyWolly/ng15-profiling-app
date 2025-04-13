@@ -3,6 +3,8 @@ import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
+import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
 
 // used to create fake backend
 // import { fakeBackendProvider } from './_helpers';
@@ -15,8 +17,6 @@ import { AlertComponent } from './_components';
 import { HomeComponent } from './home';
 import { FooterComponent } from './footer/footer.component';
 
-import { MatIconModule } from '@angular/material/icon';
-import { MatButtonModule } from '@angular/material/button';
 // import { AdminModule } from './admin/admin.module';
 
 

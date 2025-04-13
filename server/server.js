@@ -1,5 +1,6 @@
 ﻿require('rootpath')();
 const express = require('express');
+const path = require('path');
 const app = express();
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
@@ -30,6 +31,9 @@ app.use((req, res, next) => {
 
 // allow cors requests from any origin and with credentials
 app.use(cors({ origin: (origin, callback) => callback(null, true), credentials: true }));
+
+// Serve static files from the uploads directory
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // api routes
 app.use('/accounts', require('./accounts/accounts.controller'));
