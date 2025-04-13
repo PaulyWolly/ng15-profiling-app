@@ -1,0 +1,107 @@
+.accounts-table {
+    width: 100%;
+}
+
+.mat-elevation-z8 {
+    margin-top: 20px;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.image-column {
+    width: 80px;
+    text-align: center;
+    padding: 8px !important;
+}
+
+.actions-column {
+    width: 120px;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.profile-image {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid #ddd;
+    transition: transform 0.2s;
+}
+
+.profile-image:hover {
+    transform: scale(1.1);
+    cursor: pointer;
+}
+
+.no-image {
+    width: 40px;
+    height: 40px;
+    font-size: 40px;
+    color: #ccc;
+}
+
+.mb-3 {
+    margin-bottom: 1rem;
+}
+
+/* Column alignment */
+.mat-column-name {
+    padding-left: 16px;
+}
+
+.mat-column-email {
+    padding-left: 16px;
+}
+
+.mat-column-role {
+    padding-left: 16px;
+}
+
+/* Header styling */
+.mat-header-cell {
+    background-color: #f5f5f5;
+    font-weight: bold;
+    color: rgba(0, 0, 0, 0.87);
+}
+
+/* Row hover effect */
+.mat-row:hover {
+    background-color: rgba(0, 0, 0, 0.04);
+}
+
+.table-scroll {
+  height: 335px !important;
+  overflow-x: auto;
+  border: 2px solid #d1cfcf;
+}
+
+.header-list {
+  display: flex;
+  list-style-type: none
+}
+
+
+.header-style, .bullet-style {
+  font-weight: bold;
+  position: relative;
+  left: -25px;
+}
+
+.bullet-style {
+  padding-left: 20px;
+}
+
+.mat-mdc-icon-button {
+  position: relative;
+  left: 110px;
+}
+
+button.edit-icon {
+  position: relative;
+  left: 120px;
+}
+
+button.edit-color {
+  color: green;
+}

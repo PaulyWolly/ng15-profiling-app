@@ -1,0 +1,102 @@
+.table-container {
+  margin-top: 20px;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.accounts-table {
+  width: 100%;
+}
+
+.mat-mdc-header-cell {
+  background-color: #f5f5f5;
+  font-weight: bold;
+  color: rgba(0, 0, 0, 0.87);
+  padding: 16px;
+}
+
+.mat-mdc-cell {
+  padding: 16px;
+}
+
+.image-column {
+  width: 60px;
+  padding: 8px;
+  text-align: center;
+}
+
+.profile-image {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+  margin: 0 auto;
+}
+
+.no-image {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: #f5f5f5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #999;
+}
+
+.actions-column {
+  width: 100px;
+  text-align: right;
+  padding-right: 16px;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.action-buttons button {
+  margin: 0;
+}
+
+.loading-container, .no-data-container {
+  padding: 24px;
+  text-align: center;
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 200px;
+}
+
+.no-data-container {
+  color: rgba(0, 0, 0, 0.54);
+  font-style: italic;
+}
+
+/* Make table responsive */
+@media screen and (max-width: 768px) {
+  .mat-mdc-cell {
+    padding: 12px 8px;
+  }
+  
+  .actions-column {
+    width: 100px;
+  }
+
+  .image-column {
+    width: 60px;
+  }
+}
+
+.mat-mdc-table {
+  width: 100%;
+}
+
+.mat-mdc-row:hover {
+  background-color: rgba(0, 0, 0, 0.04);
+}
