@@ -6,7 +6,10 @@ import { first } from 'rxjs/operators';
 import { AccountService, AlertService } from '@app/_services';
 import { MustMatch } from '@app/_helpers';
 
-@Component({ templateUrl: 'add-edit.component.html' })
+@Component({
+    templateUrl: './add-edit.component.html',
+    styleUrls: ['./add-edit.component.css']
+})
 export class AddEditComponent implements OnInit {
     form!: FormGroup;
     id?: string;
@@ -14,6 +17,9 @@ export class AddEditComponent implements OnInit {
     loading = false;
     submitting = false;
     submitted = false;
+    account: any = null;
+    selectedFile: File | null = null;
+    previewUrl: string | null = null;
 
     constructor(
         private formBuilder: FormBuilder,
@@ -25,15 +31,17 @@ export class AddEditComponent implements OnInit {
 
     ngOnInit() {
         this.id = this.route.snapshot.params['id'];
-
+        
         this.form = this.formBuilder.group({
             title: ['', Validators.required],
             firstName: ['', Validators.required],
             lastName: ['', Validators.required],
             email: ['', [Validators.required, Validators.email]],
             role: ['', Validators.required],
-            // password only required in add mode
-            password: ['', [Validators.minLength(6), ...(!this.id ? [Validators.required] : [])]],
+            password: ['', [
+                ...(!this.id ? [Validators.required] : []),
+                Validators.minLength(6)
+            ]],
             confirmPassword: ['']
         }, {
             validator: MustMatch('password', 'confirmPassword')
@@ -48,6 +56,7 @@ export class AddEditComponent implements OnInit {
                 .pipe(first())
                 .subscribe(x => {
                     this.form.patchValue(x);
+                    this.account = x;
                     this.loading = false;
                 });
         }
@@ -56,9 +65,38 @@ export class AddEditComponent implements OnInit {
     // convenience getter for easy access to form fields
     get f() { return this.form.controls; }
 
+    onFileSelected(event: any) {
+        this.selectedFile = event.target.files[0];
+        if (this.selectedFile) {
+            // Create preview URL
+            const reader = new FileReader();
+            reader.onload = (e: any) => {
+                this.previewUrl = e.target.result;
+            };
+            reader.readAsDataURL(this.selectedFile);
+        }
+    }
+
+    uploadImage() {
+        if (!this.selectedFile || !this.id) return;
+
+        this.accountService.uploadImage(this.id, this.selectedFile)
+            .subscribe({
+                next: (account) => {
+                    this.alertService.success('Image uploaded successfully');
+                    this.account = account;
+                    this.selectedFile = null;
+                    this.previewUrl = null;
+                },
+                error: (error) => {
+                    this.alertService.error('Image upload failed');
+                    console.error('Upload failed:', error);
+                }
+            });
+    }
+
     onSubmit() {
         this.submitted = true;
-        console.log('tried to submit')
 
         // reset alerts on submit
         this.alertService.clear();
@@ -71,22 +109,15 @@ export class AddEditComponent implements OnInit {
         this.submitting = true;
 
         // create or update account based on id param
-        let saveAccount;
-        let message: string;
-        if (this.id) {
-            saveAccount = () => this.accountService.update(this.id!, this.form.value);
-            message = 'Account updated';
-        } else {
-            saveAccount = () => this.accountService.create(this.form.value);
-            message = 'Account created';
-        }
+        let observable = this.id
+            ? this.accountService.update(this.id, this.form.value)
+            : this.accountService.create(this.form.value);
 
-        saveAccount()
-            .pipe(first())
+        observable.pipe(first())
             .subscribe({
                 next: () => {
-                    this.alertService.success(message, { keepAfterRouteChange: true });
-                    this.router.navigateByUrl('/admin/accounts');
+                    this.alertService.success('Account saved', { keepAfterRouteChange: true });
+                    this.router.navigate(['../'], { relativeTo: this.route });
                 },
                 error: error => {
                     this.alertService.error(error);

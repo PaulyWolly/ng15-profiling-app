@@ -25,13 +25,16 @@
         ],
         "paths": {
             "@app/*": ["src/app/*"],
-            "@environments/*": ["src/environments/*"]
+            "@environments/*": ["src/environments/*"],
+            "@angular/*": ["node_modules/@angular/*"]
         }
     },
     "angularCompilerOptions": {
         "enableI18nLegacyMessageIdFormat": false,
         "strictInjectionParameters": true,
         "strictInputAccessModifiers": true,
-        "strictTemplates": true
+        "strictTemplates": true,
+        "enableIvy": true,
+        "fullTemplateTypeCheck": true
     }
 }

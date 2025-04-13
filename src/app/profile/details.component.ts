@@ -2,7 +2,10 @@
 
 import { AccountService } from '@app/_services';
 
-@Component({ templateUrl: 'details.component.html' })
+@Component({
+    templateUrl: 'details.component.html',
+    styleUrls: ['details.component.css']
+})
 export class DetailsComponent implements OnInit {
     account: any = null;
 

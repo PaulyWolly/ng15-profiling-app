@@ -2,7 +2,8 @@
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { map, finalize } from 'rxjs/operators';
+import { map, finalize, catchError } from 'rxjs/operators';
+import { throwError } from 'rxjs';
 
 import { environment } from '@environments/environment';
 import { Account } from '@app/_models';
@@ -103,6 +104,28 @@ export class AccountService {
                 if (id === this.accountValue?.id)
                     this.logout();
             }));
+    }
+
+    uploadImage(id: string, file: File) {
+        console.log('Starting image upload...', { id, fileName: file.name, fileSize: file.size });
+        const formData = new FormData();
+        formData.append('profileImage', file);
+        console.log('FormData created:', formData.get('profileImage'));
+        return this.http.post(`${baseUrl}/upload-profile-image`, formData, { withCredentials: true })
+            .pipe(
+                map((account: any) => {
+                    console.log('Upload successful:', account);
+                    if (account.id === this.accountValue?.id) {
+                        account = { ...this.accountValue, ...account };
+                        this.accountSubject.next(account);
+                    }
+                    return account;
+                }),
+                catchError(error => {
+                    console.error('Upload failed:', error);
+                    throw error;
+                })
+            );
     }
 
     // helper methods

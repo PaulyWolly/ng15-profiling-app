@@ -6,12 +6,17 @@ import { first } from 'rxjs/operators';
 import { AccountService, AlertService } from '@app/_services';
 import { MustMatch } from '@app/_helpers';
 
-@Component({ templateUrl: './update.component.html' })
+@Component({
+    templateUrl: 'update.component.html',
+    styleUrls: ['update.component.css']
+})
 export class UpdateComponent implements OnInit {
     form!: FormGroup;
     submitting = false;
     submitted = false;
     deleting = false;
+    selectedFile: File | null = null;
+    previewUrl: string | null = null;
 
     constructor(
         private formBuilder: FormBuilder,
@@ -36,6 +41,35 @@ export class UpdateComponent implements OnInit {
         }, {
             validator: MustMatch('password', 'confirmPassword')
         });
+    }
+
+    onFileSelected(event: any) {
+        this.selectedFile = event.target.files[0];
+        if (this.selectedFile) {
+            // Create preview URL
+            const reader = new FileReader();
+            reader.onload = (e: any) => {
+                this.previewUrl = e.target.result;
+            };
+            reader.readAsDataURL(this.selectedFile);
+        }
+    }
+
+    uploadImage() {
+        if (!this.selectedFile || !this.account?.id) return;
+
+        this.accountService.uploadImage(this.account.id, this.selectedFile)
+            .subscribe({
+                next: () => {
+                    this.alertService.success('Image uploaded successfully');
+                    this.selectedFile = null;
+                    this.previewUrl = null;
+                },
+                error: (error) => {
+                    this.alertService.error('Image upload failed');
+                    console.error('Upload failed:', error);
+                }
+            });
     }
 
     // convenience getter for easy access to form fields
