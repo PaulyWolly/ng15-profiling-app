@@ -10,7 +10,7 @@ import { AccountService } from '@app/_services';
         <mat-icon>person</mat-icon>
       </div>
       <p class="mt-2 text-center">
-        <a routerLink="/profile" class="btn btn-link">Update Profile</a>
+        <a [routerLink]="['/admin/accounts/edit', userId]" class="btn btn-link">Update Profile</a>
       </p>
     </div>
   `,
@@ -49,13 +49,17 @@ import { AccountService } from '@app/_services';
 })
 export class ProfileImageDisplayComponent implements OnInit {
   imageUrl: string | null = null;
+  userId: string | null = null;
 
   constructor(private accountService: AccountService) { }
 
   ngOnInit() {
     const account = this.accountService.accountValue;
-    if (account?.profileImage) {
-      this.imageUrl = account.profileImage;
+    if (account?.id) {
+      this.userId = account.id;
+      if (account.profileImage) {
+        this.imageUrl = account.profileImage;
+      }
     }
   }
 } 
