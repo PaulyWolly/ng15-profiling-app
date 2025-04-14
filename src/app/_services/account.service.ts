@@ -2,11 +2,11 @@
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { map, finalize, catchError } from 'rxjs/operators';
+import { map, finalize, catchError, switchMap } from 'rxjs/operators';
 import { throwError } from 'rxjs';
 
 import { environment } from '@environments/environment';
-import { Account } from '@app/_models';
+import { Account } from '../_models/account';
 
 const baseUrl = `${environment.apiUrl}/accounts`;
 
@@ -27,9 +27,13 @@ export class AccountService {
         return this.accountSubject.value;
     }
 
+    // Authentication endpoints
     login(email: string, password: string) {
         return this.http.post<any>(`${baseUrl}/authenticate`, { email, password }, { withCredentials: true })
             .pipe(map(account => {
+                if (account.profileImage) {
+                    account.profileImage = `${environment.apiUrl}/${account.profileImage}`;
+                }
                 this.accountSubject.next(account);
                 this.startRefreshTokenTimer();
                 return account;
@@ -46,12 +50,16 @@ export class AccountService {
     refreshToken() {
         return this.http.post<any>(`${baseUrl}/refresh-token`, {}, { withCredentials: true })
             .pipe(map((account) => {
+                if (account.profileImage) {
+                    account.profileImage = `${environment.apiUrl}/${account.profileImage}`;
+                }
                 this.accountSubject.next(account);
                 this.startRefreshTokenTimer();
                 return account;
             }));
     }
 
+    // Account management endpoints
     register(account: Account) {
         return this.http.post(`${baseUrl}/register`, account);
     }
@@ -72,12 +80,29 @@ export class AccountService {
         return this.http.post(`${baseUrl}/reset-password`, { token, password, confirmPassword });
     }
 
+    // CRUD operations
     getAll() {
         return this.http.get<Account[]>(baseUrl);
     }
 
     getById(id: string) {
-        return this.http.get<Account>(`${baseUrl}/${id}`);
+        return this.http.get<Account>(`${baseUrl}/${id}`)
+            .pipe(map(account => {
+                const currentUser = this.accountValue;
+                
+                if (account.profileImage) {
+                    // Only show profile image if it's the current user's account or if the current user is an Admin
+                    if (currentUser?.id === account.id || currentUser?.role === 'Admin') {
+                        if (!account.profileImage.startsWith('http')) {
+                            account.profileImage = `${environment.apiUrl}/${account.profileImage}`;
+                        }
+                    } else {
+                        // Hide profile image for non-admin users viewing other profiles
+                        account.profileImage = undefined;
+                    }
+                }
+                return account;
+            }));
     }
 
     create(params: any) {
@@ -87,9 +112,10 @@ export class AccountService {
     update(id: string, params: any) {
         return this.http.put(`${baseUrl}/${id}`, params)
             .pipe(map((account: any) => {
-                // update the current account if it was updated
+                if (account.profileImage) {
+                    account.profileImage = `${environment.apiUrl}/${account.profileImage}`;
+                }
                 if (account.id === this.accountValue?.id) {
-                    // publish updated account to subscribers
                     account = { ...this.accountValue, ...account };
                     this.accountSubject.next(account);
                 }
@@ -100,44 +126,46 @@ export class AccountService {
     delete(id: string) {
         return this.http.delete(`${baseUrl}/${id}`)
             .pipe(finalize(() => {
-                // auto logout if the logged in account was deleted
                 if (id === this.accountValue?.id)
                     this.logout();
             }));
     }
 
-    uploadImage(id: string, file: File) {
-        console.log('Starting image upload...', { id, fileName: file.name, fileSize: file.size });
-        const formData = new FormData();
-        formData.append('profileImage', file);
-        console.log('FormData created:', formData.get('profileImage'));
-        return this.http.post(`${baseUrl}/upload-profile-image`, formData, { withCredentials: true })
+    // Profile image handling
+    uploadImage(id: string, formData: FormData) {
+        const currentUser = this.accountValue;
+        
+        if (!currentUser || (currentUser.id !== id && currentUser.role !== 'Admin')) {
+            return throwError(() => new Error('Unauthorized: You can only upload images to your own profile unless you are an admin'));
+        }
+
+        return this.http.post<any>(`${baseUrl}/upload-profile-image`, formData, { withCredentials: true })
             .pipe(
-                map((account: any) => {
-                    console.log('Upload successful:', account);
-                    if (account.id === this.accountValue?.id) {
-                        account = { ...this.accountValue, ...account };
-                        this.accountSubject.next(account);
+                map(response => {
+                    if (response.imagePath) {
+                        response.profileImage = `${environment.apiUrl}/${response.imagePath}`;
+                        
+                        // Only update the current user's profile image if we're uploading to their account
+                        if (currentUser && currentUser.id === id) {
+                            const updatedAccount = { ...currentUser, profileImage: response.profileImage };
+                            this.accountSubject.next(updatedAccount);
+                        }
                     }
-                    return account;
+                    return response;
                 }),
                 catchError(error => {
-                    console.error('Upload failed:', error);
-                    throw error;
+                    console.error('Upload error:', error);
+                    return throwError(() => new Error(error.error?.message || 'Failed to upload image'));
                 })
             );
     }
 
-    // helper methods
-
+    // Timer methods
     private refreshTokenTimeout?: any;
 
     private startRefreshTokenTimer() {
-        // parse json object from base64 encoded jwt token
         const jwtBase64 = this.accountValue!.jwtToken!.split('.')[1];
         const jwtToken = JSON.parse(atob(jwtBase64));
-
-        // set a timeout to refresh the token a minute before it expires
         const expires = new Date(jwtToken.exp * 1000);
         const timeout = expires.getTime() - Date.now() - (60 * 1000);
         this.refreshTokenTimeout = setTimeout(() => this.refreshToken().subscribe(), timeout);

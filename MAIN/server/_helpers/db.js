@@ -5,7 +5,7 @@ const connectionOptions = {
   useUnifiedTopology: true
 };
 
-mongoose.connect(process.env.MONGODB_URI || config.connectionString, connectionOptions)
+mongoose.connect(config.connectionString, connectionOptions)
     .then(() => console.log('Connected to MongoDB'))
     .catch(err => console.error('MongoDB connection error:', err));
 

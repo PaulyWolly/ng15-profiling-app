@@ -10,4 +10,5 @@ export class Account {
     jwtToken?: string;
     profileImage?: string;
     isDeleting?: boolean;
+    imagePath?: string;
 }

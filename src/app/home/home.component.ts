@@ -1,16 +1,13 @@
-﻿import { Component, OnInit } from '@angular/core';
+﻿import { Component } from '@angular/core';
 import { AccountService } from '@app/_services';
-import { Account } from '@app/_models';
 
-@Component({ templateUrl: 'home.component.html' })
-export class HomeComponent implements OnInit {
-    account: Account | null = null;
+@Component({
+    templateUrl: 'home.component.html'
+})
+export class HomeComponent {
+    constructor(private accountService: AccountService) {}
 
-    constructor(private accountService: AccountService) { }
-
-    ngOnInit() {
-        this.accountService.account.subscribe(x => {
-            this.account = x;
-        });
+    get account() {
+        return this.accountService.accountValue;
     }
 }

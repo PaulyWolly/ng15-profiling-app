@@ -3,21 +3,39 @@
     <div class="row">
         <div class="col-md-4">
             <div class="profile-image-section">
-                <img *ngIf="previewUrl" [src]="previewUrl" alt="Preview" class="profile-image">
-                <img *ngIf="!previewUrl && account?.profileImage" [src]="account.profileImage" alt="Profile" class="profile-image">
-                <div *ngIf="!previewUrl && !account?.profileImage" class="profile-image-placeholder">
-                    <mat-icon>person</mat-icon>
-                </div>
-                <div class="image-upload mt-3">
-                    <input type="file" accept="image/*" (change)="onFileSelected($event)" style="display: none" #fileInput>
-                    <button type="button" mat-button color="primary" (click)="fileInput.click()">
-                        <mat-icon>cloud_upload</mat-icon>
-                        Upload Image
-                    </button>
-                    <button *ngIf="selectedFile" type="button" mat-button color="primary" (click)="uploadImage()">
-                        <mat-icon>save</mat-icon>
-                        Save Image
-                    </button>
+                <div class="card">
+                    <div class="card-header">
+                        <h4>Profile Image</h4>
+                    </div>
+                    <div class="card-body">
+                        <div *ngIf="previewUrl || account?.profileImage" class="mb-3">
+                            <img [src]="previewUrl || account?.profileImage" 
+                                 class="profile-image" 
+                                 alt="Profile Image">
+                        </div>
+                        <div class="custom-file">
+                            <input type="file" 
+                                   class="custom-file-input" 
+                                   id="profileImage" 
+                                   (change)="onFileSelected($event)"
+                                   accept="image/*"
+                                   #fileInput>
+                            <label class="custom-file-label" for="profileImage">
+                                {{selectedFile?.name || (account?.profileImage ? account.profileImage.split('/').pop() : 'Choose file')}}
+                            </label>
+                        </div>
+                        <div class="mt-3" *ngIf="selectedFile">
+                            <button type="button" 
+                                    class="btn btn-primary" 
+                                    (click)="uploadImage()"
+                                    [disabled]="uploading">
+                                {{uploading ? 'Uploading...' : 'Upload Image'}}
+                            </button>
+                        </div>
+                        <div *ngIf="error" class="alert alert-danger mt-3">
+                            {{error}}
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

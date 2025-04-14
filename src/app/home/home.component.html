@@ -2,5 +2,12 @@
     <div class="container">
         <h1>Hi {{account?.firstName}}!</h1>
         <p>You're logged in with Angular 15 & JWT!!</p>
+        <p><a routerLink="/admin/accounts">Manage Users</a></p>
+        
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <app-profile-image-display></app-profile-image-display>
+            </div>
+        </div>
     </div>
 </div>

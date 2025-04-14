@@ -9,50 +9,28 @@
 }
 
 .profile-image {
-    width: 150px;
-    height: 150px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 3px solid #ddd;
+    width: 200px;
+    height: 280px;  /* taller than width for vertical orientation */
+    border-radius: 0;  /* no border radius for oblong shape */
+    object-fit: contain;  /* maintain aspect ratio */
+    margin: 0 auto;
+    display: block;
 }
 
-.profile-image-placeholder {
-    width: 150px;
-    height: 150px;
-    border-radius: 50%;
-    background-color: #f0f0f0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 3px solid #ddd;
-}
-
-.profile-image-placeholder mat-icon {
-    font-size: 60px;
-    width: 60px;
-    height: 60px;
-    color: #666;
-}
-
-.image-upload {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
+.custom-file {
     width: 100%;
+    max-width: 300px;
+    margin: 0 auto;
 }
 
-.image-preview {
-    text-align: center;
-    width: 100%;
+.custom-file-input {
+    cursor: pointer;
 }
 
-.preview-image {
-    width: 120px;
-    height: 120px;
-    object-fit: cover;
-    border-radius: 8px;
-    border: 2px solid #ddd;
-    margin-top: 0.5rem;
+.custom-file-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .form-group {
@@ -61,4 +39,92 @@
 
 .btn {
     margin-right: 0.5rem;
+}
+
+/* Card styling */
+.card {
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.card-header {
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+    padding: 1rem;
+}
+
+.card-header h4 {
+    margin: 0;
+    color: #495057;
+}
+
+.card-body {
+    padding: 1.25rem;
+}
+
+.image-container {
+    width: 200px;
+    height: 280px;  /* taller than width for vertical orientation */
+    border-radius: 120px;
+    overflow: hidden;
+    margin: 0 auto;
+    position: relative;
+    cursor: move;
+    border: 2px solid #e0e0e0;
+    background-color: #f5f5f5;
+}
+
+.profile-image-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f5f5f5;
+}
+
+.profile-image-placeholder mat-icon {
+    font-size: 64px;
+    width: 64px;
+    height: 64px;
+    color: #999;
+}
+
+.image-controls {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+}
+
+.draggable {
+    cursor: grabbing;
+}
+
+.image-upload {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+}
+
+/* Preview container */
+.preview-container {
+    width: 200px;
+    height: 280px;  /* match container height */
+    position: relative;
+    overflow: hidden;
+    border-radius: 120px;
+    margin: 0 auto;
+    background-color: #f5f5f5;
+    border: 2px solid #e0e0e0;
+}
+
+.preview-container img {
+    position: absolute;
+    min-width: 100%;
+    min-height: 100%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    cursor: move;
 } 

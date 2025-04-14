@@ -1,28 +1,28 @@
 import { NgModule } from '@angular/core';
 import { ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 
 import { AccountRoutingModule } from './account-routing.module';
-import { LayoutComponent } from './layout.component';
-import { LoginComponent } from './login.component';
-import { RegisterComponent } from './register.component';
-import { VerifyEmailComponent } from './verify-email.component';
-import { ForgotPasswordComponent } from './forgot-password.component';
-import { ResetPasswordComponent } from './reset-password.component';
+import { LoginComponent } from './components/login/login.component';
+import { ResetPasswordComponent } from './components/reset-password/reset-password.component';
+import { RegisterComponent } from './components/register/register.component';
+import { ForgotPasswordComponent } from './components/forgot-password/forgot-password.component';
+import { LayoutComponent } from './components/layout/layout.component';
 
 @NgModule({
     imports: [
         CommonModule,
         ReactiveFormsModule,
+        RouterModule,
         AccountRoutingModule
     ],
     declarations: [
-        LayoutComponent,
         LoginComponent,
+        ResetPasswordComponent,
         RegisterComponent,
-        VerifyEmailComponent,
         ForgotPasswordComponent,
-        ResetPasswordComponent
+        LayoutComponent
     ]
 })
 export class AccountModule { }

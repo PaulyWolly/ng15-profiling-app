@@ -58,7 +58,10 @@ export class UpdateComponent implements OnInit {
     uploadImage() {
         if (!this.selectedFile || !this.account?.id) return;
 
-        this.accountService.uploadImage(this.account.id, this.selectedFile)
+        const formData = new FormData();
+        formData.append('profileImage', this.selectedFile);
+
+        this.accountService.uploadImage(this.account.id, formData)
             .subscribe({
                 next: () => {
                     this.alertService.success('Image uploaded successfully');

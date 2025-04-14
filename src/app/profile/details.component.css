@@ -16,8 +16,8 @@
 .profile-image,
 .profile-image-placeholder {
     width: 200px;
-    height: 200px;
-    border-radius: 50%;
+    height: 280px;  /* taller than width for vertical orientation */
+    border-radius: 120px;  /* rounded corners but not circular */
     overflow: hidden;
     display: flex;
     align-items: center;
@@ -27,7 +27,7 @@
 }
 
 .profile-image {
-    object-fit: cover;
+    object-fit: contain;  /* maintain aspect ratio */
 }
 
 .profile-image-placeholder mat-icon {
