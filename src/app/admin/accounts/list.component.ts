@@ -8,13 +8,14 @@ import { AccountService } from '@app/_services';
 import { Router } from '@angular/router';
 import { UserInterface } from '@app/types/user.interface';
 import { Account } from '@app/_models';
+import { environment } from '@environments/environment';
 
 @Component({
   templateUrl: 'list.component.html',
   styleUrls: ['./list.component.css']
 })
 export class ListComponent implements OnInit {
-    displayedColumns: string[] = ['name', 'email', 'role', 'actions'];
+    displayedColumns: string[] = ['thumbnail', 'name', 'email', 'role', 'actions'];
     accounts: MatTableDataSource<Account>;
     user!: UserInterface;
     error: string = '';
@@ -37,9 +38,26 @@ export class ListComponent implements OnInit {
           })
         )
         .subscribe(accounts => {
-          console.log('Loaded accounts:', accounts);
+          // Process and log each account's image URL for debugging
+          accounts.forEach(account => {
+            if (account.profileImage) {
+              const originalUrl = account.profileImage;
+              account.profileImage = this.getCompleteImageUrl(account.profileImage);
+              console.log(`Account ${account.firstName}: Image URL transformed from ${originalUrl} to ${account.profileImage}`);
+            } else {
+              console.log(`Account ${account.firstName}: No profile image`);
+            }
+          });
           this.accounts.data = accounts;
         });
+    }
+
+    private getCompleteImageUrl(imageUrl: string): string {
+      if (!imageUrl) return '';
+      if (imageUrl.startsWith('http') || imageUrl.startsWith('data:')) {
+        return imageUrl;
+      }
+      return `${environment.apiUrl}/${imageUrl}`;
     }
 
     onDelete(id: any, firstName: string, lastName: string) {

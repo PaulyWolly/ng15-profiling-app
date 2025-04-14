@@ -6,12 +6,30 @@
 
 <div class="mat-elevation-z8">
     <table mat-table [dataSource]="accounts" class="accounts-table">
+        <!-- Thumbnail Column -->
+        <ng-container matColumnDef="thumbnail">
+            <th mat-header-cell *matHeaderCellDef> Profile </th>
+            <td mat-cell *matCellDef="let account" class="thumbnail-cell">
+                <div class="profile-thumbnail">
+                    <img *ngIf="account.profileImage" 
+                         [src]="account.profileImage" 
+                         [alt]="account.firstName + ' ' + account.lastName + ' profile'"
+                         (error)="account.profileImage = null"
+                         class="profile-image"
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                    <mat-icon *ngIf="!account.profileImage" 
+                             class="placeholder-icon"
+                             [style.display]="account.profileImage ? 'none' : 'flex'">
+                        account_circle
+                    </mat-icon>
+                </div>
+            </td>
+        </ng-container>
+
         <!-- Name Column -->
         <ng-container matColumnDef="name">
             <th mat-header-cell *matHeaderCellDef>Name</th>
-            <td mat-cell *matCellDef="let account">
-                {{account.title}} {{account.firstName}} {{account.lastName}}
-            </td>
+            <td mat-cell *matCellDef="let account">{{account.firstName}} {{account.lastName}}</td>
         </ng-container>
 
         <!-- Email Column -->
@@ -28,21 +46,13 @@
 
         <!-- Actions Column -->
         <ng-container matColumnDef="actions">
-            <th mat-header-cell *matHeaderCellDef class="actions-column">Actions</th>
+            <th mat-header-cell *matHeaderCellDef></th>
             <td mat-cell *matCellDef="let account" class="actions-column">
-                <button mat-icon-button color="primary" 
-                        [routerLink]="['edit', account.id]">
+                <button mat-icon-button [routerLink]="['./', account.id]">
                     <mat-icon>edit</mat-icon>
                 </button>
-                <button mat-icon-button color="warn" 
-                        (click)="onDelete(account.id, account.firstName, account.lastName)"
-                        [disabled]="account.isDeleting">
-                    <mat-icon *ngIf="!account.isDeleting">delete</mat-icon>
-                    <mat-progress-spinner *ngIf="account.isDeleting" 
-                                       [diameter]="20"
-                                       mode="indeterminate"
-                                       class="spinner-center">
-                    </mat-progress-spinner>
+                <button mat-icon-button color="warn" (click)="deleteAccount(account.id)">
+                    <mat-icon>delete</mat-icon>
                 </button>
             </td>
         </ng-container>
@@ -52,7 +62,7 @@
 
         <!-- Loading Row -->
         <tr *matNoDataRow>
-            <td class="mat-cell" colspan="4">
+            <td class="mat-cell" colspan="5">
                 <mat-progress-spinner *ngIf="!accounts" 
                                    [diameter]="40"
                                    mode="indeterminate"
