@@ -1,24 +1,36 @@
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const accountService = require('./account.service');
+
+// Get the absolute path to the uploads directory
+const uploadsDir = path.join(__dirname, '..', 'uploads', 'profiles');
+console.log('Upload directory configured as:', uploadsDir);
+
+// Helper function to check if file exists for an email
+function getExistingProfileImage(userEmail) {
+    if (!fs.existsSync(uploadsDir)) {
+        return null;
+    }
+    const filename = `profileImage-${userEmail}.png`;
+    const filePath = path.join(uploadsDir, filename);
+    return fs.existsSync(filePath) ? filePath : null;
+}
 
 // Configure multer for file upload
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        console.log('Processing upload destination...', file);
-        const uploadDir = 'uploads/profile-images';
-        // Create directory if it doesn't exist
-        if (!fs.existsSync(uploadDir)) {
-            console.log('Creating upload directory:', uploadDir);
-            fs.mkdirSync(uploadDir, { recursive: true });
+        // Ensure uploads directory exists
+        if (!fs.existsSync(uploadsDir)) {
+            fs.mkdirSync(uploadsDir, { recursive: true });
         }
-        cb(null, uploadDir);
+        cb(null, uploadsDir);
     },
     filename: function (req, file, cb) {
-        console.log('Generating filename for:', file.originalname);
-        // Generate unique filename with timestamp
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
+        // Use a temporary filename initially
+        const timestamp = Date.now();
+        const tempFilename = `temp_${timestamp}${path.extname(file.originalname)}`;
+        cb(null, tempFilename);
     }
 });
 
@@ -29,11 +41,9 @@ const upload = multer({
         fileSize: 5 * 1024 * 1024 // 5MB limit
     },
     fileFilter: function (req, file, cb) {
-        console.log('Checking file type:', file.mimetype);
         // Accept only images
         if (!file.originalname.match(/\.(jpg|jpeg|png|gif)$/)) {
-            console.error('Invalid file type:', file.originalname);
-            return cb(new Error('Only image files are allowed!'), false);
+            return cb(new Error('Only image files (jpg, jpeg, png, gif) are allowed!'), false);
         }
         cb(null, true);
     }
@@ -42,35 +52,65 @@ const upload = multer({
 // Upload profile image
 async function uploadProfileImage(req, res, next) {
     try {
-        console.log('Starting uploadProfileImage handler');
-        console.log('Request file:', req.file);
-        console.log('Request user:', req.user);
-
         if (!req.file) {
-            console.error('No file uploaded');
             return res.status(400).json({ message: 'No file uploaded' });
         }
 
-        // Get the account from the request (assuming it's set by auth middleware)
-        const account = req.user;
-        if (!account) {
-            console.error('No authenticated user found');
-            return res.status(401).json({ message: 'User not authenticated' });
+        if (!req.user || !req.user.id) {
+            // Clean up temp file
+            if (fs.existsSync(req.file.path)) {
+                fs.unlinkSync(req.file.path);
+            }
+            return res.status(401).json({ message: 'Unauthorized' });
         }
 
-        // Update the account with the new image path
-        const imagePath = `/uploads/profile-images/${req.file.filename}`;
-        console.log('Setting new image path:', imagePath);
-        account.profileImage = imagePath;
-        await account.save();
+        if (!req.body.userEmail) {
+            // Clean up temp file
+            if (fs.existsSync(req.file.path)) {
+                fs.unlinkSync(req.file.path);
+            }
+            return res.status(400).json({ message: 'User email is required' });
+        }
 
-        console.log('Profile image updated successfully');
+        // Create the final filename with email
+        const finalFilename = `profileImage-${req.body.userEmail}${path.extname(req.file.originalname)}`;
+        const finalPath = path.join(uploadsDir, finalFilename);
+
+        // Check if an image already exists
+        if (fs.existsSync(finalPath)) {
+            // If no confirmation, ask for it
+            if (req.body.confirmed !== 'true') {
+                // Clean up temp file
+                if (fs.existsSync(req.file.path)) {
+                    fs.unlinkSync(req.file.path);
+                }
+                return res.status(409).json({
+                    message: 'An image already exists for this profile. Do you want to overwrite it?',
+                    exists: true
+                });
+            }
+            // If confirmed, delete existing file
+            fs.unlinkSync(finalPath);
+        }
+
+        // Rename temp file to final filename
+        fs.renameSync(req.file.path, finalPath);
+
+        // Create URL-friendly path
+        const urlPath = ['uploads', 'profiles', finalFilename].join('/');
+        
+        // Update database
+        await accountService.uploadImage(req.body.userId || req.user.id, urlPath);
+        
         res.json({
             message: 'Profile image uploaded successfully',
-            imagePath: account.profileImage
+            imagePath: urlPath
         });
     } catch (error) {
-        console.error('Error in uploadProfileImage:', error);
+        // Clean up temp file if it exists
+        if (req.file && fs.existsSync(req.file.path)) {
+            fs.unlinkSync(req.file.path);
+        }
         next(error);
     }
 }

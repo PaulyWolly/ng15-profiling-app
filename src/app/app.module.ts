@@ -11,8 +11,9 @@ import { JwtInterceptor, ErrorInterceptor, appInitializer } from '@app/_helpers'
 import { AccountService } from '@app/_services';
 import { AppComponent } from '@app/app.component';
 import { AlertComponent } from '@app/_components';
-import { HomeComponent } from '@app/home';
+import { HomeModule } from '@app/home/home.module';
 import { FooterComponent } from '@app/footer/footer.component';
+import { ProfileImageComponent } from './profile/profile-image.component';
 
 // import { AdminModule } from './admin/admin.module';
 
@@ -25,13 +26,14 @@ import { FooterComponent } from '@app/footer/footer.component';
         HttpClientModule,
         AppRoutingModule,
         MatIconModule,
-        MatButtonModule
+        MatButtonModule,
+        HomeModule
     ],
     declarations: [
         AppComponent,
         AlertComponent,
-        HomeComponent,
-        FooterComponent
+        FooterComponent,
+        ProfileImageComponent
     ],
     providers: [
         { provide: APP_INITIALIZER, useFactory: appInitializer, multi: true, deps: [AccountService] },

@@ -1,4 +1,4 @@
-﻿import { Component, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { first } from 'rxjs/operators';
@@ -6,8 +6,8 @@ import { first } from 'rxjs/operators';
 import { AccountService, AlertService } from '@app/_services';
 
 @Component({
-    templateUrl: 'login.component.html',
-    styleUrls: ['login.component.css']
+    templateUrl: './login.component.html',
+    styleUrls: ['./login.component.css']
 })
 export class LoginComponent implements OnInit {
     form!: FormGroup;
@@ -65,4 +65,4 @@ export class LoginComponent implements OnInit {
                 }
             });
     }
-}
+} 
