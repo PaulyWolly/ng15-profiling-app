@@ -48,7 +48,7 @@
         <ng-container matColumnDef="actions">
             <th mat-header-cell *matHeaderCellDef></th>
             <td mat-cell *matCellDef="let account" class="actions-column">
-                <button mat-icon-button [routerLink]="['./', account.id]">
+                <button mat-icon-button [routerLink]="['/admin/accounts/edit', account.id]">
                     <mat-icon>edit</mat-icon>
                 </button>
                 <button mat-icon-button color="warn" (click)="deleteAccount(account.id)">

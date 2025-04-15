@@ -12,19 +12,28 @@ export class AuthGuard implements CanActivate {
 
     canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot) {
         const account = this.accountService.accountValue;
+        console.log('AuthGuard: Checking activation for', state.url);
         if (account) {
+            console.log('AuthGuard: Account found', { id: account.id, role: account.role });
             // check if route is restricted by role
-            if (route.data.roles && !route.data.roles.includes(account.role)) {
-                // role not authorized so redirect to home page
-                this.router.navigate(['/']);
-                return false;
+            if (route.data.roles) {
+                console.log('AuthGuard: Route requires roles:', route.data.roles);
+                if (!route.data.roles.includes(account.role)) {
+                    // role not authorized so redirect to home page
+                    console.log(`AuthGuard: Role '${account.role}' NOT authorized. Redirecting to /`);
+                    this.router.navigate(['/']);
+                    return false;
+                }
+                 console.log(`AuthGuard: Role '${account.role}' IS authorized.`);
             }
 
             // authorized so return true
+            console.log('AuthGuard: Access granted.');
             return true;
         }
 
         // not logged in so redirect to login page with the return url 
+        console.log('AuthGuard: Not logged in. Redirecting to login.');
         this.router.navigate(['/account/login'], { queryParams: { returnUrl: state.url } });
         return false;
     }
