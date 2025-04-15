@@ -30,6 +30,9 @@ export class AddEditComponent implements OnInit {
     imageScale = 1;
     isDragging = false;
     isAddMode = true;
+    imageConflict = false;
+    imageConflictMessage = '';
+    pendingFormData: FormData | null = null;
 
     constructor(
         private formBuilder: FormBuilder,
@@ -169,12 +172,14 @@ export class AddEditComponent implements OnInit {
 
         this.uploading = true;
         this.error = '';
+        this.imageConflict = false;
+        this.imageConflictMessage = '';
 
-        // Create FormData
         const formData = new FormData();
         formData.append('profileImage', this.selectedFile);
         formData.append('userId', this.id);
         formData.append('userEmail', this.account.email);
+        this.pendingFormData = formData;
 
         try {
             const response = await this.accountService.uploadImage(this.id, formData)
@@ -182,30 +187,52 @@ export class AddEditComponent implements OnInit {
                 .toPromise();
 
             if (response.exists) {
-                // Ask for confirmation
-                if (confirm(response.message)) {
-                    // Add confirmation flag and try again
-                    formData.append('confirmed', 'true');
-                    const confirmResponse = await this.accountService.uploadImage(this.id, formData)
-                        .pipe(first())
-                        .toPromise();
-                    
-                    this.handleUploadSuccess(confirmResponse);
-                } else {
-                    // User cancelled the overwrite
-                    this.uploading = false;
-                    this.selectedFile = null;
-                    this.previewUrl = null;
-                }
+                this.imageConflict = true;
+                this.imageConflictMessage = response.message;
+                this.uploading = false;
             } else {
                 this.handleUploadSuccess(response);
             }
         } catch (error: any) {
             console.error('Upload failed:', error);
-            this.error = error.message || 'Failed to upload image';
+            if (error.exists) {
+                this.imageConflict = true;
+                this.imageConflictMessage = error.message || 'An image already exists for this profile';
+                this.uploading = false;
+            } else {
+                this.error = error.message || 'Failed to upload image';
+                this.uploading = false;
+                this.alertService.error(this.error);
+            }
+        }
+    }
+
+    async confirmOverwrite() {
+        if (!this.pendingFormData || !this.id) return;
+
+        this.uploading = true;
+        this.pendingFormData.append('confirmed', 'true');
+
+        try {
+            const response = await this.accountService.uploadImage(this.id, this.pendingFormData)
+                .pipe(first())
+                .toPromise();
+            
+            this.handleUploadSuccess(response);
+        } catch (error: any) {
+            console.error('Overwrite failed:', error);
+            this.error = error.message || 'Failed to overwrite image';
             this.uploading = false;
             this.alertService.error(this.error);
         }
+    }
+
+    cancelOverwrite() {
+        this.imageConflict = false;
+        this.imageConflictMessage = '';
+        this.pendingFormData = null;
+        this.selectedFile = null;
+        this.previewUrl = null;
     }
 
     private handleUploadSuccess(response: any) {
@@ -218,6 +245,9 @@ export class AddEditComponent implements OnInit {
         this.uploading = false;
         this.selectedFile = null;
         this.previewUrl = null;
+        this.imageConflict = false;
+        this.imageConflictMessage = '';
+        this.pendingFormData = null;
     }
 
     onSubmit() {
