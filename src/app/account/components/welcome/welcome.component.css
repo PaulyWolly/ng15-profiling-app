@@ -1,0 +1,38 @@
+.welcome-container {
+    text-align: center;
+    width: 100%;
+    position: fixed;
+    top: 15vh; /* Position it at 15% of viewport height from top */
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1;
+    background: transparent;
+    padding: 0;
+}
+
+.app-title {
+    color: #2c3e50;
+    font-size: 2rem;
+    font-weight: 500;
+    margin: 0;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    white-space: nowrap;
+    letter-spacing: 0.5px;
+}
+
+/* Add a subtle animation when the title appears */
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.app-title {
+    animation: fadeInDown 0.4s ease-out;
+} 
