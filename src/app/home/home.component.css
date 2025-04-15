@@ -1,0 +1,36 @@
+.p-4 {
+    min-height: calc(100vh - 56px); /* Subtract header height */
+    background-color: #f8f9fa;
+    margin: 0;
+    padding: 2rem !important;
+}
+
+.container {
+    height: 100%;
+}
+
+.profile-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 2rem;
+}
+
+.profile-image {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.update-link {
+    margin-top: 1rem;
+    color: #007bff;
+    text-decoration: none;
+}
+
+.update-link:hover {
+    text-decoration: underline;
+} 

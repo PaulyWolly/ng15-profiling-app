@@ -1,16 +1,16 @@
-/* .card {
-    max-width: 780px;
-    margin: 2rem auto;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    margin-top: 80vh;
-} 
-*/
+.card {
+    width: 650px;
+    margin: 140px auto;
+    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+    background: white;
+    border-radius: 4px;
+}
 
 .card-header {
     background-color: #e8eaec;
     padding: 1rem;
     text-align: center;
-    margin-top: -50px;
+    margin-top: 0;
 }
 
 .card-body {
@@ -35,5 +35,6 @@
 } 
 
 .outer-container {
-    margin-top: 500px;
+    margin: 0;
+    padding: 0;
 }

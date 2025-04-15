@@ -72,15 +72,36 @@ export class ListComponent implements OnInit {
     }
 
     deleteAccount(id: string) {
-      const account = this.accounts.data.find(x => x.id === id);
-      if (account) {
-        account.isDeleting = true;
-        this.accountService.delete(id)
-          .pipe(first())
-          .subscribe(() => {
-            this.accounts.data = this.accounts.data.filter(x => x.id !== id);
-          });
-      }
+        const account = this.accounts.data.find(x => x.id === id);
+        if (!account) return; // Exit if account not found in the list
+
+        // --- ADD CONFIRMATION ---
+        const text = `Are you sure you want to delete the account for ${account.firstName} ${account.lastName} (${account.email})?\nOK or Cancel.`;
+        if (confirm(text)) {
+            // User confirmed
+            account.isDeleting = true; // Set flag for potential UI feedback
+            this.accountService.delete(id)
+                .pipe(first())
+                .subscribe({
+                    next: () => {
+                        // Remove from list on success
+                        this.accounts.data = this.accounts.data.filter(x => x.id !== id);
+                        // Optionally, add a success alert here
+                        // this.alertService.success('Account deleted successfully');
+                    },
+                    error: (err) => {
+                        // Handle error (e.g., show alert)
+                        console.error('Delete failed:', err);
+                        // this.alertService.error('Failed to delete account');
+                        if (account) {
+                            account.isDeleting = false; // Reset flag on error
+                        }
+                    }
+                });
+        } else {
+            // User cancelled
+            console.log('Delete cancelled by user.');
+        }
     }
 }
 

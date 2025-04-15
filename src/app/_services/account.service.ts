@@ -31,6 +31,7 @@ export class AccountService {
     login(email: string, password: string) {
         return this.http.post<any>(`${baseUrl}/authenticate`, { email, password }, { withCredentials: true })
             .pipe(map(account => {
+                console.log('[AccountService] Login Response:', account);
                 if (account.profileImage) {
                     account.profileImage = `${environment.apiUrl}/${account.profileImage}`;
                 }
@@ -49,14 +50,22 @@ export class AccountService {
 
     refreshToken() {
         return this.http.post<any>(`${baseUrl}/refresh-token`, {}, { withCredentials: true })
-            .pipe(map((account) => {
-                if (account.profileImage) {
-                    account.profileImage = `${environment.apiUrl}/${account.profileImage}`;
-                }
-                this.accountSubject.next(account);
-                this.startRefreshTokenTimer();
-                return account;
-            }));
+            .pipe(
+                map((account) => {
+                    console.log('[AccountService] Refresh Response:', account);
+                    if (account.profileImage) {
+                        account.profileImage = `${environment.apiUrl}/${account.profileImage}`;
+                    }
+                    this.accountSubject.next(account);
+                    this.startRefreshTokenTimer();
+                    return account;
+                }),
+                catchError((err) => {
+                    console.log('RefreshToken failed, calling logout()');
+                    this.logout();
+                    return throwError(() => err);
+                })
+            );
     }
 
     // Account management endpoints
@@ -154,7 +163,17 @@ export class AccountService {
                     return response;
                 }),
                 catchError(error => {
-                    console.error('Upload error:', error);
+                    console.log('[AccountService] Upload Error:', error);
+
+                    // Handle 409 Conflict from the interceptor
+                    if (error.status === 409) {
+                        return throwError(() => ({
+                            exists: true,
+                            message: error.error?.message || 'An image already exists for this profile'
+                        }));
+                    }
+
+                    // Handle other errors
                     return throwError(() => new Error(error.error?.message || 'Failed to upload image'));
                 })
             );
