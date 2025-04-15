@@ -7,9 +7,11 @@ import { Account } from '@app/_models';
 export class UploadService {
     constructor(private http: HttpClient) { }
 
-    uploadProfileImage(file: File) {
-        const formData = new FormData();
-        formData.append('profileImage', file);
+    uploadProfileImage(file: File, existingFormData?: FormData) {
+        const formData = existingFormData || new FormData();
+        if (!existingFormData) {
+            formData.append('profileImage', file);
+        }
 
         return this.http.post<Account>(`${environment.apiUrl}/accounts/upload-profile-image`, formData);
     }

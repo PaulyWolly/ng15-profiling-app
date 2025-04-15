@@ -24,7 +24,7 @@
                                 {{selectedFile?.name || (account?.profileImage ? account.profileImage.split('/').pop() : 'Choose file')}}
                             </label>
                         </div>
-                        <div class="mt-3" *ngIf="selectedFile">
+                        <div class="mt-3" *ngIf="selectedFile && !imageConflict">
                             <button type="button" 
                                     class="btn btn-primary" 
                                     (click)="uploadImage()"
@@ -34,6 +34,22 @@
                         </div>
                         <div *ngIf="error" class="alert alert-danger mt-3">
                             {{error}}
+                        </div>
+                        <div *ngIf="imageConflict" class="alert alert-warning">
+                            <p>{{imageConflictMessage}}</p>
+                            <div class="mt-3">
+                                <button type="button" 
+                                        class="btn btn-danger me-2" 
+                                        (click)="confirmOverwrite()"
+                                        [disabled]="uploading">
+                                    {{uploading ? 'Overwriting...' : 'Overwrite Image'}}
+                                </button>
+                                <button type="button" 
+                                        class="btn btn-secondary" 
+                                        (click)="cancelOverwrite()">
+                                    Cancel
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
