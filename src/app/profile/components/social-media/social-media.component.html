@@ -1,0 +1,55 @@
+<mat-card class="social-card">
+    <mat-card-content>
+        <img *ngIf="profile.profileImage" 
+            [src]="profile.profileImage" 
+            alt="Profile picture"
+            class="img-fluid rounded-circle profile-img mb-3"
+            style="max-width: 120px;">
+        <div *ngIf="!profile.profileImage" class="default-avatar mb-3">
+            <mat-icon class="large-icon">account_circle</mat-icon>
+        </div>
+        
+        <h2>{{profile.firstName}} {{profile.lastName}}</h2>
+        <p class="text-muted">{{profile.title || 'Founder & ⅓ of @company'}}</p>
+        <p>{{profile.address || 'Austin, TX'}}</p>
+        
+        <div class="social-icons mt-3 mb-4">
+            <a href="#" class="social-icon">
+                <mat-icon>alternate_email</mat-icon>
+            </a>
+            <a href="#" class="social-icon">
+                <mat-icon>link</mat-icon>
+            </a>
+        </div>
+        
+        <div class="followers-info d-flex justify-content-around mb-4">
+            <div>
+                <h3>{{profile.followingCount || '296'}}</h3>
+                <p class="text-muted">FOLLOWING</p>
+            </div>
+            <div>
+                <h3>{{profile.followersCount || '24K'}}</h3>
+                <p class="text-muted">FOLLOWERS</p>
+            </div>
+        </div>
+        
+        <div class="followers-preview mb-4">
+            <p class="text-muted mb-2">22 FOLLOWERS YOU KNOW</p>
+            <div class="follower-avatars">
+                <!-- Placeholder for follower avatars -->
+                <span class="follower-avatar-placeholder"></span>
+                <span class="follower-avatar-placeholder"></span>
+                <span class="follower-avatar-placeholder"></span>
+                <span class="follower-avatar-placeholder"></span>
+                <span class="follower-avatar-placeholder"></span>
+                <span class="follower-avatar-placeholder"></span>
+            </div>
+        </div>
+        
+        <div class="action-buttons">
+            <button mat-raised-button color="primary">Follow</button>
+            <button mat-stroked-button class="ml-2">List</button>
+            <button mat-stroked-button class="ml-2">More</button>
+        </div>
+    </mat-card-content>
+</mat-card> 

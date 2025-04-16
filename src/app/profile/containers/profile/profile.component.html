@@ -1,0 +1,50 @@
+<div class="profile-container">
+    <div *ngIf="loading" class="loading-spinner">
+        <mat-spinner diameter="40"></mat-spinner>
+    </div>
+
+    <div *ngIf="!loading">
+        <!-- Template selection button (only visible for own profile) -->
+        <button *ngIf="isOwnProfile" 
+                mat-raised-button color="primary"
+                class="template-toggle-btn" 
+                (click)="toggleTemplateEditor()">
+            <mat-icon>brush</mat-icon> 
+            {{ isEditingTemplate ? 'Cancel' : 'Change Profile Template' }}
+        </button>
+
+        <!-- Template selector -->
+        <mat-card *ngIf="isOwnProfile && isEditingTemplate" class="template-selector">
+            <mat-card-header>
+                <mat-card-title>Select a Profile Template</mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+                <div class="templates-grid">
+                    <div *ngFor="let template of templates" 
+                        [class.active]="currentTemplate === template.id"
+                        class="template-card" 
+                        (click)="changeTemplate(template.id)">
+                        <img [src]="template.thumbnailUrl" [alt]="template.name + ' preview'">
+                        <h4>{{ template.name }}</h4>
+                        <p>{{ template.description }}</p>
+                    </div>
+                </div>
+            </mat-card-content>
+        </mat-card>
+
+        <!-- Standard Profile Template -->
+        <div *ngIf="currentTemplate === 'standard'" class="profile-standard">
+            <app-standard-profile [profile]="profileUser" [isOwnProfile]="isOwnProfile"></app-standard-profile>
+        </div>
+
+        <!-- Business Card Template -->
+        <div *ngIf="currentTemplate === 'business-card'" class="profile-business-card">
+            <app-business-card [profile]="profileUser" [isOwnProfile]="isOwnProfile"></app-business-card>
+        </div>
+
+        <!-- Social Media Template -->
+        <div *ngIf="currentTemplate === 'social-media'" class="profile-social-media">
+            <app-social-media [profile]="profileUser" [isOwnProfile]="isOwnProfile"></app-social-media>
+        </div>
+    </div>
+</div> 

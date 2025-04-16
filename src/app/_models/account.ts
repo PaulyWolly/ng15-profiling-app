@@ -1,4 +1,5 @@
 ﻿import { Role } from './role';
+import { ProfileTemplateType } from './profile-template';
 
 export class Account {
     id?: string;
@@ -11,4 +12,22 @@ export class Account {
     profileImage?: string;
     isDeleting?: boolean;
     imagePath?: string;
+    profileTemplateType?: ProfileTemplateType;
+    // Social media fields
+    website?: string;
+    github?: string;
+    twitter?: string;
+    instagram?: string;
+    facebook?: string;
+    // Business card fields
+    phone?: string;
+    mobile?: string;
+    address?: string;
+    company?: string;
+    position?: string;
+    skills?: string[];
+    // Additional profile data
+    bio?: string;
+    followersCount?: number;
+    followingCount?: number;
 }

@@ -10,23 +10,42 @@ if (connectionString === 'MONGODB_URI') {
 
 console.log('Attempting to connect to MongoDB...');
 
-mongoose.connect(connectionString, {
+// Connection options with auto reconnect enabled
+const connectionOptions = {
     useNewUrlParser: true,
-    useUnifiedTopology: true
-})
-.then(() => {
-    console.log('Successfully connected to MongoDB Atlas');
-})
-.catch(err => {
-    console.error('MongoDB connection error:', err);
-});
+    useUnifiedTopology: true,
+    serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
+    socketTimeoutMS: 45000, // Close sockets after 45s
+};
+
+// Function to handle connection
+function connectWithRetry() {
+    console.log('MongoDB connection with retry');
+    mongoose.connect(connectionString, connectionOptions)
+    .then(() => {
+        console.log('Successfully connected to MongoDB Atlas');
+    })
+    .catch(err => {
+        console.error('MongoDB connection error:', err);
+        console.log('Retrying MongoDB connection in 5 seconds');
+        setTimeout(connectWithRetry, 5000);
+    });
+}
+
+// Initial connection
+connectWithRetry();
 
 mongoose.connection.on('error', err => {
     console.error('MongoDB connection error:', err);
+    if (err.name === 'MongoNetworkError') {
+        console.log('Attempting to reconnect to MongoDB...');
+        setTimeout(connectWithRetry, 5000);
+    }
 });
 
 mongoose.connection.on('disconnected', () => {
     console.log('MongoDB disconnected');
+    setTimeout(connectWithRetry, 5000);
 });
 
 mongoose.Promise = global.Promise;

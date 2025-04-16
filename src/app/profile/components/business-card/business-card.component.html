@@ -1,0 +1,106 @@
+<mat-card>
+    <mat-card-content class="business-card-layout">
+        <div class="header d-flex justify-content-between align-items-center mb-4">
+            <div class="logo">
+                <h3>Kodecolor</h3>
+            </div>
+            <mat-form-field appearance="outline" class="search-bar">
+                <input matInput placeholder="Search">
+                <mat-icon matSuffix>search</mat-icon>
+            </mat-form-field>
+            <div class="nav-links">
+                <span class="mr-3">Find people</span>
+                <span class="mr-3">
+                    Messages
+                    <mat-icon matBadge="4" matBadgeSize="small" matBadgeColor="accent">mail</mat-icon>
+                </span>
+                <span>My Contacts</span>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-3">
+                <img *ngIf="profile.profileImage" 
+                    [src]="profile.profileImage" 
+                    alt="Profile picture"
+                    class="img-fluid rounded profile-img mb-3">
+                <div *ngIf="!profile.profileImage" class="default-avatar">
+                    <mat-icon class="large-icon">person</mat-icon>
+                </div>
+            </div>
+            
+            <div class="col-md-9">
+                <h2>{{profile.firstName}} {{profile.lastName}}</h2>
+                <p class="text-muted">{{profile.title || 'Product Designer'}}</p>
+                <p><mat-icon>place</mat-icon> {{profile.address || 'New York, NY'}}</p>
+                
+                <div class="rating mt-3 mb-3">
+                    <h4>8.6</h4>
+                    <div class="stars">
+                        <mat-icon class="text-primary">star</mat-icon>
+                        <mat-icon class="text-primary">star</mat-icon>
+                        <mat-icon class="text-primary">star</mat-icon>
+                        <mat-icon class="text-primary">star</mat-icon>
+                        <mat-icon class="text-primary">star_half</mat-icon>
+                    </div>
+                </div>
+                
+                <div class="action-buttons mt-3">
+                    <button mat-stroked-button class="mr-2">
+                        <mat-icon>mail</mat-icon> Send message
+                    </button>
+                    <button mat-stroked-button color="primary" class="mr-2">
+                        <mat-icon>contacts</mat-icon> Contacts
+                    </button>
+                    <button mat-stroked-button color="warn">
+                        <mat-icon>report</mat-icon> Report user
+                    </button>
+                </div>
+                
+                <mat-tab-group class="mt-4">
+                    <mat-tab label="Timeline">
+                        <div class="p-3">Timeline content here</div>
+                    </mat-tab>
+                    <mat-tab label="About">
+                        <div class="p-3">
+                            <div class="row mt-4">
+                                <div class="col-md-4">
+                                    <h5>WORK</h5>
+                                    <mat-card class="mb-3">
+                                        <mat-card-content>
+                                            <div class="badge primary">Primary</div>
+                                            <h6>{{profile.company || 'Spotify New York'}}</h6>
+                                            <p>{{profile.address || '170 William Street'}}</p>
+                                        </mat-card-content>
+                                    </mat-card>
+                                </div>
+                                
+                                <div class="col-md-8">
+                                    <h5>CONTACT INFORMATION</h5>
+                                    <table class="info-table">
+                                        <tr>
+                                            <td>Phone:</td>
+                                            <td>{{profile.phone || '+1 123 456 7890'}}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Address:</td>
+                                            <td>{{profile.address || '525 E 68th Street, New York, NY'}}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>E-mail:</td>
+                                            <td>{{profile.email}}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Site:</td>
+                                            <td>{{profile.website || 'www.example.com'}}</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </mat-tab>
+                </mat-tab-group>
+            </div>
+        </div>
+    </mat-card-content>
+</mat-card> 
