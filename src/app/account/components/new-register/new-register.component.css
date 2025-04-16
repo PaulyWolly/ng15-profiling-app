@@ -1,21 +1,22 @@
-.card {
+.register-card {
     width: 650px;  /* Increased width */
     margin: 40px auto;
     background: white;
-    border-radius: 4px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-radius: 8px; /* Updated border-radius */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Added shadow */
+    border: 1px solid #e0e0e0; /* Added border */
 }
 
-.card-header {
+.register-card .card-header {
     padding: 12px 20px;
     background: #f0f7f2;
     border-bottom: 1px solid #eee;
-    border-radius: 4px 4px 0 0;
+    border-radius: 7px 7px 0 0; /* Match card radius */
     font-size: 16px;
     color: #333;
 }
 
-.card-body {
+.register-card .card-body {
     padding: 25px;
 }
 
@@ -57,9 +58,9 @@ input, select {
 }
 
 input:focus, select:focus {
-    border-color: #80bdff;
+    border-color: #adb5bd; /* Updated focus color */
     outline: 0;
-    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    box-shadow: none; /* Removed focus shadow */
 }
 
 .form-check {

@@ -130,3 +130,19 @@
 .mat-mdc-cell {
     color: rgba(0, 0, 0, 0.87);
 }
+
+:host {
+    display: block;
+    padding: 2rem;
+    background-color: #ecedee; /* Ensure consistent background */
+}
+
+/* Style the table container if needed */
+.table-container {
+    background-color: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Add other specific styles for table, buttons etc. */

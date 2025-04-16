@@ -1,18 +1,19 @@
 import { NgModule } from '@angular/core';
-import { ReactiveFormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 
 import { AccountRoutingModule } from './account-routing.module';
 import { LoginComponent } from './components/login/login.component';
 import { ResetPasswordComponent } from './components/reset-password/reset-password.component';
-import { RegisterComponent } from './components/register/register.component';
+import { NewRegisterComponent } from './components/new-register/new-register.component';
 import { ForgotPasswordComponent } from './components/forgot-password/forgot-password.component';
 import { LayoutComponent } from './components/layout/layout.component';
 
 @NgModule({
     imports: [
         CommonModule,
+        FormsModule,
         ReactiveFormsModule,
         RouterModule,
         AccountRoutingModule
@@ -20,7 +21,7 @@ import { LayoutComponent } from './components/layout/layout.component';
     declarations: [
         LoginComponent,
         ResetPasswordComponent,
-        RegisterComponent,
+        NewRegisterComponent,
         ForgotPasswordComponent,
         LayoutComponent
     ]

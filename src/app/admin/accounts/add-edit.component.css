@@ -1,19 +1,48 @@
+:host {
+    display: block;
+    padding: 2rem;
+    background-color: #ecedee; /* Ensure consistent background */
+}
+
+.form-container, 
+.profile-image-section .card { /* Target both containers */
+    background-color: white; 
+    padding: 1.5rem;
+    border-radius: 8px; 
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border: 1px solid #e0e0e0;
+    margin-bottom: 1rem; /* Add some margin between sections if needed */
+}
+
+/* Adjust profile image card header/body padding if needed */
+.profile-image-section .card-header {
+    background-color: #f8f9fa; /* Keep header light */
+    padding: 1rem; /* Standardize padding */
+    border-bottom: 1px solid #e0e0e0; /* Match border */
+    border-radius: 7px 7px 0 0; /* Match card radius */
+}
+
+.profile-image-section .card-body {
+    padding: 1.5rem; /* Match form-container padding */
+}
+
+/* Keep specific profile image styles */
 .profile-image-section {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 1rem;
-    padding: 1rem;
-    background-color: #f8f9fa;
-    border-radius: 8px;
+    /* display: flex; */ /* Keep original flex styles if they were intentional */
+    /* flex-direction: column; */
+    /* align-items: center; */
+    /* gap: 1rem; */
+    /* padding: 1rem; */ /* Padding is now on the inner card */
+    /* background-color: #f8f9fa; */ /* Background is now white */
+    /* border-radius: 8px; */ /* Radius is now on the inner card */
 }
 
 .profile-image {
     width: 200px;
-    height: 280px;  /* taller than width for vertical orientation */
-    border-radius: 0;  /* no border radius for oblong shape */
-    object-fit: contain;  /* maintain aspect ratio */
-    margin: 0 auto;
+    height: 280px;  
+    border-radius: 0;  
+    object-fit: contain;  
+    margin: 0 auto 1rem auto; /* Add bottom margin */
     display: block;
 }
 
