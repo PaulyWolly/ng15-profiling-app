@@ -287,7 +287,7 @@ async function update(id, params) {
 
 async function _delete(id) {
     const account = await getAccount(id);
-    await account.remove();
+    await account.deleteOne();
 }
 
 async function uploadImage(accountId, imagePath) {
