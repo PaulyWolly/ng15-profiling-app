@@ -8,7 +8,8 @@
     "start:all": "concurrently \"npm run start\" \"npm run start:server\"",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "clean": "rimraf node_modules && rimraf dist && rimraf .angular/cache"
   },
   "private": true,
   "dependencies": {
