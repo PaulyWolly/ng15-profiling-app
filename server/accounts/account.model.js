@@ -26,9 +26,9 @@ schema.virtual('isVerified').get(function () {
 });
 
 // Add method to check if account owns a refresh token
-schema.methods.ownsToken = async function(token) {
-    const refreshToken = await this.model('RefreshToken').findOne({ token });
-    return refreshToken && refreshToken.account.toString() === this._id.toString();
+schema.methods.ownsToken = function(token) {
+    return this.model('RefreshToken').findOne({ token, account: this._id })
+        .then(refreshToken => !!refreshToken);
 };
 
 schema.set('toJSON', {

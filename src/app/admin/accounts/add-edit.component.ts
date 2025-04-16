@@ -250,6 +250,11 @@ export class AddEditComponent implements OnInit {
         this.pendingFormData = null;
     }
 
+    // Cancel edit and return to accounts list
+    cancelEdit() {
+        this.router.navigate(['/admin/accounts']);
+    }
+
     onSubmit() {
         this.submitted = true;
 
@@ -258,26 +263,29 @@ export class AddEditComponent implements OnInit {
 
         // stop here if form is invalid
         if (this.form.invalid) {
+            console.log('Form is invalid:', this.form.errors);
             return;
         }
 
         this.submitting = true;
-
-        // create or update account based on id param
-        let observable = this.id
-            ? this.accountService.update(this.id, this.form.value)
-            : this.accountService.create(this.form.value);
-
-        observable.pipe(first())
+        this.saveAccount()
+            .pipe(first())
             .subscribe({
                 next: () => {
-                    this.alertService.success('Account saved', { keepAfterRouteChange: true });
-                    this.router.navigate(['../'], { relativeTo: this.route });
+                    this.alertService.success('Account saved successfully', { keepAfterRouteChange: true });
+                    this.router.navigate(['/admin/accounts']);
                 },
                 error: error => {
                     this.alertService.error(error);
                     this.submitting = false;
                 }
             });
+    }
+
+    private saveAccount() {
+        // create or update account based on isAddMode flag
+        return this.isAddMode
+            ? this.accountService.create(this.form.value)
+            : this.accountService.update(this.id!, this.form.value);
     }
 }

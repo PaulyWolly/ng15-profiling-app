@@ -20,10 +20,12 @@
     white-space: nowrap;
 }
 
+/* This is NOT used for thumbnails in the list - 
+   only when the image is displayed standalone */
 .profile-image {
     width: 40px;
     height: 40px;
-    border-radius: 50%;
+    border-radius: 20px; /* Changed from 50% to maintain oval shape */
     object-fit: cover;
     border: 1px solid #ddd;
     transition: transform 0.2s;
@@ -94,18 +96,21 @@
     padding: 8px !important;
 }
 
+/* Oval container for thumbnails */
 .profile-thumbnail {
     width: 40px;
     height: 56px;
-    border-radius: 20px;
+    border-radius: 28px; /* Increased to make it more obviously oval */
     overflow: hidden;
     display: flex;
     align-items: center;
     justify-content: center;
     background-color: #f5f5f5;
+    border: 2px solid #e0e0e0;
 }
 
-.profile-thumbnail .profile-image {
+/* Image inside thumbnail container */
+.profile-thumbnail img {
     width: 100%;
     height: 100%;
     object-fit: cover;
@@ -146,3 +151,17 @@
 }
 
 /* Add other specific styles for table, buttons etc. */
+
+/* Style for the paginator container */
+mat-paginator {
+    display: block; /* Ensure it takes block space */
+    margin-top: 1rem; /* Add space above the paginator */
+    background: transparent !important; /* Make background transparent */
+}
+
+/* You might need to adjust the internal alignment depending 
+   on the exact structure and default Material styles. 
+   This targets the container usually holding the controls. */
+.mat-mdc-paginator-container {
+    justify-content: flex-end !important; /* Force right alignment */
+}

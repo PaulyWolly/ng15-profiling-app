@@ -1,6 +1,8 @@
-﻿import { Component, OnInit } from '@angular/core';
+﻿import { Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
 import { first, catchError } from 'rxjs/operators';
 import { MatTableDataSource } from '@angular/material/table';
+import { MatPaginator } from '@angular/material/paginator';
+import { MatSort } from '@angular/material/sort';
 import { NgIf } from '@angular/common';
 import { of } from 'rxjs';
 
@@ -14,11 +16,14 @@ import { environment } from '@environments/environment';
   templateUrl: 'list.component.html',
   styleUrls: ['./list.component.css']
 })
-export class ListComponent implements OnInit {
+export class ListComponent implements OnInit, AfterViewInit {
     displayedColumns: string[] = ['thumbnail', 'name', 'email', 'role', 'actions'];
     accounts: MatTableDataSource<Account>;
     user!: UserInterface;
     error: string = '';
+
+    @ViewChild(MatPaginator) paginator!: MatPaginator;
+    @ViewChild(MatSort) sort!: MatSort;
 
     constructor(
       private accountService: AccountService,
@@ -28,7 +33,16 @@ export class ListComponent implements OnInit {
     }
 
     ngOnInit() {
-      this.accountService.getAll()
+      this.loadAccounts();
+    }
+
+    ngAfterViewInit() {
+        this.accounts.paginator = this.paginator;
+        this.accounts.sort = this.sort;
+    }
+
+    loadAccounts() {
+        this.accountService.getAll()
         .pipe(
           first(),
           catchError(err => {
@@ -38,26 +52,29 @@ export class ListComponent implements OnInit {
           })
         )
         .subscribe(accounts => {
-          // Process and log each account's image URL for debugging
           accounts.forEach(account => {
             if (account.profileImage) {
-              const originalUrl = account.profileImage;
               account.profileImage = this.getCompleteImageUrl(account.profileImage);
-              console.log(`Account ${account.firstName}: Image URL transformed from ${originalUrl} to ${account.profileImage}`);
-            } else {
-              console.log(`Account ${account.firstName}: No profile image`);
             }
           });
           this.accounts.data = accounts;
+          if (this.paginator) {
+            this.accounts.paginator = this.paginator;
+          }
+           if (this.sort) {
+            this.accounts.sort = this.sort;
+           }
         });
     }
 
     private getCompleteImageUrl(imageUrl: string): string {
-      if (!imageUrl) return '';
-      if (imageUrl.startsWith('http') || imageUrl.startsWith('data:')) {
-        return imageUrl;
-      }
-      return `${environment.apiUrl}/${imageUrl}`;
+        if (!imageUrl) return '';
+        if (imageUrl.startsWith('http') || imageUrl.startsWith('data:')) {
+          return imageUrl;
+        }
+        const apiUrl = environment.apiUrl.endsWith('/') ? environment.apiUrl.slice(0, -1) : environment.apiUrl;
+        const imagePath = imageUrl.startsWith('/') ? imageUrl.slice(1) : imageUrl;
+        return `${apiUrl}/${imagePath}`;
     }
 
     onDelete(id: any, firstName: string, lastName: string) {
@@ -71,35 +88,31 @@ export class ListComponent implements OnInit {
       }
     }
 
+    addAccount() {
+      this.route.navigate(['/admin/accounts/add']);
+    }
+
     deleteAccount(id: string) {
         const account = this.accounts.data.find(x => x.id === id);
-        if (!account) return; // Exit if account not found in the list
+        if (!account) return; // Exit if account not found
 
-        // --- ADD CONFIRMATION ---
         const text = `Are you sure you want to delete the account for ${account.firstName} ${account.lastName} (${account.email})?\nOK or Cancel.`;
         if (confirm(text)) {
-            // User confirmed
-            account.isDeleting = true; // Set flag for potential UI feedback
+            account.isDeleting = true; 
             this.accountService.delete(id)
                 .pipe(first())
                 .subscribe({
                     next: () => {
-                        // Remove from list on success
                         this.accounts.data = this.accounts.data.filter(x => x.id !== id);
-                        // Optionally, add a success alert here
-                        // this.alertService.success('Account deleted successfully');
                     },
                     error: (err) => {
-                        // Handle error (e.g., show alert)
                         console.error('Delete failed:', err);
-                        // this.alertService.error('Failed to delete account');
                         if (account) {
-                            account.isDeleting = false; // Reset flag on error
+                            account.isDeleting = false; 
                         }
                     }
                 });
         } else {
-            // User cancelled
             console.log('Delete cancelled by user.');
         }
     }

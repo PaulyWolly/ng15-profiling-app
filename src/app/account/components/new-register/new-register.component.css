@@ -5,6 +5,14 @@
     border-radius: 8px; /* Updated border-radius */
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Added shadow */
     border: 1px solid #e0e0e0; /* Added border */
+    overflow: visible !important;
+    overflow-y: hidden !important;
+    scrollbar-width: none !important;
+}
+
+.register-card::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
 }
 
 .register-card .card-header {
@@ -14,21 +22,33 @@
     border-radius: 7px 7px 0 0; /* Match card radius */
     font-size: 16px;
     color: #333;
+    overflow: visible !important;
+    overflow-y: hidden !important;
+    scrollbar-width: none !important;
 }
 
 .register-card .card-body {
     padding: 25px;
+    overflow: visible !important;
+    overflow-y: hidden !important;
+    scrollbar-width: none !important;
 }
 
 .form-row {
     display: flex;
     gap: 15px;
     margin-bottom: 15px;
+    overflow: visible !important;
+    overflow-y: hidden !important;
+    scrollbar-width: none !important;
 }
 
 .form-group {
     flex: 1;
     margin-bottom: 15px;
+    overflow: visible !important;
+    overflow-y: hidden !important;
+    scrollbar-width: none !important;
 }
 
 /* Title field should be smaller but not too small */

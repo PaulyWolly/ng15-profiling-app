@@ -1,3 +1,28 @@
+/* Add form-specific styles to ensure proper display of controls */
+.form-control, .form-select {
+    display: block;
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #212529;
+    background-color: #fff;
+    background-clip: padding-box;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+    transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+    height: calc(1.5em + 0.75rem + 2px);
+}
+
+.form-control:focus, .form-select:focus {
+    color: #212529;
+    background-color: #fff;
+    border-color: #86b7fe;
+    outline: 0;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
 :host {
     display: block;
     padding: 2rem;
@@ -40,9 +65,9 @@
 .profile-image {
     width: 200px;
     height: 280px;  
-    border-radius: 0;  
-    object-fit: contain;  
-    margin: 0 auto 1rem auto; /* Add bottom margin */
+    border-radius: 120px; /* Restore oval shape */
+    object-fit: cover; /* Change to cover to fit properly */
+    margin: 0 auto 1rem auto;
     display: block;
 }
 

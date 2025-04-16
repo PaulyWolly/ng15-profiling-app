@@ -30,11 +30,10 @@
     gap: 1rem;
 }
 
-.profile-image,
-.profile-image-placeholder {
+.oval-container {
     width: 200px;
-    height: 280px;  /* taller than width for vertical orientation */
-    border-radius: 120px;  /* rounded corners but not circular */
+    height: 280px;
+    border-radius: 120px; /* This creates the oval shape */
     overflow: hidden;
     display: flex;
     align-items: center;
@@ -43,14 +42,18 @@
     border: 2px solid #e0e0e0;
 }
 
-.profile-image {
-    width: 150px;
-    height: 150px;
-    border-radius: 50%;
+.oval-container img {
+    width: 100%;
+    height: 100%;
     object-fit: cover;
-    margin-bottom: 1rem;
-    border: 3px solid #fff;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.profile-image-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
 }
 
 .profile-image-placeholder mat-icon {

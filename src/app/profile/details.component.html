@@ -1,14 +1,16 @@
 ﻿<h1>My Profile</h1>
 <div *ngIf="account" class="profile-container">
     <div class="profile-image-section">
-        <img *ngIf="account.profileImage" [src]="account.profileImage" alt="Profile" class="profile-image">
-        <div *ngIf="!account.profileImage" class="profile-image-placeholder">
-            <mat-icon>person</mat-icon>
+        <div class="oval-container">
+            <img *ngIf="account.profileImage" [src]="account.profileImage" alt="Profile">
+            <div *ngIf="!account.profileImage" class="profile-image-placeholder">
+                <mat-icon>person</mat-icon>
+            </div>
         </div>
     </div>
     <div class="profile-details">
         <p><strong>Name: </strong> {{account.title}} {{account.firstName}} {{account.lastName}}</p>
         <p><strong>Email: </strong> {{account.email}}</p>
-        <p><a [routerLink]="['/admin/accounts/edit', account.id]">Update Profile</a></p>
+        <p><a routerLink="edit">Update Profile</a></p>
     </div>
 </div>

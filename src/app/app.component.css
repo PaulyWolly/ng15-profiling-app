@@ -1,4 +1,24 @@
+.user-info {
+    font-size: 0.9rem;
+    opacity: 0.9;
+    color: #ddd;
+    padding-right: 0.5rem;
+    font-style: normal;
+}
+
+.user-name {
+    font-style: italic;
+}
+
+/* Remove the absolute positioning since we're using flexbox */
 .btn.btn-link.nav-item.nav-link {
-  position: absolute;
-  right: 10px;
+    position: relative;
+    right: auto;
+}
+
+/* Add navbar spacing */
+.navbar-nav.ms-auto {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
 }

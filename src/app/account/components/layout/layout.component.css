@@ -1,21 +1,37 @@
+/* Hide the account header when not needed */
 :host {
-    display: block; /* Ensure the component takes up space */
-    width: 100%;
+    display: block;
     min-height: 100vh;
-    /* background-color: #f8f9fa; */ /* Removed redundant background */
-    padding: 2rem 0; /* Add some padding for spacing */
+    width: 100%;
+    background-color: #ecedee;
 }
 
-.container {
-    /* background-color: #f8f9fa; */ /* Removed background from here */
-    /* Ensure it fills the host height if needed */
-    /* height: 100%; */ 
+/* Hide any unwanted headers except the welcome component */
+:host ::ng-deep h1:not(.app-title),
+:host ::ng-deep .navbar-nav,
+:host ::ng-deep .admin-nav {
+    display: none !important;
 }
 
-.container-fluid {
-    background-color: #f8f9fa;
+/* Make sure app-welcome is visible */
+:host ::ng-deep app-welcome {
+    display: block !important;
+    visibility: visible !important;
+    z-index: 100;
 }
 
+/* Ensure content is properly centered */
+:host ::ng-deep .container {
+    padding-top: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: #ecedee;
+    margin-top: -5vh; /* Move content up a bit */
+}
+
+/* Footer settings */
 .footer {
     position: fixed;
     bottom: 0;
@@ -23,4 +39,29 @@
     background-color: white;
     border-top: 1px solid #dee2e6;
     padding: 8px 0;
+}
+
+.container {
+    padding-top: 0;
+}
+
+/* Remove any unwanted headers */
+h1, h2, h3, h4, h5, h6 {
+    display: none;
+}
+
+:host {
+    /* background-color: #f8f9fa; */ /* Removed redundant background */
+    padding: 2rem 0; /* Add some padding for spacing */
+}
+
+/* .container {
+    /* background-color: #f8f9fa; */ /* Removed background from here */
+    /* Ensure it fills the host height if needed */
+    /* height: 100%; 
+}*/ 
+
+
+.container-fluid {
+    background-color: #ecedee;
 } 

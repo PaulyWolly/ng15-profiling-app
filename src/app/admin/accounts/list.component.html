@@ -1,6 +1,6 @@
 ﻿<h1>Accounts</h1>
 <p>All accounts from secure (admin only) api end point. Accounts created here DO NOT need to be email authenticated.</p>
-<button mat-raised-button color="primary" routerLink="add" class="mb-3">Create Account</button>
+<button mat-raised-button color="primary" (click)="addAccount()" class="mb-3">Create Account</button>
 
 <div *ngIf="error" class="alert alert-danger">{{error}}</div>
 
@@ -15,7 +15,6 @@
                          [src]="account.profileImage" 
                          [alt]="account.firstName + ' ' + account.lastName + ' profile'"
                          (error)="account.profileImage = null"
-                         class="profile-image"
                          onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
                     <mat-icon *ngIf="!account.profileImage" 
                              class="placeholder-icon"
@@ -73,3 +72,10 @@
         </tr>
     </table>
 </div>
+
+<!-- Paginator moved outside the container -->
+<mat-paginator [pageSize]="4"
+               [pageSizeOptions]="[4, 5, 7, 10]"
+               showFirstLastButtons
+               aria-label="Select page of accounts">
+</mat-paginator>

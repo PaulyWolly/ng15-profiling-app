@@ -5,7 +5,11 @@ import { Subscription } from 'rxjs';
 import { Alert, AlertType } from '@app/_models';
 import { AlertService } from '@app/_services';
 
-@Component({ selector: 'alert', templateUrl: 'alert.component.html' })
+@Component({ 
+    selector: 'alert', 
+    templateUrl: 'alert.component.html',
+    styleUrls: ['alert.component.css']
+})
 export class AlertComponent implements OnInit, OnDestroy {
     @Input() id = 'default-alert';
     @Input() fade = true;
@@ -74,8 +78,8 @@ export class AlertComponent implements OnInit, OnDestroy {
     cssClasses(alert: Alert) {
         if (!alert) return;
 
-        const classes = ['alert', 'alert-dismissible', 'mt-4', 'container'];
-
+        const classes = ['alert', 'alert-dismissible'];
+                
         const alertTypeClass = {
             [AlertType.Success]: 'alert-success',
             [AlertType.Error]: 'alert-danger',
@@ -92,5 +96,18 @@ export class AlertComponent implements OnInit, OnDestroy {
         }
 
         return classes.join(' ');
+    }
+
+    getAlertIcon(alert: Alert) {
+        if (!alert) return '';
+        
+        const iconClass = {
+            [AlertType.Success]: 'fas fa-check-circle',
+            [AlertType.Error]: 'fas fa-exclamation-circle',
+            [AlertType.Info]: 'fas fa-info-circle',
+            [AlertType.Warning]: 'fas fa-exclamation-triangle'
+        }
+        
+        return alert.type ? iconClass[alert.type] : '';
     }
 }
