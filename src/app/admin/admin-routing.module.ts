@@ -20,9 +20,9 @@ const routes: Routes = [
         path: '', 
         component: LayoutComponent,
         children: [
-            // Default route redirects to overview
+            // Redirect empty path to overview
             { path: '', redirectTo: 'overview', pathMatch: 'full' },
-            // Admin overview page
+            // Admin overview page with its own path
             { path: 'overview', component: OverviewComponent },
             // Accounts management
             { path: 'accounts', loadChildren: accountsModule }
