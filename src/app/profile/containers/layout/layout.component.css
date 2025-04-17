@@ -1,1 +1,40 @@
 /* Layout component styles */ 
+.layout-container {
+    display: flex;
+    flex-direction: column;
+    min-height: calc(100vh - 120px);
+}
+
+.profile-header {
+    background-color: #f8f8f8;
+    padding: 5px 20px;
+    border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.template-selector {
+    display: flex;
+    align-items: center;
+    font-size: 0.85rem;
+}
+
+.template-label {
+    color: #666;
+    margin-right: 10px;
+    font-weight: 500;
+}
+
+.template-btn {
+    padding: 0 8px;
+    line-height: 30px;
+    min-width: auto;
+    font-size: 0.8rem;
+    margin-left: 5px;
+}
+
+.content-container {
+    flex: 1;
+    padding: 20px;
+    overflow: auto;
+} 

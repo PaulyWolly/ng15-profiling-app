@@ -13,14 +13,14 @@
 
 .business-card-layout .profile-img {
   width: 100%;
-  max-width: 200px;
+  max-width: 150px;
   box-shadow: 0 3px 10px rgba(0,0,0,0.1);
 }
 
 .business-card-layout .default-avatar {
   color: #6c757d;
   text-align: center;
-  padding: 30px;
+  padding: 20px;
   background: #f8f9fa;
   border-radius: 5px;
 }
@@ -31,15 +31,15 @@
 }
 
 .business-card-layout .stars .mat-icon {
-  font-size: 18px;
-  width: 18px;
-  height: 18px;
+  font-size: 16px;
+  width: 16px;
+  height: 16px;
 }
 
 .large-icon {
-  font-size: 64px;
-  height: 64px;
-  width: 64px;
+  font-size: 48px;
+  height: 48px;
+  width: 48px;
 }
 
 .badge {
@@ -52,7 +52,7 @@
   white-space: nowrap;
   vertical-align: baseline;
   border-radius: 0.25rem;
-  margin-bottom: 8px;
+  margin-bottom: 5px;
 }
 
 .badge.primary {
@@ -65,11 +65,27 @@
 }
 
 .info-table td {
-  padding: 10px 0;
+  padding: 5px 0;
   border-bottom: 1px solid #eee;
 }
 
 .info-table td:first-child {
   width: 30%;
   font-weight: bold;
+}
+
+/* Additional optimization styles */
+h2, h3, h4, h5 {
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+
+.mat-card-content {
+  padding: 10px;
+}
+
+.action-buttons button {
+  padding: 0 10px;
+  line-height: 30px;
+  margin-right: 5px;
 } 

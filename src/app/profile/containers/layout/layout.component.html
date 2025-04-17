@@ -1,5 +1,16 @@
-<div class="p-4">
-    <div class="container">
+<div class="layout-container">
+    <!-- Header with template buttons -->
+    <div class="profile-header">
+        <div class="template-selector" *ngIf="isDetailsRoute()">
+            <span class="template-label">Template:</span>
+            <button mat-button color="primary" class="template-btn" (click)="selectTemplate('standard')">Standard</button>
+            <button mat-button color="accent" class="template-btn" (click)="selectTemplate('business-card')">Business</button>
+            <button mat-button color="warn" class="template-btn" (click)="selectTemplate('social-media')">Social</button>
+        </div>
+    </div>
+
+    <!-- Main content -->
+    <div class="content-container">
         <router-outlet></router-outlet>
     </div>
 </div> 

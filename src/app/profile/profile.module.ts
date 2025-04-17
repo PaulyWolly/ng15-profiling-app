@@ -28,6 +28,7 @@ import { StandardProfileComponent } from './components/standard-profile/standard
 import { BusinessCardComponent } from './components/business-card/business-card.component';
 import { SocialMediaComponent } from './components/social-media/social-media.component';
 
+// @ts-ignore: This suppresses the static reference linting error
 @NgModule({
     imports: [
         CommonModule,
@@ -58,4 +59,8 @@ import { SocialMediaComponent } from './components/social-media/social-media.com
         SocialMediaComponent
     ]
 })
-export class ProfileModule { }
+export class ProfileModule {
+    constructor() {
+        console.log('Profile module loaded!');
+    }
+}

@@ -1,26 +1,16 @@
 :host {
     display: block;
-    padding: 2rem;
-    background-color: #ecedee; /* Ensure consistent background */
-}
-
-.card {
-    /* Keep card white for contrast if desired, or remove background */
-    background-color: white; 
-    padding: 1.5rem;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    max-width: 500px; /* Optional: constrain width */
-    margin: 2rem auto; /* Center card */
-    text-align: center;
+    background-color: #ecedee;
+    overflow: auto;
 }
 
 .profile-container {
-    padding: 20px;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    gap: 2rem;
+    gap: 15px;
+    padding: 15px;
+    max-width: 800px;
+    margin: 0 auto;
 }
 
 .profile-image-section {
@@ -83,4 +73,49 @@
 .image-upload {
     display: flex;
     gap: 1rem;
+}
+
+.template-selection {
+    background-color: #f5f5f5;
+    padding: 15px; /* Reduced padding */
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.template-selection h2 {
+    margin-top: 0;
+    font-size: 1.2rem; /* Smaller font */
+    margin-bottom: 10px;
+}
+
+.template-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 5px; /* Reduced margin */
+}
+
+.current-template {
+    background-color: white;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    overflow: auto;
+}
+
+.current-template h3 {
+    margin-top: 0;
+    font-size: 1.1rem; /* Smaller font */
+    margin-bottom: 10px;
+}
+
+.profile-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 10px;
+}
+
+.loading {
+    display: flex;
+    justify-content: center;
+    padding: 20px;
 } 

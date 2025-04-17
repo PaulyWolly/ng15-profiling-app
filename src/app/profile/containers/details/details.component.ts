@@ -1,22 +1,50 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Subscription } from 'rxjs';
 
-import { AccountService } from '@app/_services';
+import { AccountService, ProfileTemplateService } from '@app/_services';
 import { Account } from '@app/_models';
+import { ProfileTemplateType } from '@app/_models/profile-template';
 
 @Component({
   selector: 'app-details',
   templateUrl: './details.component.html',
   styleUrls: ['./details.component.css']
 })
-export class DetailsComponent implements OnInit {
+export class DetailsComponent implements OnInit, OnDestroy {
   account: Account | null = null;
+  currentTemplate: string = 'standard';
+  private subscriptions: Subscription = new Subscription();
 
-  constructor(private accountService: AccountService) { }
+  constructor(
+    private accountService: AccountService,
+    private profileTemplateService: ProfileTemplateService
+  ) {
+    console.log('DetailsComponent constructor called');
+  }
 
   ngOnInit() {
-    this.accountService.account.subscribe(x => {
-      console.log('Account updated:', x);
+    console.log('DetailsComponent ngOnInit called');
+    
+    // Subscribe to account changes
+    const accountSub = this.accountService.account.subscribe(x => {
+      console.log('DetailsComponent - Account updated:', x);
       this.account = x;
     });
+    this.subscriptions.add(accountSub);
+    
+    // Subscribe to template changes
+    const templateSub = this.profileTemplateService.currentTemplate.subscribe(template => {
+      console.log('DetailsComponent - Template changed to:', template);
+      this.currentTemplate = template;
+    });
+    this.subscriptions.add(templateSub);
+    
+    // Log initial template value from service
+    console.log('Initial template value:', this.profileTemplateService.currentTemplateValue);
+  }
+  
+  ngOnDestroy() {
+    // Clean up subscriptions
+    this.subscriptions.unsubscribe();
   }
 } 

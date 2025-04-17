@@ -3,6 +3,7 @@ import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
+import { RouterModule } from '@angular/router';
 
 // Material Modules (Keep essential ones needed globally or in HomeModule)
 import { MatIconModule } from '@angular/material/icon';
@@ -19,7 +20,6 @@ import { AppComponent } from '@app/app.component';
 import { AlertComponent } from '@app/_components';
 import { HomeModule } from '@app/home/home.module';
 import { FooterComponent } from '@app/footer/footer.component';
-import { ProfileImageComponent } from './profile/profile-image.component';
 
 // Import AdminModule instead of individual components
 import { AdminModule } from './admin/admin.module';
@@ -31,6 +31,7 @@ import { AdminModule } from './admin/admin.module';
         BrowserAnimationsModule,
         ReactiveFormsModule,
         HttpClientModule,
+        RouterModule,
         AppRoutingModule,
         MatIconModule,    // Keep necessary global Material Modules
         MatButtonModule,
@@ -41,8 +42,7 @@ import { AdminModule } from './admin/admin.module';
     declarations: [
         AppComponent,
         AlertComponent,
-        FooterComponent,
-        ProfileImageComponent
+        FooterComponent
         // Removed Admin components declarations
     ],
     providers: [

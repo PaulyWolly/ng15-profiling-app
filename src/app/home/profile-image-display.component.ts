@@ -14,7 +14,7 @@ import { Role } from '@app/_models';
       </div>
       <p class="mt-2 text-center">
         <a *ngIf="isAdmin" [routerLink]="['/admin/accounts/edit', userId]" class="btn btn-link">Update Profile</a>
-        <a *ngIf="!isAdmin" routerLink="/profile/edit" class="btn btn-link">Update Profile</a>
+        <a *ngIf="!isAdmin" routerLink="/profile" class="btn btn-link">View Profile</a>
       </p>
     </div>
   `,

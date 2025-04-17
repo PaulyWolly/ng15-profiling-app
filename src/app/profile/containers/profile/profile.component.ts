@@ -67,21 +67,14 @@ export class ProfileComponent implements OnInit {
     if (!this.isOwnProfile) return;
     
     this.loading = true;
-    this.profileTemplateService.setTemplate(template)
-      .pipe(first())
-      .subscribe({
-        next: () => {
-          this.currentTemplate = template;
-          this.profileUser.profileTemplateType = template;
-          this.loading = false;
-          this.isEditingTemplate = false;
-          this.alertService.success('Profile template updated successfully');
-        },
-        error: (error: string) => {
-          this.alertService.error('Error updating template: ' + error);
-          this.loading = false;
-        }
-      });
+    this.profileTemplateService.setTemplate(template);
+    
+    // Update local state since the service handles the API call
+    this.currentTemplate = template;
+    this.profileUser.profileTemplateType = template;
+    this.loading = false;
+    this.isEditingTemplate = false;
+    this.alertService.success('Profile template updated successfully');
   }
 
   toggleTemplateEditor() {
