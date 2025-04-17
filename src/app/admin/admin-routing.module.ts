@@ -1,18 +1,30 @@
 import { NgModule } from '@angular/core';
-import { Route, RouterModule } from '@angular/router';
+import { Routes, RouterModule } from '@angular/router';
 
 import { SubNavComponent } from './subnav.component';
 import { LayoutComponent } from './layout.component';
 import { OverviewComponent } from './overview.component';
 
+// Lazy load accounts module
 const accountsModule = () => import('./accounts/accounts.module').then(x => x.AccountsModule);
 
-const routes: Route[] = [
-    { path: '', component: SubNavComponent, outlet: 'subnav' },
-    {
-        path: '', component: LayoutComponent,
+const routes: Routes = [
+    // Named outlet for subnav with admin menu
+    { 
+        path: '', 
+        component: SubNavComponent, 
+        outlet: 'subnav'
+    },
+    // Main content routes
+    { 
+        path: '', 
+        component: LayoutComponent,
         children: [
-            { path: '', component: OverviewComponent },
+            // Default route redirects to overview
+            { path: '', redirectTo: 'overview', pathMatch: 'full' },
+            // Admin overview page
+            { path: 'overview', component: OverviewComponent },
+            // Accounts management
             { path: 'accounts', loadChildren: accountsModule }
         ]
     }

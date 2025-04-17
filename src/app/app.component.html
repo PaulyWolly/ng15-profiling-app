@@ -2,9 +2,9 @@
     <!-- main nav -->
     <nav class="navbar navbar-expand navbar-dark bg-dark px-3" *ngIf="account">
         <div class="navbar-nav">
-            <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{exact: true}" class="nav-item nav-link">Home</a>
-            <a routerLink="/profile" routerLinkActive="active" class="nav-item nav-link">Profile</a>
-            <a *ngIf="account.role === Role.Admin" routerLink="/admin" routerLinkActive="active" class="nav-item nav-link">Admin</a>
+            <a [routerLink]="['/']" [class.active]="isActiveRoute('/')" class="nav-item nav-link">Home</a>
+            <a (click)="navigateTo('/profile')" [class.active]="isActiveRoute('/profile')" class="nav-item nav-link clickable">Profile</a>
+            <a *ngIf="account.role === Role.Admin" (click)="navigateTo('/admin')" [class.active]="isActiveRoute('/admin')" class="nav-item nav-link clickable">Admin</a>
         </div>
         <div class="navbar-nav ms-auto">
             <span class="nav-item nav-link user-info">Logged in as <span class="user-name">{{account.firstName}} {{account.lastName}}</span></span>
@@ -12,8 +12,8 @@
         </div>
     </nav>
 
-    <!-- subnav router outlet - only show for admin users -->
-    <router-outlet name="subnav" *ngIf="account && account.role === Role.Admin"></router-outlet>
+    <!-- subnav router outlet - only show for admin users when in admin section -->
+    <router-outlet name="subnav" *ngIf="account?.role === Role.Admin && isActiveRoute('/admin')"></router-outlet>
 
     <!-- global alert -->
     <alert></alert>
