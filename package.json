@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve --open --port 5000",
+    "start": "ng serve --open --port 6000",
     "start:server": "cd server && npm start",
     "start:all": "concurrently \"npm run start\" \"npm run start:server\"",
     "build": "ng build",
@@ -24,6 +24,7 @@
     "@angular/platform-browser-dynamic": "15.2.9",
     "@angular/router": "15.2.9",
     "concurrently": "^8.2.2",
+    "cookie-parser": "^1.4.7",
     "dotenv": "^16.3.1",
     "multer": "^1.4.5-lts.2",
     "rootpath": "^0.1.2",

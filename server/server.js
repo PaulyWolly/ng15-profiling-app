@@ -48,7 +48,7 @@ app.use('/api-docs', require('./_helpers/swagger'));
 app.use(errorHandler);
 
 // start server
-const port = process.env.NODE_ENV === 'production' ? (process.env.PORT || 80) : 5001;
+const port = process.env.NODE_ENV === 'production' ? (process.env.PORT || 80) : 6001;
 app.listen(port, () => {
     console.log('Server listening on port ' + port);
     console.log('Connected to DB:', DBName);
