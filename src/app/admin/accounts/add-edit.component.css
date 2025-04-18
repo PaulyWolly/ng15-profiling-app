@@ -62,17 +62,19 @@
     justify-content: center;
     align-items: center;
     width: 100%;
+    max-width: 250px;
+    height: 200px;
+    margin: 0 auto;
     border-radius: 4px;
     overflow: hidden;
     background-color: #f5f5f5;
 }
 
 .profile-image {
-    width: 100%;
-    max-height: 200px;
-    object-fit: cover;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
     border-radius: 4px;
-    margin-bottom: 0;
 }
 
 .custom-file-container {
