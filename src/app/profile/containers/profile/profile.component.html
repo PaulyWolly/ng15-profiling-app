@@ -3,7 +3,7 @@
         <mat-spinner diameter="40"></mat-spinner>
     </div>
 
-    <div *ngIf="!loading">
+    <div *ngIf="!loading" class="profile-content scrollable-container" preventWheelPropagation>
         <!-- Template selection button (only visible for own profile) -->
         <button *ngIf="isOwnProfile" 
                 mat-raised-button color="primary"
@@ -24,7 +24,6 @@
                         [class.active]="currentTemplate === template.id"
                         class="template-card" 
                         (click)="changeTemplate(template.id)">
-                        <img [src]="template.thumbnailUrl" [alt]="template.name + ' preview'">
                         <h4>{{ template.name }}</h4>
                         <p>{{ template.description }}</p>
                     </div>

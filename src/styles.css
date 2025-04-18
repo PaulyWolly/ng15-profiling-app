@@ -5,37 +5,39 @@ html, body {
     height: 100%;
     margin: 0;
     padding: 0;
-    overflow-x: hidden;
     font-family: 'Nunito', 'Quicksand', 'Varela Round', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
-    background-color: #ecedee; /* Updated background color */
-    font-size: 12px; /* Reduced from 14px */
+    background-color: #ecedee;
+    font-size: 12px;
+    overflow: hidden !important; /* Prevent full page scroll */
+    overscroll-behavior: none; /* Prevent bounce effects */
 }
 
-body {
-    overflow-y: auto !important; /* Only show scrollbar when needed */
-}
-
+/* Global app structure */
 app-root {
     display: flex;
     flex-direction: column;
-    min-height: 100vh;
+    height: 100vh;
+    position: relative;
+    overflow: hidden; /* Prevent app-root from scrolling */
 }
 
 .main-container {
     flex: 1;
-    padding-bottom: 35px; /* Reduced from 50px */
+    padding-bottom: 35px;
+    overflow: hidden; /* Prevent main container from scrolling */
 }
 
-/* Additional global styles */
-.card {
-    margin-bottom: 10px; /* Reduced from 15px */
-    box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+/* SIMPLE SCROLLBAR FIX - for the scrollable containers */
+.scrollable-form-container {
+    width: 96% !important; /* Reduced from 98% to add more margin between content and scrollbar */
+    margin-right: 4% !important; /* Increased from 2% to add more margin */
+    padding-right: 10px !important; /* Add padding to increase space between content and scrollbar */
 }
 
-.spinner-border {
-    width: 1rem;
-    height: 1rem;
-    border-width: 0.12em;
+/* Allow reasonable bottom margin for page content */
+.page-container {
+    margin-bottom: 60px;
+    overflow: hidden; /* Prevent page container from scrolling */
 }
 
 /* Utility classes */
@@ -43,115 +45,127 @@ app-root {
     cursor: pointer;
 }
 
+/* Global styling for scrollable containers */
+.scrollable-form-container {
+    height: 58vh;
+    max-height: 58vh;
+    overflow-y: auto;
+    box-sizing: border-box;
+    overscroll-behavior: contain; /* Contain scroll effects within this container */
+}
+
+/* Profile image container adjustment for edit pages */
+app-edit .oval-container,
+app-add-edit .oval-container {
+    border-radius: 5px !important; /* Use square corners for edit page */
+    width: 180px !important; /* Make it slightly larger */
+    height: auto !important; /* Allow height to adjust to content */
+    aspect-ratio: 1 / 1; /* Square aspect ratio */
+}
+
+app-edit .oval-container img,
+app-add-edit .oval-container img {
+    object-fit: contain !important; /* Show full image without cropping */
+    width: 100% !important;
+    height: 100% !important;
+}
+
+/* Custom scrollbar styling with arrows */
+::-webkit-scrollbar {
+    width: 14px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 2px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 2px;
+    border: 3px solid #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+::-webkit-scrollbar-button {
+    display: block;
+    height: 14px;
+    width: 14px;
+    background-color: #f1f1f1;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+::-webkit-scrollbar-button:vertical:decrement {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' fill='%23555'%3E%3Cpath d='M5 0 L10 10 L0 10 Z'/%3E%3C/svg%3E");
+    transform: rotate(180deg);
+}
+
+::-webkit-scrollbar-button:vertical:increment {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' fill='%23555'%3E%3Cpath d='M5 0 L10 10 L0 10 Z'/%3E%3C/svg%3E");
+}
+
+/* For Firefox */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: #888 #f1f1f1;
+}
+
+/* Prevent mouse wheel from triggering page scroll */
+html, body, app-root, .container, .container-fluid, .content-container {
+    overflow: hidden !important;
+}
+
+/* Only allow scrolling in designated containers */
+.scrollable-form-container, 
+app-edit .col-md-8 .scrollable-form-container, 
+app-add-edit .col-md-8 .scrollable-form-container {
+    overflow-y: auto !important;
+    scrollbar-width: thin !important;
+}
+
 /* Material overrides */
 .mat-form-field {
     width: 100%;
-    font-size: 85%; /* Reduced from 90% */
+    font-size: 85%;
 }
 
 /* Content sizing */
 .content-container {
-    min-height: calc(100vh - 80px); /* Reduced from 100px */
+    min-height: calc(100vh - 80px);
     position: relative;
 }
 
-/* Prevents scrollbars on full-height pages */
-.full-height-no-scroll {
-    height: 100vh;
-    overflow: hidden;
-}
-
-/* Applying the rounded font to all headings with smaller sizes */
-h1 {
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
     font-family: 'Nunito', 'Quicksand', sans-serif;
     font-weight: 700;
-    font-size: 1.5rem; /* Reduced from 1.8rem */
+}
+
+h1 {
+    font-size: 1.5rem;
     margin-bottom: 0.75rem;
 }
 
 h2 {
-    font-family: 'Nunito', 'Quicksand', sans-serif;
-    font-weight: 700;
-    font-size: 1.3rem; /* Reduced from 1.5rem */
+    font-size: 1.3rem;
     margin-bottom: 0.6rem;
 }
 
 h3, h4, h5, h6 {
-    font-family: 'Nunito', 'Quicksand', sans-serif;
-    font-weight: 700;
-    font-size: 1.1rem; /* Reduced from 1.2rem */
+    font-size: 1.1rem;
     margin-bottom: 0.5rem;
 }
 
-/* More compact spacing */
-.mb-3 {
-    margin-bottom: 0.6rem !important; /* Reduced from default Bootstrap */
+/* Card styling */
+.card {
+    margin-bottom: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.08);
 }
 
-.mt-3 {
-    margin-top: 0.6rem !important; /* Reduced from default Bootstrap */
-}
-
-.p-3 {
-    padding: 0.6rem !important; /* Reduced from default Bootstrap */
-}
-
-/* Global styles for profile images - reduced sizes */
-.oval-container {
-    width: 140px !important; /* Reduced from 160px */
-    height: 196px !important; /* Reduced from 224px */
-    border-radius: 80px !important; /* Reduced from 100px */
-    overflow: hidden !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    background-color: #f5f5f5 !important;
-    border: 2px solid #e0e0e0 !important;
-    margin: 0 auto !important;
-    position: relative !important;
-}
-
-.oval-container img {
-    width: 100% !important;
-    height: 100% !important;
-    object-fit: cover !important;
-    border-radius: 0 !important;
-    border: none !important;
-}
-
-.profile-thumbnail {
-    width: 28px !important; /* Reduced from 32px */
-    height: 39px !important; /* Reduced from 45px */
-    border-radius: 18px !important; /* Reduced from 22px */
-    overflow: hidden !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    background-color: #f5f5f5 !important;
-    border: 1px solid #e0e0e0 !important; /* Reduced from 2px */
-}
-
-.profile-thumbnail img {
-    width: 100% !important;
-    height: 100% !important;
-    object-fit: cover !important;
-    border-radius: 0 !important;
-    border: none !important;
-}
-
-/* Form controls and inputs - make them more compact */
-.form-control, .btn {
-    padding: 0.25rem 0.5rem;
-    font-size: 0.85rem;
-    line-height: 1.4;
-}
-
-.input-group-text {
-    padding: 0.25rem 0.5rem;
-    font-size: 0.85rem;
-}
-
-/* Reduce spacing in cards and content areas */
 .card-body {
     padding: 0.75rem;
 }
@@ -160,148 +174,29 @@ h3, h4, h5, h6 {
     padding: 0.5rem 0.75rem;
 }
 
-.container, .container-fluid {
-    padding: 0.5rem;
-}
-
-/* Adjust table sizes */
-.table th, .table td {
-    padding: 0.35rem;
+/* Form controls */
+.form-control, .btn {
+    padding: 0.25rem 0.5rem;
     font-size: 0.85rem;
+    line-height: 1.4;
 }
 
-/* SCROLLBAR SETTINGS - SHOW ONLY WHEN NEEDED */
-
-/* For Firefox */
-* {
-    scrollbar-width: none;
-}
-
-/* Default setting - only show scrollbars when content overflows */
-html, body, div, section, article, aside, nav, header, footer, main {
-    overflow: hidden;
-}
-
-/* Set main content to have auto overflow */
-.main-content-wrapper {
-    overflow-y: auto;
-}
-
-/* Login and Account Page Specific Settings */
-.account-layout, 
-.login-container, 
-.register-container, 
-.forgot-password-container,
-app-login,
-app-footer,
-.footer-container,
-app-new-register,
-app-reset-password,
-app-forgot-password {
-    overflow: visible !important;
-}
-
-/* Fix for footer in login pages */
-body.login-page {
-    overflow: hidden !important;
-}
-
-app-footer .footer-container {
-    overflow: hidden !important;
-}
-
-.login-page app-footer .footer-container {
-    display: block;
-    overflow: hidden !important;
-}
-
-/* For Chrome, Safari, and other WebKit browsers */
-::-webkit-scrollbar {
-    width: 8px; /* Reduced from 10px */
-    height: 8px; /* Reduced from 10px */
-}
-
-::-webkit-scrollbar-track {
-    background: #f0f0f0;
-    border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb {
-    background: #888;
-    border-radius: 4px;
-    border: 1px solid #f0f0f0;
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background: #666;
-}
-
-/* Override Bootstrap's bg-light to use our preferred color */
+/* Bootstrap overrides */
 .bg-light {
     background-color: #ecedee !important;
 }
 
-.admin-nav {
-    padding-top: 0;
-    padding-bottom: 0;
-    background-color: #e8e9ea;
-    border-bottom: 1px solid #ccc;
+/* Responsive adjustments */
+@media (min-width: 768px) {
+    .scrollable-form-container {
+        height: calc(100vh - 220px);
+        margin-bottom: 80px;
+    }
 }
 
-.btn-delete-account {
-    width: 32px; /* Reduced from 36px */
-    text-align: center;
-    box-sizing: content-box;
-}
-
-/* Special fix for account pages */
-app-layout .container {
-    height: 100vh;
-    overflow: hidden !important;
-}
-
-/* Ensure the footer doesn't cause scrollbars */
-.footer-container {
-    overflow: hidden !important;
-}
-
-/* Remove potentially conflicting global overrides below */
-
-/* 
-.container {
-    padding: 2rem 1rem;
-}
-*/
-
-/* Override bootstrap card styles - Keep if needed globally, otherwise remove */
-/*
-.card {
-    background: transparent !important;
-    border: none !important;
-    box-shadow: none !important;
-}
-*/
-
-/* Remove conflicting input/form-control styles */
-/*
-.input-group {
-    background: white;
-    border-radius: 4px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.input-group-text {
-    background-color: white !important;
-    border: none !important;
-    padding-left: 1rem;
-}
-
-.form-control {
-    border: none !important;
-    padding: 0.75rem !important;
-}
-
-.form-control:focus {
-    box-shadow: none !important;
-}
-*/ 
+@media (max-height: 800px) {
+    .scrollable-form-container {
+        height: calc(100vh - 240px);
+        margin-bottom: 80px;
+    }
+} 

@@ -1,6 +1,6 @@
 ﻿import { Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, FormControl } from '@angular/forms';
 import { first } from 'rxjs/operators';
 
 import { AccountService } from '../../_services/account.service';
@@ -31,6 +31,7 @@ export class AddEditComponent implements OnInit {
     imageConflictMessage = '';
     pendingFormData: FormData | null = null;
     profileTemplates: ProfileTemplate[] = PROFILE_TEMPLATES;
+    imageUrl: string | null = null;
 
     constructor(
         private formBuilder: FormBuilder,
@@ -41,9 +42,8 @@ export class AddEditComponent implements OnInit {
     ) { }
 
     ngOnInit() {
-        const id = this.route.snapshot.params['id'];
-        this.id = id;
-        this.isAddMode = !id;
+        this.id = this.route.snapshot.params['id'];
+        this.isAddMode = !this.id;
         this.title = this.isAddMode ? 'Create Account' : 'Edit Account';
 
         // password not required in edit mode
@@ -89,34 +89,19 @@ export class AddEditComponent implements OnInit {
             validator: MustMatch('password', 'confirmPassword')
         });
 
-        if (typeof id === 'string') {
-            this.accountService.getById(id)
+        if (!this.isAddMode && this.id) {
+            this.accountService.getById(this.id)
                 .pipe(first())
-                .subscribe(account => {
-                    this.account = account;
-                    // Only show profile image if it's the current user's account
-                    const currentUser = this.accountService.accountValue;
-                    if (currentUser?.id === account.id || currentUser?.role === 'Admin') {
-                        // Ensure the profile image URL is complete
-                        if (account.profileImage && !account.profileImage.startsWith('http')) {
-                            account.profileImage = `${environment.apiUrl}/${account.profileImage}`;
-                        }
-                    } else {
-                        account.profileImage = undefined;
+                .subscribe({
+                    next: (account) => {
+                        this.account = account;
+                        this.form.patchValue(account);
+                        this.imageUrl = account.profileImage || null;
+                    },
+                    error: error => {
+                        this.alertService.error(error);
+                        this.loading = false;
                     }
-                    
-                    // Convert skills array to comma-separated string for form if it exists
-                    if (account.skills && Array.isArray(account.skills)) {
-                        const skillsString = account.skills.join(', ');
-                        this.form.get('skills')?.setValue(skillsString);
-                    }
-                    
-                    // Initialize template type if not set
-                    if (!account.profileTemplateType) {
-                        account.profileTemplateType = ProfileTemplateType.STANDARD;
-                    }
-                    
-                    this.form.patchValue(account);
                 });
         }
     }
@@ -291,17 +276,45 @@ export class AddEditComponent implements OnInit {
             : this.accountService.update(this.id!, formData);
     }
 
-    isSocialMediaTemplate(): boolean {
-        return this.form.get('profileTemplateType')?.value === ProfileTemplateType.SOCIAL_MEDIA;
-    }
-
-    isBusinessCardTemplate(): boolean {
+    isBusinessCardTemplate() {
         return this.form.get('profileTemplateType')?.value === ProfileTemplateType.BUSINESS_CARD;
     }
 
-    getSelectedTemplateDescription(): string {
-        const selectedType = this.form.get('profileTemplateType')?.value;
-        const template = this.profileTemplates.find(t => t.id === selectedType);
-        return template?.description || 'No description available';
+    isSocialMediaTemplate() {
+        return this.form.get('profileTemplateType')?.value === ProfileTemplateType.SOCIAL_MEDIA;
+    }
+
+    isStandardTemplate() {
+        return this.form.get('profileTemplateType')?.value === ProfileTemplateType.STANDARD;
+    }
+
+    getSelectedTemplateDescription() {
+        const templateId = this.form.get('profileTemplateType')?.value;
+        const template = this.profileTemplates.find(t => t.id === templateId);
+        return template ? template.description : '';
+    }
+
+    onImageChange(event: any) {
+        if (event.target.files && event.target.files[0]) {
+            const file = event.target.files[0];
+            const reader = new FileReader();
+            
+            reader.onload = (e: any) => {
+                this.imageUrl = e.target.result as string;
+                this.account.profileImage = e.target.result;
+            };
+            
+            reader.readAsDataURL(file);
+        }
+    }
+    
+    removeImage() {
+        this.imageUrl = null;
+        this.account.profileImage = null;
+    }
+
+    selectedTemplateChanged() {
+        // You can add template-specific logic here
+        console.log('Template changed to:', this.form.get('profileTemplateType')?.value);
     }
 }

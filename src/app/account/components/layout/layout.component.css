@@ -4,7 +4,7 @@
     min-height: 100vh;
     width: 100%;
     background-color: #ecedee;
-    overflow: hidden;
+    overflow: hidden !important;
     padding-top: 2.5rem; /* Add padding to account for the fixed header */
 }
 
@@ -30,7 +30,20 @@
     align-items: center;
     justify-content: center;
     background-color: #ecedee;
-    overflow: hidden;
+    overflow: hidden !important;
+}
+
+/* Complete scroll prevention for account pages */
+:host ::ng-deep * {
+    overflow: hidden !important;
+}
+
+:host ::ng-deep .container,
+:host ::ng-deep .container-fluid,
+:host ::ng-deep form,
+:host ::ng-deep .card,
+:host ::ng-deep .card-body {
+    overflow: hidden !important;
 }
 
 /* Footer settings */
@@ -41,17 +54,28 @@
     background-color: white;
     border-top: 1px solid #dee2e6;
     padding: 8px 0;
-    overflow: hidden;
+    overflow: hidden !important;
 }
 
 .container {
     padding-top: 0;
-    overflow: hidden;
+    overflow: hidden !important;
 }
 
 /* Hide the router-outlet scrollbar */
 ::ng-deep router-outlet + * {
-    overflow: visible !important;
+    overflow: hidden !important;
+}
+
+/* Hide all scrollbars in the entire layout */
+:host ::ng-deep ::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+}
+
+:host ::ng-deep * {
+    -ms-overflow-style: none !important;
+    scrollbar-width: none !important;
 }
 
 /* Remove any unwanted headers */

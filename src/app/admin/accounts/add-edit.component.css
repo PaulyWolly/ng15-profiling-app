@@ -336,4 +336,221 @@ h1 {
 textarea.form-control {
     height: auto;
     min-height: 80px;
+}
+
+/* Command bar styling */
+.command-bar {
+  background-color: #f8f9fa;
+  padding: 12px 16px;
+  border-radius: 4px;
+  border: 1px solid #e9ecef;
+  margin-bottom: 15px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+/* Template description styling */
+.template-description {
+  font-size: 0.85rem;
+  color: #495057;
+  max-width: 450px;
+  display: inline-block;
+  padding: 8px 12px;
+  background-color: #f8f9fa;
+  border-radius: 4px;
+  border-left: 3px solid #007bff;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  margin-top: 5px;
+}
+
+/* Container styles - reduce wasted space */
+.admin-edit-container {
+  max-height: calc(100vh - 170px);
+  margin-top: 10px !important;
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+
+/* Left column - no scroll needed */
+.col-md-4 {
+  height: 100%;
+  padding-right: 10px;
+}
+
+/* Right column - MUST have scroll */
+.col-md-8 {
+  height: 100%;
+}
+
+/* Simplified scrollable container */
+.scrollable-form-container {
+  height: calc(100vh - 120px);
+  overflow-y: auto;
+  width: 98%;
+  margin-right: 2%;
+  padding-bottom: 60px;
+  margin-bottom: 60px; /* Space for footer */
+}
+
+/* Simple scrollbar styling */
+.scrollable-form-container::-webkit-scrollbar {
+  width: 8px;
+  background-color: #f0f0f0;
+  display: block;
+}
+
+.scrollable-form-container::-webkit-scrollbar-track {
+  background-color: #f0f0f0;
+}
+
+.scrollable-form-container::-webkit-scrollbar-thumb {
+  background-color: #888;
+  border: none;
+}
+
+/* Profile image styling */
+.profile-image-container {
+  width: 200px;
+  height: 200px;
+  margin: 0 auto;
+  border-radius: 50%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f8f9fa;
+  border: 1px solid #e9ecef;
+}
+
+.profile-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Card styling */
+.card {
+  margin-bottom: 15px;
+  border-radius: 4px;
+  border: 1px solid #e9ecef;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.card-header {
+  background-color: #f8f9fa;
+  padding: 10px 15px;
+  border-bottom: 1px solid #e9ecef;
+  font-weight: 500;
+}
+
+.card-header h5 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #495057;
+}
+
+.card-body {
+  padding: 15px;
+}
+
+/* Button styling */
+.btn {
+  font-size: 0.875rem;
+  padding: 0.375rem 0.75rem;
+}
+
+.btn-primary {
+  background-color: #007bff;
+  border-color: #007bff;
+}
+
+.btn-secondary {
+  background-color: #6c757d;
+  border-color: #6c757d;
+}
+
+/* Spacing utilities */
+.mt-2 {
+  margin-top: 0.5rem !important;
+}
+
+.mb-3 {
+  margin-bottom: 1rem !important;
+}
+
+.me-2 {
+  margin-right: 0.5rem !important;
+}
+
+.gap-2 {
+  gap: 0.5rem !important;
+}
+
+/* Highlight section for template */
+.highlight-section {
+  border-color: #007bff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.15);
+}
+
+/* Badge styling */
+.badge {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  font-weight: normal;
+}
+
+.bg-primary {
+  background-color: #007bff !important;
+}
+
+/* Form controls */
+.form-control, .form-select {
+  font-size: 0.875rem;
+  padding: 0.375rem 0.75rem;
+}
+
+/* Ensure inputs have proper height */
+input.form-control,
+select.form-select {
+  height: calc(1.5em + 0.75rem + 2px);
+}
+
+/* Loading state styling */
+.spinner-border {
+  width: 2rem;
+  height: 2rem;
+}
+
+/* Text utilities */
+.text-muted {
+  color: #6c757d !important;
+}
+
+small {
+  font-size: 80%;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .admin-edit-container {
+    max-height: none;
+    overflow: visible;
+  }
+  
+  .scrollable-form-container {
+    height: auto;
+    max-height: none;
+    overflow: visible !important;
+  }
+}
+
+/* Fixed element to cover scrollbar at the bottom */
+.scrollbar-fix {
+  position: absolute;
+  bottom: 0;
+  right: 8px; /* Position exactly where the scrollbar is */
+  width: 10px; /* Match scrollbar width */
+  height: 80px; /* Tall enough to cover the bottom part */
+  background-color: #ecedee; /* Match page background color */
+  z-index: 9999; /* Ensure it's above everything */
 } 
