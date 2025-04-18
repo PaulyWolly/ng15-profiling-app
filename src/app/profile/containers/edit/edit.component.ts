@@ -104,8 +104,15 @@ export class EditComponent implements OnInit {
       validator: MustMatch('password', 'confirmPassword')
     });
     
-    // Auto-expand sections based on template type
-    this.updateAccordionState();
+    // Set a default template if none is set
+    if (!this.form.get('profileTemplateType')?.value) {
+      this.form.get('profileTemplateType')?.setValue(ProfileTemplateType.STANDARD);
+    }
+    
+    // Force update of accordion state
+    setTimeout(() => {
+      this.updateAccordionState();
+    }, 100);
     
     // Listen to template type changes to update accordion state
     this.form.get('profileTemplateType')?.valueChanges.subscribe(value => {
@@ -134,7 +141,7 @@ export class EditComponent implements OnInit {
   }
   
   // Updates accordion collapse state based on the selected template
-  private updateAccordionState() {
+  public updateAccordionState() {
     const templateType = this.form.get('profileTemplateType')?.value;
     
     switch(templateType) {
@@ -212,9 +219,39 @@ export class EditComponent implements OnInit {
   }
   
   getSelectedTemplateDescription(): string {
-    const templateType = this.form.get('profileTemplateType')?.value;
+    const templateType = this.form?.get('profileTemplateType')?.value;
+    console.log('Current template type:', templateType);
+    console.log('Available templates:', this.profileTemplates);
+    
+    // Find matching template
     const template = this.profileTemplates.find(t => t.id === templateType);
-    return template?.description || 'No description available';
+    console.log('Found template:', template);
+    
+    if (template?.description) {
+      return template.description;
+    } else {
+      // Fallback descriptions if template not found
+      if (templateType === ProfileTemplateType.STANDARD) {
+        return 'Basic professional profile layout with user information, location, and social links';
+      } else if (templateType === ProfileTemplateType.BUSINESS_CARD) {
+        return 'Professional contact card-style layout with ratings and work information';
+      } else if (templateType === ProfileTemplateType.SOCIAL_MEDIA) {
+        return 'Twitter-inspired layout showing follower counts and connection information';
+      }
+      return 'No description available';
+    }
+  }
+  
+  // Added method to get the selected template ID
+  getSelectedTemplateId(): ProfileTemplateType {
+    return this.form.get('profileTemplateType')?.value || ProfileTemplateType.STANDARD;
+  }
+  
+  // Added method to remove the profile image
+  removeImage() {
+    this.selectedFile = null;
+    this.previewUrl = null;
+    this.error = '';
   }
   
   // Form controls convenience getter
@@ -548,5 +585,24 @@ export class EditComponent implements OnInit {
 
   cancelEdit() {
     this.router.navigate(['/profile']);
+  }
+
+  // Add a new method to handle template changes
+  onTemplateChange(event: any) {
+    // Get the selected template value
+    const selectedValue = event.target.value;
+    console.log('Template changed to:', selectedValue);
+    
+    // Update form value if needed
+    this.form.get('profileTemplateType')?.setValue(selectedValue, { emitEvent: false });
+    
+    // Update UI based on selected template
+    this.updateAccordionState();
+    
+    // Force template description update
+    setTimeout(() => {
+      console.log('Forcing template description update');
+      // This is just to trigger change detection
+    }, 10);
   }
 } 

@@ -1,9 +1,10 @@
 .profile-container {
-  padding: 20px;
+  height: calc(100vh - 120px);
+  overflow: hidden;
 }
 
 .template-selector {
-  margin: 20px 0;
+  margin-bottom: 20px;
 }
 
 .template-selector .mat-card-title {
@@ -52,6 +53,7 @@
 }
 
 .template-toggle-btn {
+  width: 100%;
   margin-bottom: 15px;
 }
 
@@ -60,6 +62,37 @@
   justify-content: center;
   align-items: center;
   height: 100px;
+}
+
+/* Profile sections */
+.profile-standard, 
+.profile-business-card, 
+.profile-social-media {
+  padding: 10px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .two-column-container {
+    flex-direction: column;
+  }
+  
+  .two-column-container .left-column,
+  .two-column-container .right-column {
+    flex: 1 1 100%;
+    width: 100%;
+    padding: 10px;
+  }
+  
+  .left-column {
+    max-height: auto;
+    overflow-y: visible;
+  }
+  
+  .sticky-sidebar {
+    position: relative;
+    max-height: none;
+  }
 }
 
 /* Spacing utilities */
