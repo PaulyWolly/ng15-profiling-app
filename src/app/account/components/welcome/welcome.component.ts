@@ -6,5 +6,5 @@ import { Component } from '@angular/core';
     styleUrls: ['./welcome.component.css']
 })
 export class WelcomeComponent {
-    title = 'My MEAN Profiling app';
+    // Using a static title since we're simplifying the component
 } 

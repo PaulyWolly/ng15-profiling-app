@@ -11,8 +11,11 @@ import { ProfileTemplateType } from '@app/_models/profile-template';
   styleUrls: ['./details.component.css']
 })
 export class DetailsComponent implements OnInit, OnDestroy {
+  // Expose enum to template
+  ProfileTemplateType = ProfileTemplateType;
+  
   account: Account | null = null;
-  currentTemplate: string = 'standard';
+  currentTemplate: ProfileTemplateType = ProfileTemplateType.STANDARD;
   private subscriptions: Subscription = new Subscription();
 
   constructor(

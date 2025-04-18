@@ -221,7 +221,44 @@ function updateSchema(req, res, next) {
         lastName: Joi.string().empty(''),
         email: Joi.string().email().empty(''),
         password: Joi.string().min(6).empty(''),
-        confirmPassword: Joi.string().valid(Joi.ref('password')).empty('')
+        confirmPassword: Joi.string().valid(Joi.ref('password')).empty(''),
+        
+        // Profile template
+        profileTemplateType: Joi.string().valid('STANDARD', 'BUSINESS_CARD', 'SOCIAL_MEDIA').empty(''),
+        
+        // Personal & Professional Details
+        position: Joi.string().empty(''),
+        company: Joi.string().empty(''),
+        address: Joi.string().empty(''),
+        phone: Joi.string().empty(''),
+        mobile: Joi.string().empty(''),
+        bio: Joi.string().empty(''),
+        
+        // Social Media Links
+        website: Joi.string().uri().empty(''),
+        github: Joi.string().empty(''),
+        twitter: Joi.string().empty(''),
+        instagram: Joi.string().empty(''),
+        facebook: Joi.string().empty(''),
+        
+        // Social Media Stats
+        followersCount: Joi.number().integer().min(0).empty(''),
+        followingCount: Joi.number().integer().min(0).empty(''),
+        
+        // Professional Skills - allow array of strings
+        skills: Joi.alternatives().try(
+            Joi.array().items(Joi.string()),
+            Joi.string()
+        ).empty(''),
+        
+        // Follower images
+        followerImages: Joi.array().items(
+            Joi.object({
+                id: Joi.string().required(),
+                imageUrl: Joi.string().required(),
+                path: Joi.string().optional()
+            })
+        ).optional()
     };
 
     if (req.user.role === Role.Admin) {

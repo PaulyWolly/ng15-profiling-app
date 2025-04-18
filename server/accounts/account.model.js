@@ -18,7 +18,32 @@ const schema = new Schema({
     passwordReset: Date,
     created: { type: Date, default: Date.now },
     updated: Date,
-    profileImage: String
+    profileImage: String,
+    
+    // Profile template selection
+    profileTemplateType: { type: String, default: 'STANDARD' },
+    
+    // Personal & Professional Details
+    position: String,
+    company: String, 
+    address: String,
+    phone: String,
+    mobile: String,
+    bio: String,
+    
+    // Social Media Links
+    website: String,
+    github: String,
+    twitter: String,
+    instagram: String,
+    facebook: String,
+    
+    // Social Media Stats
+    followersCount: { type: Number, default: 0 },
+    followingCount: { type: Number, default: 0 },
+    
+    // Professional Skills
+    skills: [String]
 });
 
 schema.virtual('isVerified').get(function () {

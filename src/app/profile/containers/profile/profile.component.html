@@ -32,18 +32,23 @@
             </mat-card-content>
         </mat-card>
 
+        <!-- Debug information - can be removed in production -->
+        <div *ngIf="isOwnProfile" style="margin-bottom: 10px; font-size: 12px; color: #666;">
+            Current template: {{ currentTemplate }}
+        </div>
+
         <!-- Standard Profile Template -->
-        <div *ngIf="currentTemplate === 'standard'" class="profile-standard">
+        <div *ngIf="currentTemplate === ProfileTemplateType.STANDARD" class="profile-standard">
             <app-standard-profile [profile]="profileUser" [isOwnProfile]="isOwnProfile"></app-standard-profile>
         </div>
 
         <!-- Business Card Template -->
-        <div *ngIf="currentTemplate === 'business-card'" class="profile-business-card">
+        <div *ngIf="currentTemplate === ProfileTemplateType.BUSINESS_CARD" class="profile-business-card">
             <app-business-card [profile]="profileUser" [isOwnProfile]="isOwnProfile"></app-business-card>
         </div>
 
         <!-- Social Media Template -->
-        <div *ngIf="currentTemplate === 'social-media'" class="profile-social-media">
+        <div *ngIf="currentTemplate === ProfileTemplateType.SOCIAL_MEDIA" class="profile-social-media">
             <app-social-media [profile]="profileUser" [isOwnProfile]="isOwnProfile"></app-social-media>
         </div>
     </div>

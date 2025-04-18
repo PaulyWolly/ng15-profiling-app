@@ -62,6 +62,15 @@ export class LayoutComponent implements OnInit {
     }
     
     console.log('LayoutComponent - Setting template to:', templateType);
+    
+    // Debugging log to verify values
+    console.log('ProfileTemplateType values:', ProfileTemplateType);
+    console.log('Template string to enum mapping:', {
+      'standard': ProfileTemplateType.STANDARD,
+      'business-card': ProfileTemplateType.BUSINESS_CARD,
+      'social-media': ProfileTemplateType.SOCIAL_MEDIA
+    });
+    
     this.profileTemplateService.setTemplate(templateType);
   }
 } 

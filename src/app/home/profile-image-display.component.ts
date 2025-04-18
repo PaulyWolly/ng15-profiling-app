@@ -1,20 +1,24 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { AccountService } from '@app/_services';
 import { Role } from '@app/_models';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-profile-image-display',
   template: `
     <div class="profile-image-container">
-      <div class="oval-container">
-        <img *ngIf="imageUrl" [src]="imageUrl" alt="Profile Image">
-        <div *ngIf="!imageUrl" class="profile-image-placeholder">
+      <div class="oval-container" [class.loading]="loading">
+        <img *ngIf="imageUrl" [src]="imageUrl" alt="Profile Image" (load)="onImageLoaded()" (error)="onImageError()">
+        <div *ngIf="!imageUrl && !loading" class="profile-image-placeholder">
           <mat-icon>person</mat-icon>
+        </div>
+        <div *ngIf="loading" class="loading-spinner">
+          <mat-spinner diameter="40"></mat-spinner>
         </div>
       </div>
       <p class="mt-2 text-center">
-        <a *ngIf="isAdmin" [routerLink]="['/admin/accounts/edit', userId]" class="btn btn-link">Update Profile</a>
-        <a *ngIf="!isAdmin" routerLink="/profile" class="btn btn-link">View Profile</a>
+        <a *ngIf="isAdmin" [routerLink]="['/admin/accounts/edit', userId]" class="btn btn-link">Update Your Account</a>
+        <a *ngIf="!isAdmin" routerLink="/profile" class="btn btn-link">View Your Profile</a>
       </p>
     </div>
   `,
@@ -36,6 +40,11 @@ import { Role } from '@app/_models';
       display: flex;
       align-items: center;
       justify-content: center;
+      position: relative;
+    }
+
+    .oval-container.loading {
+      background-color: #f0f0f0;
     }
 
     .oval-container img {
@@ -58,23 +67,73 @@ import { Role } from '@app/_models';
       height: 100px;
       color: #9e9e9e;
     }
+
+    .loading-spinner {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+    }
   `]
 })
-export class ProfileImageDisplayComponent implements OnInit {
+export class ProfileImageDisplayComponent implements OnInit, OnDestroy {
   imageUrl: string | null = null;
   userId: string | null = null;
   isAdmin = false;
+  loading = true;
+  private accountSubscription?: Subscription;
 
   constructor(private accountService: AccountService) { }
 
   ngOnInit() {
-    const account = this.accountService.accountValue;
+    // First try to get the current value
+    this.updateFromAccount(this.accountService.accountValue);
+    
+    // Then subscribe to changes to keep it updated
+    this.accountSubscription = this.accountService.account.subscribe(account => {
+      console.log('[ProfileImageDisplay] Account updated:', account?.id);
+      this.updateFromAccount(account);
+    });
+  }
+  
+  ngOnDestroy() {
+    if (this.accountSubscription) {
+      this.accountSubscription.unsubscribe();
+    }
+  }
+  
+  private updateFromAccount(account: any) {
     if (account?.id) {
       this.userId = account.id;
       this.isAdmin = account.role === Role.Admin;
-      if (account.profileImage) {
+      
+      // If profile image URL changed, update and show loading state
+      if (account.profileImage !== this.imageUrl) {
+        this.loading = true;
         this.imageUrl = account.profileImage;
+        
+        // If no image URL is provided, don't show a loading state
+        if (!this.imageUrl) {
+          this.loading = false;
+        }
       }
+    } else {
+      this.userId = null;
+      this.isAdmin = false;
+      this.imageUrl = null;
+      this.loading = false;
     }
+  }
+  
+  onImageLoaded() {
+    console.log('[ProfileImageDisplay] Image loaded successfully');
+    this.loading = false;
+  }
+  
+  onImageError() {
+    console.error('[ProfileImageDisplay] Error loading image');
+    this.imageUrl = null;
+    this.loading = false;
   }
 } 

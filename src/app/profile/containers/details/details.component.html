@@ -4,15 +4,15 @@
     <!-- Current Template Display -->
     <div class="current-template">
         <div [ngSwitch]="currentTemplate">
-            <app-standard-profile *ngSwitchCase="'standard'" [profile]="account" [isOwnProfile]="true"></app-standard-profile>
-            <app-business-card *ngSwitchCase="'business-card'" [profile]="account" [isOwnProfile]="true"></app-business-card>
-            <app-social-media *ngSwitchCase="'social-media'" [profile]="account" [isOwnProfile]="true"></app-social-media>
+            <app-standard-profile *ngSwitchCase="ProfileTemplateType.STANDARD" [profile]="account" [isOwnProfile]="true"></app-standard-profile>
+            <app-business-card *ngSwitchCase="ProfileTemplateType.BUSINESS_CARD" [profile]="account" [isOwnProfile]="true"></app-business-card>
+            <app-social-media *ngSwitchCase="ProfileTemplateType.SOCIAL_MEDIA" [profile]="account" [isOwnProfile]="true"></app-social-media>
             <app-standard-profile *ngSwitchDefault [profile]="account" [isOwnProfile]="true"></app-standard-profile>
         </div>
     </div>
     
     <div class="profile-actions">
-        <p><a routerLink="edit" mat-button color="primary">Update Profile</a></p>
+        <p><a routerLink="edit" mat-button color="primary">Update Your Profile</a></p>
     </div>
 </div>
 

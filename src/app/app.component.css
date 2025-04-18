@@ -1,3 +1,18 @@
+/* Add navbar styling to keep it fixed at top */
+.navbar {
+    position: sticky;
+    top: 0;
+    z-index: 1030;
+    width: 100%;
+}
+
+/* Make main content area properly scroll */
+.main-content-wrapper {
+    padding-top: 10px;
+    padding-bottom: 70px; /* Space for footer */
+    min-height: calc(100vh - 120px); /* Account for navbar and footer */
+}
+
 .user-info {
     font-size: 0.9rem;
     opacity: 0.9;
@@ -28,6 +43,7 @@
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    overflow-x: hidden; /* Prevent horizontal scrolling */
 }
 
 .no-scroll {
@@ -77,4 +93,9 @@
 
 .navbar-nav .nav-link.clickable:hover {
     color: #fff;
+}
+
+/* Fix footer display */
+.app-footer {
+    margin-top: auto; /* Push to the bottom */
 }

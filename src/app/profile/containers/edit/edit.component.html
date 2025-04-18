@@ -1,127 +1,400 @@
 <h1>Update Profile</h1>
 <form *ngIf="!loading" [formGroup]="form">
-  <div class="row">
-    <div class="col-md-4">
-      <div class="profile-image-section">
-        <div class="card">
-          <div class="card-header">
-            <h4>Profile Image</h4>
+  <div class="page-container">
+    <div class="row">
+      <!-- Left Column - Profile Image and Template Selection -->
+      <div class="col-md-4">
+        <div class="sticky-sidebar">
+          <!-- Profile Image Section -->
+          <div class="profile-image-section">
+            <div class="card">
+              <div class="card-header">
+                <h4>Profile Image</h4>
+              </div>
+              <div class="card-body scrollable-card-body">
+                <div *ngIf="previewUrl || account?.profileImage" class="mb-3">
+                  <div class="oval-container">
+                    <img [src]="previewUrl || account?.profileImage" alt="Profile Image">
+                  </div>
+                </div>
+                <div class="custom-file">
+                  <input type="file" 
+                         class="custom-file-input" 
+                         id="profileImage" 
+                         (change)="onFileSelected($event)"
+                         accept="image/*"
+                         #fileInput>
+                  <label class="custom-file-label" for="profileImage">
+                    {{selectedFile?.name || (account?.profileImage ? (account?.profileImage?.split('/') || []).pop() || 'Choose file' : 'Choose file')}}
+                  </label>
+                </div>
+                <div class="mt-3" *ngIf="selectedFile && !imageConflict">
+                  <button type="button" 
+                          class="btn btn-primary" 
+                          (click)="uploadImage()"
+                          [disabled]="uploading">
+                    {{uploading ? 'Uploading...' : 'Upload Image'}}
+                  </button>
+                </div>
+                <div *ngIf="error" class="alert alert-danger mt-3">
+                  {{error}}
+                </div>
+                <div *ngIf="imageConflict" class="alert alert-warning">
+                  <p>{{imageConflictMessage}}</p>
+                  <div class="mt-3">
+                    <button type="button" 
+                            class="btn btn-danger me-2" 
+                            (click)="confirmOverwrite()"
+                            [disabled]="uploading">
+                      {{uploading ? 'Overwriting...' : 'Overwrite Image'}}
+                    </button>
+                    <button type="button" 
+                            class="btn btn-secondary" 
+                            (click)="cancelOverwrite()">
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="card-body">
-            <div *ngIf="previewUrl || account?.profileImage" class="mb-3">
-              <div class="oval-container">
-                <img [src]="previewUrl || account?.profileImage" alt="Profile Image">
+          
+          <!-- Template Selection -->
+          <div class="card mt-3">
+            <div class="card-header">
+              <h4>Profile Template</h4>
+            </div>
+            <div class="card-body scrollable-card-body">
+              <div class="form-group">
+                <label class="form-label">Choose Template:</label>
+                <select formControlName="profileTemplateType" class="form-select" [ngClass]="{ 'is-invalid': submitted && f.profileTemplateType.errors }">
+                  <option *ngFor="let template of profileTemplates" [value]="template.id">
+                    {{template.name}}
+                  </option>
+                </select>
               </div>
-            </div>
-            <div class="custom-file">
-              <input type="file" 
-                     class="custom-file-input" 
-                     id="profileImage" 
-                     (change)="onFileSelected($event)"
-                     accept="image/*"
-                     #fileInput>
-              <label class="custom-file-label" for="profileImage">
-                {{selectedFile?.name || (account?.profileImage ? (account?.profileImage?.split('/') || []).pop() || 'Choose file' : 'Choose file')}}
-              </label>
-            </div>
-            <div class="mt-3" *ngIf="selectedFile && !imageConflict">
-              <button type="button" 
-                      class="btn btn-primary" 
-                      (click)="uploadImage()"
-                      [disabled]="uploading">
-                {{uploading ? 'Uploading...' : 'Upload Image'}}
-              </button>
-            </div>
-            <div *ngIf="error" class="alert alert-danger mt-3">
-              {{error}}
-            </div>
-            <div *ngIf="imageConflict" class="alert alert-warning">
-              <p>{{imageConflictMessage}}</p>
               <div class="mt-3">
-                <button type="button" 
-                        class="btn btn-danger me-2" 
-                        (click)="confirmOverwrite()"
-                        [disabled]="uploading">
-                  {{uploading ? 'Overwriting...' : 'Overwrite Image'}}
-                </button>
-                <button type="button" 
-                        class="btn btn-secondary" 
-                        (click)="cancelOverwrite()">
-                  Cancel
-                </button>
+                <p class="small text-muted">{{getSelectedTemplateDescription()}}</p>
               </div>
             </div>
+          </div>
+          
+          <!-- Form Buttons (moved to sidebar for easy access) -->
+          <div class="mt-3 mb-3 action-buttons">
+            <button title="button" type="submit" class="btn btn-primary" (click)="onSubmit()" [disabled]="submitting">
+              <span *ngIf="submitting" class="spinner-border spinner-border-sm me-1"></span>
+              Save Changes
+            </button>
+            <button type="button" class="btn btn-secondary ms-2" (click)="cancelEdit()">Cancel</button>
           </div>
         </div>
       </div>
-    </div>
-    <div class="col-md-8">
-      <div class="form-container">
-        <div class="row">
-          <div class="mb-3 col-2">
-            <label class="form-label">Title</label>
-            <select title="select" formControlName="title" class="form-select" [ngClass]="{ 'is-invalid': submitted && f.title.errors }">
-              <option value=""></option>
-              <option value="Mr">Mr</option>
-              <option value="Mrs">Mrs</option>
-              <option value="Miss">Miss</option>
-              <option value="Ms">Ms</option>
-            </select>
-            <div *ngIf="submitted && f.title.errors" class="invalid-feedback">
-              <div *ngIf="f.title.errors.required">Title is required</div>
+      
+      <!-- Right Column - Form Fields -->
+      <div class="col-md-8">
+        <div class="scrollable-form-container">
+          <!-- Common Information (Always Visible) -->
+          <div class="card mb-3">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <h4>Basic Information</h4>
+              <span class="badge bg-primary">Required</span>
+            </div>
+            <div class="card-body">
+              <div class="row">
+                <div class="mb-3 col-2">
+                  <label class="form-label">Title</label>
+                  <select title="select" formControlName="title" class="form-select" [ngClass]="{ 'is-invalid': submitted && f.title.errors }">
+                    <option value=""></option>
+                    <option value="Mr">Mr</option>
+                    <option value="Mrs">Mrs</option>
+                    <option value="Miss">Miss</option>
+                    <option value="Ms">Ms</option>
+                    <option value="Dr">Dr</option>
+                    <option value="Prof">Prof</option>
+                  </select>
+                  <div *ngIf="submitted && f.title.errors" class="invalid-feedback">
+                    <div *ngIf="f.title.errors.required">Title is required</div>
+                  </div>
+                </div>
+                <div class="mb-3 col-5">
+                  <label class="form-label">First Name</label>
+                  <input title="input" type="text" formControlName="firstName" class="form-control" [ngClass]="{ 'is-invalid': submitted && f.firstName.errors }" />
+                  <div *ngIf="submitted && f.firstName.errors" class="invalid-feedback">
+                    <div *ngIf="f.firstName.errors.required">First Name is required</div>
+                  </div>
+                </div>
+                <div class="mb-3 col-5">
+                  <label class="form-label">Last Name</label>
+                  <input title="input" type="text" formControlName="lastName" class="form-control" [ngClass]="{ 'is-invalid': submitted && f.lastName.errors }" />
+                  <div *ngIf="submitted && f.lastName.errors" class="invalid-feedback">
+                    <div *ngIf="f.lastName.errors.required">Last Name is required</div>
+                  </div>
+                </div>
+              </div>
+              <div class="row">
+                <div class="mb-3 col">
+                  <label class="form-label">Email</label>
+                  <input title="input" type="text" formControlName="email" class="form-control" [ngClass]="{ 'is-invalid': submitted && f.email.errors }" />
+                  <div *ngIf="submitted && f.email.errors" class="invalid-feedback">
+                    <div *ngIf="f.email.errors.required">Email is required</div>
+                    <div *ngIf="f.email.errors.email">Email must be a valid email address</div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-          <div class="mb-3 col-5">
-            <label class="form-label">First Name</label>
-            <input title="input" type="text" formControlName="firstName" class="form-control" [ngClass]="{ 'is-invalid': submitted && f.firstName.errors }" />
-            <div *ngIf="submitted && f.firstName.errors" class="invalid-feedback">
-              <div *ngIf="f.firstName.errors.required">First Name is required</div>
+          
+          <!-- Template-Specific Information Accordion -->
+          <div class="card mb-3">
+            <div class="card-header">
+              <h4>Template-Specific Information</h4>
+            </div>
+            <div class="card-body p-0">
+              <div class="accordion" id="templateAccordion">
+                <!-- Contact Information (Visible for Standard & Business Card) -->
+                <div class="accordion-item" *ngIf="isStandardTemplate() || isBusinessCardTemplate()">
+                  <h2 class="accordion-header" id="contactHeading">
+                    <button class="accordion-button" type="button" [class.collapsed]="collapseContactInfo" (click)="toggleContactInfo()">
+                      Contact Information
+                      <span *ngIf="isBusinessCardTemplate()" class="badge bg-primary ms-2">Required for Business Card</span>
+                    </button>
+                  </h2>
+                  <div class="accordion-collapse collapse" [class.show]="!collapseContactInfo" aria-labelledby="contactHeading">
+                    <div class="accordion-body">
+                      <div class="row">
+                        <div class="mb-3 col-md-6">
+                          <label class="form-label">Phone</label>
+                          <input type="tel" formControlName="phone" class="form-control" placeholder="e.g. (555) 123-4567" />
+                        </div>
+                        <div class="mb-3 col-md-6">
+                          <label class="form-label">Mobile</label>
+                          <input type="tel" formControlName="mobile" class="form-control" placeholder="e.g. (555) 987-6543" />
+                        </div>
+                      </div>
+                      <div class="row">
+                        <div class="mb-3 col-md-12">
+                          <label class="form-label">Address</label>
+                          <input type="text" formControlName="address" class="form-control" placeholder="e.g. San Francisco, CA" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Professional Information (Visible for Business Card) -->
+                <div class="accordion-item" *ngIf="isBusinessCardTemplate()">
+                  <h2 class="accordion-header" id="professionalHeading">
+                    <button class="accordion-button" type="button" [class.collapsed]="collapseProfessionalInfo" (click)="toggleProfessionalInfo()">
+                      Professional Information
+                      <span class="badge bg-primary ms-2">Required for Business Card</span>
+                    </button>
+                  </h2>
+                  <div class="accordion-collapse collapse" [class.show]="!collapseProfessionalInfo" aria-labelledby="professionalHeading">
+                    <div class="accordion-body">
+                      <div class="row">
+                        <div class="mb-3 col-md-6">
+                          <label class="form-label">Job Title</label>
+                          <input type="text" formControlName="position" class="form-control" placeholder="e.g. Senior Developer" />
+                        </div>
+                        <div class="mb-3 col-md-6">
+                          <label class="form-label">Company</label>
+                          <input type="text" formControlName="company" class="form-control" placeholder="e.g. Acme Inc." />
+                        </div>
+                      </div>
+                      <div class="mb-3">
+                        <label class="form-label">Skills (comma separated)</label>
+                        <input type="text" formControlName="skills" class="form-control" placeholder="e.g. JavaScript, Angular, Node.js" />
+                        <small class="form-text text-muted">Enter your skills separated by commas</small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Bio Information (Visible for Standard & Social Media) -->
+                <div class="accordion-item" *ngIf="isStandardTemplate() || isSocialMediaTemplate()">
+                  <h2 class="accordion-header" id="bioHeading">
+                    <button class="accordion-button" type="button" [class.collapsed]="collapseBioInfo" (click)="toggleBioInfo()">
+                      Bio & About
+                    </button>
+                  </h2>
+                  <div class="accordion-collapse collapse" [class.show]="!collapseBioInfo" aria-labelledby="bioHeading">
+                    <div class="accordion-body">
+                      <div class="mb-3">
+                        <label class="form-label">Bio/About</label>
+                        <textarea formControlName="bio" class="form-control" rows="3" placeholder="Tell us about yourself"></textarea>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Social Media Links (Visible for all templates, required for Social Media) -->
+                <div class="accordion-item">
+                  <h2 class="accordion-header" id="socialLinksHeading">
+                    <button class="accordion-button" type="button" [class.collapsed]="collapseSocialLinks" (click)="toggleSocialLinks()">
+                      Social Media Links
+                      <span *ngIf="isSocialMediaTemplate()" class="badge bg-primary ms-2">Required for Social Media</span>
+                    </button>
+                  </h2>
+                  <div class="accordion-collapse collapse" [class.show]="!collapseSocialLinks" aria-labelledby="socialLinksHeading">
+                    <div class="accordion-body">
+                      <div class="row">
+                        <div class="mb-3 col-md-6">
+                          <label class="form-label">Website</label>
+                          <input type="url" formControlName="website" class="form-control" placeholder="e.g. https://example.com" />
+                        </div>
+                        <div class="mb-3 col-md-6">
+                          <label class="form-label">GitHub</label>
+                          <input type="text" formControlName="github" class="form-control" placeholder="e.g. yourusername" />
+                        </div>
+                      </div>
+                      <div class="row">
+                        <div class="mb-3 col-md-4">
+                          <label class="form-label">Twitter</label>
+                          <input type="text" formControlName="twitter" class="form-control" placeholder="e.g. @username" />
+                        </div>
+                        <div class="mb-3 col-md-4">
+                          <label class="form-label">Instagram</label>
+                          <input type="text" formControlName="instagram" class="form-control" placeholder="e.g. username" />
+                        </div>
+                        <div class="mb-3 col-md-4">
+                          <label class="form-label">Facebook</label>
+                          <input type="text" formControlName="facebook" class="form-control" placeholder="e.g. username" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Social Media Stats (Visible only for Social Media) -->
+                <div class="accordion-item" *ngIf="isSocialMediaTemplate()">
+                  <h2 class="accordion-header" id="socialStatsHeading">
+                    <button class="accordion-button" type="button" [class.collapsed]="collapseSocialStats" (click)="toggleSocialStats()">
+                      Social Media Stats
+                      <span class="badge bg-primary ms-2">Required for Social Media</span>
+                    </button>
+                  </h2>
+                  <div class="accordion-collapse collapse" [class.show]="!collapseSocialStats" aria-labelledby="socialStatsHeading">
+                    <div class="accordion-body">
+                      <div class="row">
+                        <div class="mb-3 col-md-6">
+                          <label class="form-label">Followers Count</label>
+                          <input type="number" formControlName="followersCount" class="form-control" placeholder="e.g. 1000" />
+                        </div>
+                        <div class="mb-3 col-md-6">
+                          <label class="form-label">Following Count</label>
+                          <input type="number" formControlName="followingCount" class="form-control" placeholder="e.g. 500" />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <!-- Follower Images (Visible only for Social Media) -->
+                <div class="accordion-item" *ngIf="isSocialMediaTemplate()">
+                  <h2 class="accordion-header" id="followerImagesHeading">
+                    <button class="accordion-button" type="button" [class.collapsed]="collapseFollowerImages" (click)="toggleFollowerImages()">
+                      Follower Images
+                      <span class="badge bg-primary ms-2">Required for Social Media</span>
+                    </button>
+                  </h2>
+                  <div class="accordion-collapse collapse" [class.show]="!collapseFollowerImages" aria-labelledby="followerImagesHeading">
+                    <div class="accordion-body follower-management-container">
+                      <!-- Follower Management UI -->
+                      <div class="follower-management">
+                        <div class="upload-area">
+                          <h5>Add Follower Images</h5>
+                          <div class="dropzone" 
+                               [class.active]="isDraggingOver" 
+                               (dragover)="onDragOver($event)" 
+                               (dragleave)="onDragLeave($event)" 
+                               (drop)="onDrop($event)"
+                               (click)="followerFileInput.click()">
+                            <input type="file" 
+                                   #followerFileInput 
+                                   hidden 
+                                   multiple 
+                                   accept="image/*" 
+                                   (change)="onFollowerImageSelected($event)" />
+                            <div class="dz-message">
+                              <div><i class="fa fa-cloud-upload"></i></div>
+                              <h3>Drop images here or click to upload</h3>
+                              <p>Upload up to 10 follower images (JPG, PNG, JPEG)</p>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <!-- Progress bar for bulk uploads -->
+                        <div *ngIf="followerUploadProgress > 0 && followerUploadProgress < 100" class="progress mt-3">
+                          <div class="progress-bar" 
+                               [style.width.%]="followerUploadProgress" 
+                               [attr.aria-valuenow]="followerUploadProgress" 
+                               aria-valuemin="0" 
+                               aria-valuemax="100">
+                            {{followerUploadProgress}}%
+                          </div>
+                        </div>
+                        
+                        <div *ngIf="followerUploadError" class="alert alert-danger mt-3">
+                          {{followerUploadError}}
+                        </div>
+                        
+                        <!-- Current follower images grid -->
+                        <div class="follower-grid-container">
+                          <h5 class="mt-4">Current Followers ({{followerImages.length}})</h5>
+                          <div class="follower-grid" cdkDropList (cdkDropListDropped)="onFollowerDrop($event)">
+                            <div *ngIf="followerImages.length === 0" class="no-followers">
+                              <p>No follower images added yet. Add some above!</p>
+                            </div>
+                            <div *ngFor="let follower of followerImages; let i = index" 
+                                 class="follower-item" 
+                                 cdkDrag>
+                              <div class="follower-image">
+                                <img [src]="follower.imageUrl" [alt]="'Follower ' + (i+1)">
+                              </div>
+                              <div class="follower-actions">
+                                <button type="button" class="btn btn-sm btn-danger" (click)="removeFollowerImage(follower)">
+                                  <i class="fa fa-trash"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-secondary handle" cdkDragHandle>
+                                  <i class="fa fa-arrows"></i>
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-          <div class="mb-3 col-5">
-            <label class="form-label">Last Name</label>
-            <input title="input" type="text" formControlName="lastName" class="form-control" [ngClass]="{ 'is-invalid': submitted && f.lastName.errors }" />
-            <div *ngIf="submitted && f.lastName.errors" class="invalid-feedback">
-              <div *ngIf="f.lastName.errors.required">Last Name is required</div>
+          
+          <!-- Password Change Section -->
+          <div class="card mb-3">
+            <div class="card-header">
+              <h4>Change Password</h4>
+            </div>
+            <div class="card-body">
+              <p class="text-muted">Leave blank to keep the same password</p>
+              <div class="row">
+                <div class="mb-3 col">
+                  <label class="form-label">Password</label>
+                  <input title="input" type="password" formControlName="password" class="form-control" [ngClass]="{ 'is-invalid': submitted && f.password.errors }" />
+                  <div *ngIf="submitted && f.password.errors" class="invalid-feedback">
+                    <div *ngIf="f.password.errors.minlength">Password must be at least 6 characters</div>
+                  </div>
+                </div>
+                <div class="mb-3 col">
+                  <label class="form-label">Confirm Password</label>
+                  <input title="input" type="password" formControlName="confirmPassword" class="form-control" [ngClass]="{ 'is-invalid': submitted && f.confirmPassword.errors }" />
+                  <div *ngIf="submitted && f.confirmPassword.errors" class="invalid-feedback">
+                    <div *ngIf="f.confirmPassword.errors.mustMatch">Passwords must match</div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
-        <div class="row">
-          <div class="mb-3 col">
-            <label class="form-label">Email</label>
-            <input title="input" type="text" formControlName="email" class="form-control" [ngClass]="{ 'is-invalid': submitted && f.email.errors }" />
-            <div *ngIf="submitted && f.email.errors" class="invalid-feedback">
-              <div *ngIf="f.email.errors.required">Email is required</div>
-              <div *ngIf="f.email.errors.email">Email must be a valid email address</div>
-            </div>
-          </div>
-        </div>
-        <div>
-          <h3 class="pt-3">Change Password</h3>
-          <p>Leave blank to keep the same password</p>
-        </div>
-        <div class="row">
-          <div class="mb-3 col">
-            <label class="form-label">Password</label>
-            <input title="input" type="password" formControlName="password" class="form-control" [ngClass]="{ 'is-invalid': submitted && f.password.errors }" />
-            <div *ngIf="submitted && f.password.errors" class="invalid-feedback">
-              <div *ngIf="f.password.errors.minlength">Password must be at least 6 characters</div>
-            </div>
-          </div>
-          <div class="mb-3 col">
-            <label class="form-label">Confirm Password</label>
-            <input title="input" type="password" formControlName="confirmPassword" class="form-control" [ngClass]="{ 'is-invalid': submitted && f.confirmPassword.errors }" />
-            <div *ngIf="submitted && f.confirmPassword.errors" class="invalid-feedback">
-              <div *ngIf="f.confirmPassword.errors.mustMatch">Passwords must match</div>
-            </div>
-          </div>
-        </div>
-        <div class="mb-3">
-          <button title="button" type="submit" class="btn btn-primary" (click)="onSubmit()" [disabled]="submitting">
-            <span *ngIf="submitting" class="spinner-border spinner-border-sm me-1"></span>
-            Save
-          </button>
-          <button type="button" class="btn btn-link" (click)="cancelEdit()">Cancel</button>
         </div>
       </div>
     </div>
