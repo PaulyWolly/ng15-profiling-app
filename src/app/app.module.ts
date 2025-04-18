@@ -23,6 +23,7 @@ import { FooterComponent } from '@app/footer/footer.component';
 
 // Import AdminModule instead of individual components
 import { AdminModule } from './admin/admin.module';
+import { SharedModule } from './shared/shared.module';
 
 
 @NgModule({
@@ -37,13 +38,14 @@ import { AdminModule } from './admin/admin.module';
         MatButtonModule,
         // Remove MatTable, MatPaginator, MatSort if moved to AdminModule
         HomeModule,
-        AdminModule       // Import AdminModule
+        AdminModule,      // Import AdminModule
+        SharedModule      // Import SharedModule
     ],
     declarations: [
         AppComponent,
         AlertComponent,
         FooterComponent
-        // Removed Admin components declarations
+        // Remove EditContentComponent from here
     ],
     providers: [
         { provide: APP_INITIALIZER, useFactory: appInitializer, multi: true, deps: [AccountService] },

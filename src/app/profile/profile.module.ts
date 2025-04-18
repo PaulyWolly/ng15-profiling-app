@@ -4,6 +4,7 @@ import { RouterModule } from '@angular/router';
 import { ReactiveFormsModule } from '@angular/forms';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { Directive, HostListener, ElementRef } from '@angular/core';
+import { SharedModule } from '../shared/shared.module';
 
 // Material Modules
 import { MatButtonModule } from '@angular/material/button';
@@ -78,6 +79,7 @@ export class PreventWheelPropagationDirective {
         ReactiveFormsModule,
         RouterModule,
         ProfileRoutingModule,
+        SharedModule,
         // Angular CDK
         DragDropModule,
         // Material modules
