@@ -1,6 +1,6 @@
 .register-card {
     width: 650px;  /* Increased width */
-    margin: 40px auto;
+    margin: 15px auto;
     background: white;
     border-radius: 8px; /* Updated border-radius */
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* Added shadow */
