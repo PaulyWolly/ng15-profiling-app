@@ -1,6 +1,12 @@
 ﻿import { Role } from './role';
 import { ProfileTemplateType } from './profile-template';
 
+export interface FollowerImage {
+    id: string;
+    imageUrl: string;
+    path?: string;
+}
+
 export class Account {
     id?: string;
     title?: string;
@@ -9,6 +15,8 @@ export class Account {
     email?: string;
     role?: Role;
     jwtToken?: string;
+    refreshToken?: string;
+    isVerified?: boolean = false;
     profileImage?: string;
     isDeleting?: boolean;
     imagePath?: string;
@@ -30,4 +38,6 @@ export class Account {
     bio?: string;
     followersCount?: number;
     followingCount?: number;
+    // Follower images for social media template
+    followerImages?: FollowerImage[];
 }

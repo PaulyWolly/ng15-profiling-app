@@ -15,7 +15,7 @@
                          [src]="account.profileImage" 
                          [alt]="account.firstName + ' ' + account.lastName + ' profile'"
                          (error)="account.profileImage = null"
-                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                         onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';">
                     <mat-icon *ngIf="!account.profileImage" 
                              class="placeholder-icon"
                              [style.display]="account.profileImage ? 'none' : 'flex'">

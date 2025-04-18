@@ -8,6 +8,7 @@ import { AlertService } from '../../_services/alert.service';
 import { MustMatch } from '../../_helpers/must-match.validator';
 import { Account } from '../../_models/account';
 import { environment } from '../../../environments/environment';
+import { PROFILE_TEMPLATES, ProfileTemplate, ProfileTemplateType } from '@app/_models/profile-template';
 
 @Component({
     templateUrl: './add-edit.component.html',
@@ -25,14 +26,11 @@ export class AddEditComponent implements OnInit {
     previewUrl: string | null = null;
     uploading = false;
     error = '';
-    imagePosition = { x: 0, y: 0 };
-    dragStart = { x: 0, y: 0 };
-    imageScale = 1;
-    isDragging = false;
     isAddMode = true;
     imageConflict = false;
     imageConflictMessage = '';
     pendingFormData: FormData | null = null;
+    profileTemplates: ProfileTemplate[] = PROFILE_TEMPLATES;
 
     constructor(
         private formBuilder: FormBuilder,
@@ -61,7 +59,32 @@ export class AddEditComponent implements OnInit {
             email: ['', [Validators.required, Validators.email]],
             role: ['', Validators.required],
             password: ['', passwordValidators],
-            confirmPassword: ['']
+            confirmPassword: [''],
+            
+            // Profile template selection
+            profileTemplateType: [ProfileTemplateType.STANDARD],
+            
+            // Personal & Professional Details
+            position: [''],
+            company: [''],
+            address: [''],
+            phone: [''],
+            mobile: [''],
+            bio: [''],
+            
+            // Social Media Links
+            website: [''],
+            github: [''],
+            twitter: [''],
+            instagram: [''],
+            facebook: [''],
+            
+            // Social Media Stats
+            followersCount: [0],
+            followingCount: [0],
+            
+            // Professional Skills (stored as comma-separated string in form)
+            skills: ['']
         }, {
             validator: MustMatch('password', 'confirmPassword')
         });
@@ -81,6 +104,18 @@ export class AddEditComponent implements OnInit {
                     } else {
                         account.profileImage = undefined;
                     }
+                    
+                    // Convert skills array to comma-separated string for form if it exists
+                    if (account.skills && Array.isArray(account.skills)) {
+                        const skillsString = account.skills.join(', ');
+                        this.form.get('skills')?.setValue(skillsString);
+                    }
+                    
+                    // Initialize template type if not set
+                    if (!account.profileTemplateType) {
+                        account.profileTemplateType = ProfileTemplateType.STANDARD;
+                    }
+                    
                     this.form.patchValue(account);
                 });
         }
@@ -88,51 +123,6 @@ export class AddEditComponent implements OnInit {
 
     // convenience getter for easy access to form fields
     get f() { return this.form.controls; }
-
-    startDragging(event: MouseEvent) {
-        event.preventDefault();
-        this.isDragging = true;
-        const img = event.target as HTMLElement;
-        const rect = img.getBoundingClientRect();
-        
-        this.dragStart = {
-            x: event.clientX - (rect.left + rect.width / 2),
-            y: event.clientY - (rect.top + rect.height / 2)
-        };
-    }
-
-    onDrag(event: MouseEvent) {
-        if (this.isDragging) {
-            const container = event.currentTarget as HTMLElement;
-            const rect = container.getBoundingClientRect();
-            
-            // Calculate new position within container bounds
-            const x = event.clientX - this.dragStart.x - rect.left;
-            const y = event.clientY - this.dragStart.y - rect.top;
-            
-            // Apply bounds to keep image visible
-            const maxX = container.offsetWidth / 2;
-            const maxY = container.offsetHeight / 2;
-            
-            this.imagePosition = {
-                x: Math.max(-maxX, Math.min(maxX, x)),
-                y: Math.max(-maxY, Math.min(maxY, y))
-            };
-        }
-    }
-
-    stopDragging() {
-        this.isDragging = false;
-    }
-
-    adjustScale(delta: number) {
-        this.imageScale = Math.max(1, Math.min(3, this.imageScale + delta));
-    }
-
-    resetPosition() {
-        this.imagePosition = { x: 0, y: 0 };
-        this.imageScale = 1;
-    }
 
     onFileSelected(event: any) {
         const file = event.target.files[0];
@@ -209,19 +199,18 @@ export class AddEditComponent implements OnInit {
 
     async confirmOverwrite() {
         if (!this.pendingFormData || !this.id) return;
-
+        
         this.uploading = true;
-        this.pendingFormData.append('confirmed', 'true');
-
+        // Add overwrite flag to form data
+        this.pendingFormData.append('overwrite', 'true');
+        
         try {
             const response = await this.accountService.uploadImage(this.id, this.pendingFormData)
                 .pipe(first())
                 .toPromise();
-            
             this.handleUploadSuccess(response);
         } catch (error: any) {
-            console.error('Overwrite failed:', error);
-            this.error = error.message || 'Failed to overwrite image';
+            this.error = error.message || 'Failed to upload image';
             this.uploading = false;
             this.alertService.error(this.error);
         }
@@ -231,28 +220,23 @@ export class AddEditComponent implements OnInit {
         this.imageConflict = false;
         this.imageConflictMessage = '';
         this.pendingFormData = null;
-        this.selectedFile = null;
-        this.previewUrl = null;
+        this.error = '';
     }
 
     private handleUploadSuccess(response: any) {
-        if (response.imagePath) {
-            this.account.profileImage = `${environment.apiUrl}/${response.imagePath}`;
-            this.alertService.success('Profile image uploaded successfully');
-        } else {
-            this.error = 'Invalid response from server';
-        }
         this.uploading = false;
-        this.selectedFile = null;
-        this.previewUrl = null;
         this.imageConflict = false;
-        this.imageConflictMessage = '';
-        this.pendingFormData = null;
+        this.selectedFile = null;
+        if (response.profileImage) {
+            this.account.profileImage = response.profileImage.startsWith('http') 
+                ? response.profileImage 
+                : `${environment.apiUrl}/${response.profileImage}`;
+        }
+        this.alertService.success('Image uploaded successfully');
     }
 
-    // Cancel edit and return to accounts list
     cancelEdit() {
-        this.router.navigate(['/admin/accounts']);
+        this.router.navigate(['../'], { relativeTo: this.route });
     }
 
     onSubmit() {
@@ -263,7 +247,6 @@ export class AddEditComponent implements OnInit {
 
         // stop here if form is invalid
         if (this.form.invalid) {
-            console.log('Form is invalid:', this.form.errors);
             return;
         }
 
@@ -272,8 +255,8 @@ export class AddEditComponent implements OnInit {
             .pipe(first())
             .subscribe({
                 next: () => {
-                    this.alertService.success('Account saved successfully', { keepAfterRouteChange: true });
-                    this.router.navigate(['/admin/accounts']);
+                    this.alertService.success('Account saved', { keepAfterRouteChange: true });
+                    this.router.navigate(['../../'], { relativeTo: this.route });
                 },
                 error: error => {
                     this.alertService.error(error);
@@ -284,8 +267,41 @@ export class AddEditComponent implements OnInit {
 
     private saveAccount() {
         // create or update account based on isAddMode flag
+        const formData = this.form.value;
+        
+        // Convert skills string to array if provided
+        if (formData.skills) {
+            // Ensure skills is a string before splitting
+            if (typeof formData.skills === 'string') {
+                formData.skills = formData.skills.split(',').map((skill: string) => skill.trim());
+            } else if (Array.isArray(formData.skills)) {
+                // Already an array, make sure all items are trimmed
+                formData.skills = formData.skills.map((skill: string) => skill.trim());
+            } else {
+                // Set to empty array if not a string or array
+                formData.skills = [];
+            }
+        } else {
+            // Ensure skills is always an array
+            formData.skills = [];
+        }
+        
         return this.isAddMode
-            ? this.accountService.create(this.form.value)
-            : this.accountService.update(this.id!, this.form.value);
+            ? this.accountService.create(formData)
+            : this.accountService.update(this.id!, formData);
+    }
+
+    isSocialMediaTemplate(): boolean {
+        return this.form.get('profileTemplateType')?.value === ProfileTemplateType.SOCIAL_MEDIA;
+    }
+
+    isBusinessCardTemplate(): boolean {
+        return this.form.get('profileTemplateType')?.value === ProfileTemplateType.BUSINESS_CARD;
+    }
+
+    getSelectedTemplateDescription(): string {
+        const selectedType = this.form.get('profileTemplateType')?.value;
+        const template = this.profileTemplates.find(t => t.id === selectedType);
+        return template?.description || 'No description available';
     }
 }

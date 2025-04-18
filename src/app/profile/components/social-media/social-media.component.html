@@ -1,12 +1,19 @@
 <mat-card class="social-card">
     <mat-card-content>
-        <img *ngIf="profile.profileImage" 
-            [src]="profile.profileImage" 
-            alt="Profile picture"
-            class="img-fluid rounded-circle profile-img mb-3"
-            style="max-width: 120px;">
-        <div *ngIf="!profile.profileImage" class="default-avatar mb-3">
-            <mat-icon class="large-icon">account_circle</mat-icon>
+        <div class="profile-image-container" [class.loading]="imageLoading">
+            <img *ngIf="profile.profileImage" 
+                [src]="profile.profileImage" 
+                alt="Profile picture"
+                class="img-fluid rounded-circle profile-img mb-3"
+                style="max-width: 120px;"
+                (load)="onImageLoaded()"
+                (error)="onImageError()">
+            <div *ngIf="!profile.profileImage && !imageLoading" class="default-avatar mb-3">
+                <mat-icon class="large-icon">account_circle</mat-icon>
+            </div>
+            <div *ngIf="imageLoading" class="loading-spinner">
+                <mat-spinner diameter="40"></mat-spinner>
+            </div>
         </div>
         
         <h2>{{profile.firstName}} {{profile.lastName}}</h2>

@@ -1,7 +1,7 @@
 export enum ProfileTemplateType {
-    STANDARD = 'standard',
-    BUSINESS_CARD = 'business-card',
-    SOCIAL_MEDIA = 'social-media'
+    STANDARD = 'STANDARD',
+    BUSINESS_CARD = 'BUSINESS_CARD',
+    SOCIAL_MEDIA = 'SOCIAL_MEDIA'
 }
 
 export interface ProfileTemplate {

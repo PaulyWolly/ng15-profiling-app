@@ -4,6 +4,8 @@
     min-height: 100vh;
     width: 100%;
     background-color: #ecedee;
+    overflow: hidden;
+    padding-top: 2.5rem; /* Add padding to account for the fixed header */
 }
 
 /* Hide any unwanted headers except the welcome component */
@@ -28,7 +30,7 @@
     align-items: center;
     justify-content: center;
     background-color: #ecedee;
-    margin-top: -5vh; /* Move content up a bit */
+    overflow: hidden;
 }
 
 /* Footer settings */
@@ -39,15 +41,46 @@
     background-color: white;
     border-top: 1px solid #dee2e6;
     padding: 8px 0;
+    overflow: hidden;
 }
 
 .container {
     padding-top: 0;
+    overflow: hidden;
+}
+
+/* Hide the router-outlet scrollbar */
+::ng-deep router-outlet + * {
+    overflow: visible !important;
 }
 
 /* Remove any unwanted headers */
 h1, h2, h3, h4, h5, h6 {
     display: none;
+}
+
+/* Make sure the app-footer doesn't cause scrollbars */
+:host ::ng-deep app-footer {
+    overflow: hidden !important;
+}
+
+:host ::ng-deep .footer-container {
+    overflow: hidden !important;
+}
+
+/* Hide scrollbars in the account layout */
+:host ::ng-deep body,
+:host ::ng-deep .container-fluid,
+:host ::ng-deep app-login,
+:host ::ng-deep app-new-register,
+:host ::ng-deep app-reset-password,
+:host ::ng-deep app-forgot-password {
+    overflow: hidden !important;
+}
+
+.container-fluid {
+    background-color: #ecedee;
+    overflow: hidden;
 }
 
 :host {
@@ -60,8 +93,3 @@ h1, h2, h3, h4, h5, h6 {
     /* Ensure it fills the host height if needed */
     /* height: 100%; 
 }*/ 
-
-
-.container-fluid {
-    background-color: #ecedee;
-} 

@@ -1,42 +1,41 @@
-.welcome-container {
+.app-header {
+    background-color: #3f51b5;
+    color: white;
     text-align: center;
-    width: 100%;
+    padding: 0.6rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
     position: fixed;
-    top: 10vh; /* Position it higher up */
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 1;
-    background: transparent;
-    padding: 1rem 0; /* Add vertical padding */
-    height: auto; /* Allow height to adjust to content */
-    overflow: visible; /* Ensure text isn't cut off */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: auto;
 }
 
 .app-title {
-    color: #2c3e50;
-    font-size: 3.5rem; /* Increased font size */
-    font-weight: 800; /* Even bolder for better visibility */
     margin: 0;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
-    font-family: 'Nunito', 'Quicksand', 'Varela Round', 'Open Sans', sans-serif;
-    white-space: nowrap;
-    letter-spacing: 0.5px;
-    border-radius: 0.25rem;
-    background: linear-gradient(135deg, #2c3e50 0%, #4a6491 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    text-fill-color: transparent;
-    padding: 0.5rem 1rem; /* Add horizontal padding too */
-    line-height: 1.2; /* Improve line height */
-    display: inline-block; /* Better text containment */
+    font-size: 1.4rem;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    color: white;
+}
+
+/* For smaller screens */
+@media (max-width: 768px) {
+    .app-header {
+        padding: 0.5rem;
+    }
+    
+    .app-title {
+        font-size: 1.2rem;
+    }
 }
 
 /* Add a subtle animation when the title appears */
 @keyframes fadeInDown {
     from {
         opacity: 0;
-        transform: translateY(-20px);
+        transform: translateY(-10px);
     }
     to {
         opacity: 1;
@@ -45,5 +44,5 @@
 }
 
 .app-title {
-    animation: fadeInDown 0.4s ease-out;
+    animation: fadeInDown 0.3s ease-out;
 } 

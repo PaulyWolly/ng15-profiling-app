@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { ReactiveFormsModule } from '@angular/forms';
+import { DragDropModule } from '@angular/cdk/drag-drop';
 
 // Material Modules
 import { MatButtonModule } from '@angular/material/button';
@@ -35,6 +36,8 @@ import { SocialMediaComponent } from './components/social-media/social-media.com
         ReactiveFormsModule,
         RouterModule,
         ProfileRoutingModule,
+        // Angular CDK
+        DragDropModule,
         // Material modules
         MatButtonModule,
         MatIconModule,

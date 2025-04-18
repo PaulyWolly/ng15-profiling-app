@@ -38,4 +38,28 @@ mat-card {
 .mt-3 button {
   padding: 0 10px;
   line-height: 30px;
+}
+
+/* Image loading styles */
+.profile-image-container {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  margin: 0 auto 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profile-image-container.loading {
+  background-color: #f0f0f0;
+  border-radius: 50%;
+}
+
+.loading-spinner {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 10;
 } 

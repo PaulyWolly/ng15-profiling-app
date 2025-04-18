@@ -1,4 +1,4 @@
-﻿import { Component } from '@angular/core';
+﻿import { Component, OnInit } from '@angular/core';
 import { Router, NavigationEnd, Event } from '@angular/router';
 import { filter } from 'rxjs/operators';
 
@@ -10,7 +10,7 @@ import { Account, Role } from './_models';
     templateUrl: 'app.component.html',
     styleUrls: ['./app.component.css']
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
     Role = Role;
     account?: Account | null;
     currentUrl: string = '';
@@ -30,6 +30,27 @@ export class AppComponent {
         });
     }
 
+    ngOnInit() {
+        // Initialize the account service to restore the session
+        this.accountService.initialize();
+
+        // Listen to route changes to apply body classes for account pages
+        this.router.events.pipe(
+            filter(event => event instanceof NavigationEnd)
+        ).subscribe((event: any) => {
+            const url = event.url;
+            // Check if we're on a login or account page
+            if (url.includes('/account/login') || 
+                url.includes('/account/register') || 
+                url.includes('/account/forgot-password') || 
+                url.includes('/account/reset-password')) {
+                document.body.classList.add('login-page');
+            } else {
+                document.body.classList.remove('login-page');
+            }
+        });
+    }
+
     logout() {
         this.accountService.logout();
     }
@@ -41,6 +62,13 @@ export class AppComponent {
         // If we're already on this route's page, don't navigate again
         if (this.isActiveRoute(route)) {
             console.log('Already on this route, not navigating');
+            return;
+        }
+        
+        // Don't force navigation on profile edit pages
+        const currentUrl = this.router.url;
+        if (currentUrl.startsWith('/profile/edit') && route === '/admin') {
+            console.log('On profile edit page, not forcing navigation to admin');
             return;
         }
         

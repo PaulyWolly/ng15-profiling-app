@@ -1,3 +1,65 @@
+/* Global container styles */
+.page-container {
+  position: relative;
+  height: calc(100vh - 160px);  /* Adjusted for navbar (60px) and fixed footer (60px) with margin (40px) */
+  overflow: hidden;
+  margin-bottom: 60px; /* Add space for the footer */
+}
+
+/* Sticky sidebar */
+.sticky-sidebar {
+  position: sticky;
+  top: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 160px);
+}
+
+/* Scrollable containers - with visible scrollbars */
+.scrollable-card-body {
+  max-height: 350px;
+  overflow-y: auto;
+  scrollbar-width: auto; /* Show scrollbar in Firefox */
+  overflow-y: scroll; /* Always show scrollbar */
+}
+
+.scrollable-form-container {
+  height: 100%;
+  overflow-y: auto;
+  padding-right: 10px;
+  padding-bottom: 70px; /* Extra padding at bottom to ensure content isn't hidden behind footer */
+  scrollbar-width: auto; /* Show scrollbar in Firefox */
+  max-height: calc(100vh - 160px);
+  overflow-y: scroll; /* Always show scrollbar */
+}
+
+/* Custom scrollbar styling - more visible */
+.scrollable-card-body::-webkit-scrollbar,
+.scrollable-form-container::-webkit-scrollbar {
+  width: 12px; /* Wider, more visible scrollbar */
+  background-color: #f0f0f0;
+}
+
+.scrollable-card-body::-webkit-scrollbar-thumb,
+.scrollable-form-container::-webkit-scrollbar-thumb {
+  background: #888; /* Darker color for better visibility */
+  border-radius: 5px;
+  border: 2px solid #f0f0f0;
+}
+
+.scrollable-card-body::-webkit-scrollbar-track,
+.scrollable-form-container::-webkit-scrollbar-track {
+  background: #f0f0f0;
+  border-radius: 5px;
+}
+
+/* Make sure scrollbar is clearly visible on hover */
+.scrollable-card-body:hover::-webkit-scrollbar-thumb,
+.scrollable-form-container:hover::-webkit-scrollbar-thumb {
+  background: #666; /* Even darker on hover */
+}
+
 /* Form control styles */
 .form-control, .form-select {
   display: block;
@@ -58,12 +120,8 @@
   height: 280px;
   border-radius: 120px;
   overflow: hidden;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: #f5f5f5;
-  border: 2px solid #e0e0e0;
   margin: 0 auto;
+  text-align: center;
 }
 
 .oval-container img {
@@ -100,6 +158,16 @@
 /* Button styles */
 .btn {
   margin-right: 0.5rem;
+}
+
+.action-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  padding: 10px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .btn-danger {
@@ -170,51 +238,189 @@
   margin-bottom: 1rem;
 }
 
-.m-5 {
-  margin: 3rem;
+.mt-4 {
+  margin-top: 1.5rem;
 }
 
-.text-center {
+.card {
+  margin-bottom: 1.5rem;
+  border-radius: 0.25rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.card-header {
+  background-color: #f8f9fa;
+  border-bottom: 1px solid rgba(0,0,0,.125);
+  padding: 0.75rem 1.25rem;
+}
+
+.card-body {
+  padding: 1.25rem;
+}
+
+.card-body.p-0 {
+  padding: 0;
+}
+
+.btn-primary {
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+}
+
+.btn-secondary {
+  background-color: #6c757d;
+  border-color: #6c757d;
+  color: white;
+}
+
+.text-muted {
+  color: #6c757d;
+}
+
+.small {
+  font-size: 0.875em;
+}
+
+/* Follower Management Specific Styles */
+.follower-management-container {
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.dropzone {
+  border: 2px dashed #ced4da;
+  border-radius: 8px;
+  padding: 30px;
   text-align: center;
+  cursor: pointer;
+  background-color: #f8f9fa;
+  transition: all 0.3s ease;
 }
 
-.col-md-4 {
-  flex: 0 0 auto;
-  width: 33.33333333%;
+.dropzone.active {
+  border-color: #0d6efd;
+  background-color: #e7f1ff;
 }
 
-.col-md-8 {
-  flex: 0 0 auto;
-  width: 66.66666667%;
+.dropzone .dz-message {
+  color: #6c757d;
 }
 
-.spinner-border {
-  display: inline-block;
-  width: 1rem;
-  height: 1rem;
-  border: 0.2em solid currentColor;
-  border-right-color: transparent;
-  border-radius: 50%;
-  animation: spinner-border .75s linear infinite;
+.dropzone .dz-message h3 {
+  font-size: 1.25rem;
+  margin-top: 10px;
 }
 
-.spinner-border-sm {
-  width: 1rem;
-  height: 1rem;
-  border-width: 0.2em;
-}
-
-.spinner-border-lg {
-  width: 2rem;
-  height: 2rem;
-}
-
-.align-center {
-  vertical-align: middle;
-}
-
-.invalid-feedback {
-  color: #dc3545;
+.dropzone .dz-message p {
   font-size: 0.875rem;
-  margin-top: 0.25rem;
+}
+
+.dropzone i {
+  font-size: 3rem;
+  color: #6c757d;
+}
+
+.progress {
+  height: 20px;
+  margin-bottom: 15px;
+  overflow: hidden;
+  background-color: #f5f5f5;
+  border-radius: 4px;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.progress-bar {
+  float: left;
+  width: 0%;
+  height: 100%;
+  font-size: 12px;
+  line-height: 20px;
+  color: #fff;
+  text-align: center;
+  background-color: #0d6efd;
+  box-shadow: inset 0 -1px 0 rgba(0,0,0,0.15);
+  transition: width 0.6s ease;
+}
+
+.follower-grid-container {
+  margin-top: 20px;
+}
+
+.follower-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+  gap: 15px;
+  margin-top: 10px;
+}
+
+.follower-item {
+  position: relative;
+  cursor: move;
+  transition: all 0.2s ease;
+}
+
+.follower-item:hover {
+  transform: scale(1.05);
+}
+
+.follower-image {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid #fff;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.follower-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.follower-actions {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  display: none;
+}
+
+.follower-item:hover .follower-actions {
+  display: flex;
+  gap: 5px;
+}
+
+.follower-actions .btn {
+  padding: 2px 5px;
+  margin: 0;
+}
+
+.handle {
+  cursor: grab;
+}
+
+.no-followers {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 20px;
+  color: #6c757d;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+}
+
+/* Animation for better UX */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.follower-item {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Ensure navbar stays fixed on the edit page */
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 1030;
 } 

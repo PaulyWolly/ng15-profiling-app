@@ -275,12 +275,29 @@ async function update(id, params) {
     // hash password if it was entered
     if (params.password) {
         params.passwordHash = hash(params.password);
+        // Don't store the plain text password in the DB
+        delete params.password;
     }
+    
+    // Remove confirmPassword if it exists (we don't store this)
+    if (params.confirmPassword) {
+        delete params.confirmPassword;
+    }
+    
+    // Handle skills array if it's provided as a string
+    if (params.skills && typeof params.skills === 'string') {
+        params.skills = params.skills.split(',').map(skill => skill.trim()).filter(Boolean);
+    }
+    
+    // Log the parameters we're about to save
+    console.log('Updating account with these parameters:', JSON.stringify(params, null, 2));
 
     // copy params to account and save
     Object.assign(account, params);
     account.updated = Date.now();
     await account.save();
+    
+    console.log('Account updated successfully');
 
     return basicDetails(account);
 }
@@ -323,6 +340,7 @@ function generateJwtToken(account) {
         email: account.email,
         role: account.role
     });
+    
     const token = jwt.sign({ sub: account.id, id: account.id }, secret, { expiresIn: '15m' });
     console.log('JWT token generated successfully');
     return token;
@@ -343,8 +361,17 @@ function randomTokenString() {
 }
 
 function basicDetails(account) {
-    const { id, title, firstName, lastName, email, role, created, updated, isVerified, profileImage } = account;
-    return { id, title, firstName, lastName, email, role, created, updated, isVerified, profileImage };
+    const { id, title, firstName, lastName, email, role, created, updated, isVerified, profileImage,
+          // Include all the new fields
+          profileTemplateType, position, company, address, phone, mobile, bio,
+          website, github, twitter, instagram, facebook,
+          followersCount, followingCount, skills } = account;
+    
+    return { id, title, firstName, lastName, email, role, created, updated, isVerified, profileImage,
+           // Return all the new fields
+           profileTemplateType, position, company, address, phone, mobile, bio,
+           website, github, twitter, instagram, facebook,
+           followersCount, followingCount, skills };
 }
 
 async function sendVerificationEmail(account, origin) {

@@ -11,6 +11,9 @@ import { ProfileTemplateType, ProfileTemplate } from '@app/_models/profile-templ
   styleUrls: ['./profile.component.css']
 })
 export class ProfileComponent implements OnInit {
+  // Make enum accessible in template
+  ProfileTemplateType = ProfileTemplateType;
+  
   account: Account | null;
   profileUser!: Account;
   loading = false;
@@ -28,6 +31,8 @@ export class ProfileComponent implements OnInit {
     this.account = this.accountService.accountValue;
     this.templates = this.profileTemplateService.getTemplates();
     this.currentTemplate = this.profileTemplateService.currentTemplateValue;
+    console.log('[ProfileComponent] Initial currentTemplate:', this.currentTemplate);
+    console.log('[ProfileComponent] ProfileTemplateType values:', ProfileTemplateType);
   }
 
   ngOnInit() {
@@ -46,15 +51,20 @@ export class ProfileComponent implements OnInit {
       .subscribe({
         next: (user) => {
           this.profileUser = user;
-          this.loading = false;
           
           // Use the profile user's template if available, otherwise use default
           if (user.profileTemplateType) {
+            console.log('[ProfileComponent] User profile template type:', user.profileTemplateType);
             this.currentTemplate = user.profileTemplateType;
             if (this.isOwnProfile) {
               this.profileTemplateService.initFromAccount(user.profileTemplateType);
             }
+          } else {
+            console.log('[ProfileComponent] No template type in user profile, using default');
           }
+          
+          console.log('[ProfileComponent] Current template after loading user profile:', this.currentTemplate);
+          this.loading = false;
         },
         error: (error: string) => {
           this.alertService.error('Error loading profile: ' + error);
@@ -66,15 +76,48 @@ export class ProfileComponent implements OnInit {
   changeTemplate(template: ProfileTemplateType) {
     if (!this.isOwnProfile) return;
     
-    this.loading = true;
-    this.profileTemplateService.setTemplate(template);
+    console.log('[ProfileComponent] Changing template to:', template);
+    console.log('[ProfileComponent] Template type:', typeof template);
+    console.log('[ProfileComponent] Current template before update:', this.currentTemplate);
     
-    // Update local state since the service handles the API call
-    this.currentTemplate = template;
-    this.profileUser.profileTemplateType = template;
-    this.loading = false;
-    this.isEditingTemplate = false;
-    this.alertService.success('Profile template updated successfully');
+    this.loading = true;
+    this.alertService.clear();
+    
+    // Update profile first with selected template
+    if (this.account?.id) {
+      const updateData = { profileTemplateType: template };
+      
+      this.accountService.update(this.account.id, updateData)
+        .pipe(first())
+        .subscribe({
+          next: (response) => {
+            console.log('[ProfileComponent] Template updated in database:', response);
+            console.log('[ProfileComponent] Response profileTemplateType:', response.profileTemplateType);
+            
+            // Update local cache and service (skip database update since we just did it)
+            this.currentTemplate = template;
+            this.profileUser.profileTemplateType = template;
+            this.profileTemplateService.setTemplate(template, true);
+            
+            console.log('[ProfileComponent] Current template after update:', this.currentTemplate);
+            
+            this.loading = false;
+            this.isEditingTemplate = false;
+            this.alertService.success('Profile template updated successfully');
+          },
+          error: (error) => {
+            console.error('[ProfileComponent] Error updating template:', error);
+            this.loading = false;
+            this.alertService.error('Failed to update template: ' + error);
+          }
+        });
+    } else {
+      // Fallback if user ID is missing
+      this.currentTemplate = template;
+      this.profileTemplateService.setTemplate(template);
+      this.loading = false;
+      this.isEditingTemplate = false;
+    }
   }
 
   toggleTemplateEditor() {
