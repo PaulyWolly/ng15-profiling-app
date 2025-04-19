@@ -107,16 +107,20 @@
                 <!-- Role selection (only visible in account mode) -->
                 <div class="col-md-5" *ngIf="editMode === 'account'">
                   <label class="form-label">User Role</label>
-                  <select formControlName="role" class="form-select" [ngClass]="{ 'is-invalid': submitted && f.role.errors }">
+                  <select formControlName="role" class="form-select" [ngClass]="{ 'is-invalid': submitted && f.role.errors }" [disabled]="!isAdmin">
                     <option value="User">User</option>
-                    <option value="Admin">Admin</option>
+                    <option value="Admin" *ngIf="isAdmin">Admin</option>
                   </select>
                   <div *ngIf="submitted && f.role.errors" class="invalid-feedback">
                     <div *ngIf="f.role.errors.required">Role is required</div>
                   </div>
-                  <small class="text-muted d-block mt-2">
+                  <small class="text-muted d-block mt-2" *ngIf="isAdmin">
                     <strong>Admin:</strong> Full system access<br>
                     <strong>User:</strong> Limited account access
+                  </small>
+                  <small class="text-warning d-block mt-2" *ngIf="!isAdmin">
+                    <i class="material-icons small-icon align-middle">lock</i>
+                    Only administrators can change user roles.
                   </small>
                 </div>
               </div>

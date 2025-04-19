@@ -225,6 +225,12 @@ export class EditContentComponent implements OnInit, OnChanges {
       formData.skills = [];
     }
     
+    // Security check: If user is not an admin, ensure they cannot promote themselves
+    if (this.editMode === EditMode.ACCOUNT && !this.isAdmin && formData.role === 'Admin') {
+      console.warn('Attempted role escalation blocked: Non-admin user tried to set role to Admin');
+      formData.role = 'User'; // Force back to User role
+    }
+    
     // Add followers to the form data
     if (this.isSocialMediaTemplate()) {
       // Make sure we're only including necessary properties and properly formatted followers
