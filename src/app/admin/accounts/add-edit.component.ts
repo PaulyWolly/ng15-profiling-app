@@ -1,4 +1,4 @@
-﻿import { Component, OnInit } from '@angular/core';
+﻿import { Component, OnInit, HostListener, OnDestroy, Renderer2 } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, FormControl } from '@angular/forms';
 import { first } from 'rxjs/operators';
@@ -15,7 +15,7 @@ import { EditMode } from '@app/shared/components/edit-content/edit-content.compo
     templateUrl: './add-edit.component.html',
     styleUrls: ['./add-edit.component.css']
 })
-export class AddEditComponent implements OnInit {
+export class AddEditComponent implements OnInit, OnDestroy {
     title!: string;
     id?: string;
     form!: FormGroup;
@@ -34,19 +34,24 @@ export class AddEditComponent implements OnInit {
     profileTemplates: ProfileTemplate[] = PROFILE_TEMPLATES;
     imageUrl: string | null = null;
     editMode = EditMode.ACCOUNT;
+    private bodyOriginalStyle: { [key: string]: string } = {};
 
     constructor(
         private formBuilder: FormBuilder,
         private route: ActivatedRoute,
         private router: Router,
         private accountService: AccountService,
-        private alertService: AlertService
+        private alertService: AlertService,
+        private renderer: Renderer2
     ) { }
 
     ngOnInit() {
         this.id = this.route.snapshot.params['id'];
         this.isAddMode = !this.id;
         this.title = this.isAddMode ? 'Create Account' : 'Edit Account';
+
+        // Disable page scrolling
+        this.disablePageScrolling();
 
         // password not required in edit mode
         const passwordValidators = [Validators.minLength(6)];
@@ -93,6 +98,111 @@ export class AddEditComponent implements OnInit {
                     }
                 });
         }
+    }
+
+    ngOnDestroy() {
+        // Restore page scrolling
+        this.restorePageScrolling();
+    }
+
+    // Completely disable page scrolling
+    private disablePageScrolling() {
+        const body = document.body;
+        this.bodyOriginalStyle = {
+            overflow: body.style.overflow,
+            position: body.style.position,
+            height: body.style.height,
+            width: body.style.width
+        };
+
+        this.renderer.setStyle(body, 'overflow', 'hidden');
+        this.renderer.setStyle(body, 'position', 'fixed');
+        this.renderer.setStyle(body, 'width', '100%');
+        this.renderer.setStyle(body, 'height', '100%');
+        
+        // Add CSS class to body for additional styling
+        this.renderer.addClass(body, 'edit-account-page');
+
+        // Add a global event listeners for wheel and keyboard events
+        document.addEventListener('wheel', this.preventScroll, { passive: false });
+        document.addEventListener('keydown', this.preventArrowScroll, { passive: false });
+    }
+
+    // Restore original page scrolling
+    private restorePageScrolling() {
+        const body = document.body;
+        
+        for (const [prop, value] of Object.entries(this.bodyOriginalStyle)) {
+            if (value) {
+                this.renderer.setStyle(body, prop, value);
+            } else {
+                this.renderer.removeStyle(body, prop);
+            }
+        }
+        
+        // Remove the CSS class
+        this.renderer.removeClass(body, 'edit-account-page');
+
+        // Remove the global event listeners
+        document.removeEventListener('wheel', this.preventScroll);
+        document.removeEventListener('keydown', this.preventArrowScroll);
+    }
+
+    // Global wheel event handler
+    private preventScroll = (event: WheelEvent) => {
+        // Only allow wheel events in scrollable form containers
+        if (!this.isEventInScrollableArea(event.target as HTMLElement)) {
+            event.preventDefault();
+            return false;
+        }
+        return true;
+    }
+    
+    // Global keyboard event handler to prevent arrow key scrolling
+    private preventArrowScroll = (event: KeyboardEvent) => {
+        // Arrow keys and space
+        const scrollKeys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space', ' ', 'PageUp', 'PageDown', 'Home', 'End'];
+        
+        if (scrollKeys.includes(event.key) && !this.isInputElement(event.target as HTMLElement)) {
+            // Prevent arrow keys from scrolling the page
+            // But allow if focus is in a form control (input, textarea, select)
+            event.preventDefault();
+            return false;
+        }
+        return true;
+    }
+    
+    // Helper method to check if element is a form control
+    private isInputElement(element: HTMLElement | null): boolean {
+        if (!element) return false;
+        
+        const formElements = ['INPUT', 'TEXTAREA', 'SELECT', 'BUTTON'];
+        
+        // First check if element is directly a form element
+        if (formElements.includes(element.tagName)) {
+            return true;
+        }
+        
+        // Then check if it's in a scrollable container
+        if (this.isEventInScrollableArea(element)) {
+            return true;
+        }
+        
+        return false;
+    }
+
+    // Helper method to check if event is in a scrollable area
+    private isEventInScrollableArea(element: HTMLElement | null): boolean {
+        if (!element) return false;
+        
+        // Check if element or any parent has the class 'scrollable-form-container'
+        while (element && element !== document.body) {
+            if (element.classList && element.classList.contains('scrollable-form-container')) {
+                return true;
+            }
+            element = element.parentElement;
+        }
+        return false;
     }
 
     // convenience getter for easy access to form fields

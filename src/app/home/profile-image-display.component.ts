@@ -17,7 +17,7 @@ import { Subscription } from 'rxjs';
         </div>
       </div>
       <p class="mt-2 text-center">
-        <a *ngIf="isAdmin" [routerLink]="['/admin/accounts/edit', userId]" class="btn btn-link">Update Your Account</a>
+        <a *ngIf="isAdmin" [routerLink]="['/admin/accounts/edit', userId]" class="btn btn-link update-link">Update Your Account</a>
         <a *ngIf="!isAdmin" routerLink="/profile" class="btn btn-link">View Your Profile</a>
       </p>
     </div>
@@ -74,6 +74,16 @@ import { Subscription } from 'rxjs';
       justify-content: center;
       width: 100%;
       height: 100%;
+    }
+    
+    .update-link {
+      font-size: 1rem;
+      font-weight: normal;
+      text-decoration: none;
+    }
+    
+    .update-link:hover {
+      text-decoration: underline;
     }
   `]
 })

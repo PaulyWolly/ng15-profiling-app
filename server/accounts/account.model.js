@@ -4,7 +4,6 @@ const Schema = mongoose.Schema;
 const schema = new Schema({
     email: { type: String, unique: true, required: true },
     passwordHash: { type: String, required: true },
-    title: { type: String },
     firstName: { type: String, required: true },
     lastName: { type: String, required: true },
     acceptTerms: Boolean,
@@ -27,6 +26,9 @@ const schema = new Schema({
     position: String,
     company: String, 
     address: String,
+    city: String,
+    state: String,
+    zipCode: String,
     phone: String,
     mobile: String,
     bio: String,
@@ -43,7 +45,16 @@ const schema = new Schema({
     followingCount: { type: Number, default: 0 },
     
     // Professional Skills
-    skills: [String]
+    skills: [String],
+    
+    // Follower Images for Social Media template
+    followerImages: [{
+        id: String,
+        name: String,
+        title: String,
+        imageUrl: String,
+        path: String
+    }]
 });
 
 schema.virtual('isVerified').get(function () {

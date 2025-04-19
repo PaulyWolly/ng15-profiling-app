@@ -16,9 +16,32 @@
             </div>
         </div>
         
+        <!-- Image upload controls - only shown when viewing own profile -->
+        <div *ngIf="isOwnProfile" class="image-upload-controls mb-3">
+            <input type="file" accept="image/*" (change)="onFileSelected($event)" style="display: none" #fileInput>
+            <button type="button" mat-stroked-button color="primary" (click)="fileInput.click()" class="upload-btn">
+                <mat-icon>cloud_upload</mat-icon>
+                Change Photo
+            </button>
+            <button *ngIf="selectedFile" type="button" mat-stroked-button color="primary" (click)="uploadImage()" class="save-btn">
+                <mat-icon>save</mat-icon>
+                Save
+            </button>
+            <div *ngIf="selectedFile" class="preview-container mt-2">
+                <img [src]="previewUrl" alt="Preview" class="preview-image">
+            </div>
+        </div>
+        
         <h2>{{profile.firstName}} {{profile.lastName}}</h2>
-        <p class="text-muted">{{profile.title || 'Founder & ⅓ of @company'}}</p>
-        <p>{{profile.address || 'Austin, TX'}}</p>
+        <p class="text-muted">{{profile.position || 'Founder & ⅓ of @company'}}</p>
+        <p>
+            <mat-icon class="location-icon" (click)="openMapDialog()">place</mat-icon>
+            {{profile.address || ''}}
+            <span *ngIf="profile.city || profile.state || profile.zipCode">
+                <span *ngIf="profile.address">, </span>{{profile.city || ''}}{{profile.city && profile.state ? ', ' : ''}}{{profile.state || ''}} {{profile.zipCode || ''}}
+            </span>
+            <span *ngIf="!profile.address && !profile.city && !profile.state && !profile.zipCode">Austin, TX</span>
+        </p>
         
         <div class="social-icons mt-3 mb-4">
             <a href="#" class="social-icon">
@@ -41,15 +64,23 @@
         </div>
         
         <div class="followers-preview mb-4">
-            <p class="text-muted mb-2">22 FOLLOWERS YOU KNOW</p>
+            <p class="text-muted mb-2" *ngIf="hasFollowers()">FOLLOWERS YOU KNOW</p>
+            <p class="text-muted mb-2" *ngIf="!hasFollowers()">NO FOLLOWERS YET</p>
             <div class="follower-avatars">
-                <!-- Placeholder for follower avatars -->
-                <span class="follower-avatar-placeholder"></span>
-                <span class="follower-avatar-placeholder"></span>
-                <span class="follower-avatar-placeholder"></span>
-                <span class="follower-avatar-placeholder"></span>
-                <span class="follower-avatar-placeholder"></span>
-                <span class="follower-avatar-placeholder"></span>
+                <!-- Display real follower avatars -->
+                <div *ngFor="let follower of profile.followerImages" class="follower-avatar">
+                    <img *ngIf="follower.imageUrl" [src]="follower.imageUrl" [alt]="follower.name" 
+                         class="follower-image" [title]="follower.name + (follower.title ? ' - ' + follower.title : '')">
+                    <span *ngIf="!follower.imageUrl" class="follower-avatar-placeholder" 
+                          [title]="follower.name + (follower.title ? ' - ' + follower.title : '')"></span>
+                </div>
+                
+                <!-- Show placeholders only if no followers exist -->
+                <ng-container *ngIf="!hasFollowers()">
+                    <span class="follower-avatar-placeholder"></span>
+                    <span class="follower-avatar-placeholder"></span>
+                    <span class="follower-avatar-placeholder"></span>
+                </ng-container>
             </div>
         </div>
         

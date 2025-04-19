@@ -2,14 +2,15 @@
 import { ProfileTemplateType } from './profile-template';
 
 export interface FollowerImage {
-    id: string;
-    imageUrl: string;
+    id?: string;
+    name: string;
+    title?: string; 
+    imageUrl?: string;
     path?: string;
 }
 
 export class Account {
     id?: string;
-    title?: string;
     firstName?: string;
     lastName?: string;
     email?: string;
@@ -31,6 +32,9 @@ export class Account {
     phone?: string;
     mobile?: string;
     address?: string;
+    city?: string;
+    state?: string;
+    zipCode?: string;
     company?: string;
     position?: string;
     skills?: string[];

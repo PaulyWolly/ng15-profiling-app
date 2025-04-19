@@ -41,4 +41,15 @@
 
 .update-link:hover {
     text-decoration: underline;
+}
+
+.manage-users-link {
+    font-size: 1rem;
+    font-weight: normal;
+    color: #007bff;
+    text-decoration: none;
+}
+
+.manage-users-link:hover {
+    text-decoration: underline;
 } 

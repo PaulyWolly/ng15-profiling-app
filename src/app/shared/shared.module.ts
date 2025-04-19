@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule } from '@angular/forms';
+import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { EditContentComponent } from './components/edit-content/edit-content.component';
 
 @NgModule({
@@ -9,7 +9,8 @@ import { EditContentComponent } from './components/edit-content/edit-content.com
   ],
   imports: [
     CommonModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    FormsModule
   ],
   exports: [
     EditContentComponent

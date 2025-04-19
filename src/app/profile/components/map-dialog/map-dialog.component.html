@@ -1,0 +1,25 @@
+<div class="map-dialog-container">
+  <h2 mat-dialog-title>Location Map</h2>
+  <div mat-dialog-content>
+    <p class="address-text">{{fullAddress || 'No address provided'}}</p>
+    <div class="map-container" *ngIf="fullAddress">
+      <iframe
+        width="100%"
+        height="400"
+        frameborder="0"
+        style="border:0"
+        [src]="mapUrl"
+        allowfullscreen
+      ></iframe>
+    </div>
+    <div class="no-address-message" *ngIf="!fullAddress">
+      <p>No valid address information available to display on the map.</p>
+    </div>
+  </div>
+  <div mat-dialog-actions align="end">
+    <button mat-button (click)="closeDialog()">Close</button>
+    <a mat-raised-button color="primary" [href]="'https://www.google.com/maps/search/?api=1&query=' + fullAddress" target="_blank">
+      Open in Google Maps
+    </a>
+  </div>
+</div> 

@@ -3,6 +3,15 @@ import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { MustMatch } from '../../../_helpers/must-match.validator';
 import { PROFILE_TEMPLATES, ProfileTemplate, ProfileTemplateType } from '@app/_models/profile-template';
 import { environment } from '@environments/environment';
+import { FormsModule } from '@angular/forms';
+import { FollowerImage } from '@app/_models/account';
+import { UploadService } from '@app/_services/upload.service';
+import { first } from 'rxjs/operators';
+
+// Extending FollowerImage for local use
+export interface Follower extends FollowerImage {
+  imageFile?: File;
+}
 
 export enum EditMode {
   PROFILE = 'profile',
@@ -32,7 +41,16 @@ export class EditContentComponent implements OnInit, OnChanges {
   imageUrl: string | null = null;
   isAdmin: boolean = false;
   
-  constructor(private formBuilder: FormBuilder) { }
+  // Follower management
+  followers: Follower[] = [];
+  showFollowerDialog: boolean = false;
+  currentFollower: Follower = { name: '' };
+  editingFollowerIndex: number = -1;
+  
+  constructor(
+    private formBuilder: FormBuilder,
+    private uploadService: UploadService
+  ) { }
 
   ngOnInit(): void {
     this.initializeForm();
@@ -46,6 +64,38 @@ export class EditContentComponent implements OnInit, OnChanges {
     }
   }
   
+  /**
+   * Prevents wheel scrolling on the main container
+   * This stops the page from scrolling up and covering the menu
+   */
+  preventWheelScroll(event: WheelEvent): void {
+    if (this.editMode === EditMode.ACCOUNT) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+  }
+  
+  /**
+   * Handles keyboard events within the scrollable form container
+   * This enables proper keyboard navigation within the form
+   */
+  handleKeyboardEvents(event: KeyboardEvent): void {
+    // Allow all keyboard events within the scrollable container
+    // The event will propagate but be caught by our global handler
+    // if it's a navigation key that would cause page scrolling
+    event.stopPropagation();
+  }
+  
+  /**
+   * Allows wheel scrolling within the scrollable form container
+   * This enables scrolling of form content while preventing the page scroll
+   */
+  allowWheelScroll(event: WheelEvent): void {
+    // Don't stop propagation, but let the event bubble naturally
+    // This allows scrolling within the container
+    event.stopPropagation();
+  }
+  
   private updateDataFromInput(): void {
     if (this.initialData) {
       console.log('EditContentComponent - Initial data received:', this.initialData);
@@ -56,6 +106,11 @@ export class EditContentComponent implements OnInit, OnChanges {
       console.log('EditContentComponent - Image URL set to:', this.imageUrl);
       
       this.isAdmin = this.initialData.role === 'Admin';
+      
+      // Load existing followers if available
+      if (this.initialData.followerImages && Array.isArray(this.initialData.followerImages)) {
+        this.followers = [...this.initialData.followerImages];
+      }
     }
   }
   
@@ -68,7 +123,6 @@ export class EditContentComponent implements OnInit, OnChanges {
 
     this.form = this.formBuilder.group({
       // Common fields
-      title: ['', Validators.required],
       firstName: ['', Validators.required],
       lastName: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
@@ -171,6 +225,20 @@ export class EditContentComponent implements OnInit, OnChanges {
       formData.skills = [];
     }
     
+    // Add followers to the form data
+    if (this.isSocialMediaTemplate()) {
+      // Make sure we're only including necessary properties and properly formatted followers
+      formData.followerImages = this.followers.map(follower => ({
+        id: follower.id,
+        name: follower.name,
+        title: follower.title || '',
+        imageUrl: follower.imageUrl || '',
+        path: follower.path || ''
+      }));
+      
+      console.log('Submitting followers:', formData.followerImages);
+    }
+    
     this.save.emit(formData);
   }
   
@@ -226,6 +294,122 @@ export class EditContentComponent implements OnInit, OnChanges {
         return this.isSocialMediaTemplate();
       default:
         return true;
+    }
+  }
+
+  // Follower management methods
+  hasFollowers(): boolean {
+    return this.followers && this.followers.length > 0;
+  }
+  
+  openFollowerDialog(): void {
+    this.currentFollower = { name: '' };
+    this.editingFollowerIndex = -1;
+    this.showFollowerDialog = true;
+  }
+  
+  closeFollowerDialog(): void {
+    this.showFollowerDialog = false;
+  }
+  
+  editFollower(index: number): void {
+    if (index >= 0 && index < this.followers.length) {
+      this.currentFollower = { ...this.followers[index] };
+      this.editingFollowerIndex = index;
+      this.showFollowerDialog = true;
+    }
+  }
+  
+  removeFollower(index: number): void {
+    if (index >= 0 && index < this.followers.length) {
+      this.followers.splice(index, 1);
+    }
+  }
+  
+  saveFollower(): void {
+    if (!this.currentFollower.name) {
+      alert('Follower name is required');
+      return;
+    }
+    
+    // If we have an image file, upload it first
+    if (this.currentFollower.imageFile) {
+      console.log('Uploading follower image for:', this.currentFollower.name);
+      
+      this.uploadService.uploadFollowerImage(
+        this.currentFollower.imageFile, 
+        this.currentFollower.name,
+        this.currentFollower.title
+      )
+      .pipe(first())
+      .subscribe({
+        next: (follower) => {
+          console.log('Follower image uploaded successfully:', follower);
+          // Update with the server-provided data
+          this.currentFollower.id = follower.id;
+          this.currentFollower.imageUrl = follower.imageUrl;
+          this.currentFollower.path = follower.path;
+          
+          this.saveFollowerToList();
+        },
+        error: (error) => {
+          console.error('Failed to upload follower image', error);
+          
+          // Create a unique ID for the follower if we don't have one
+          if (!this.currentFollower.id) {
+            this.currentFollower.id = Date.now().toString();
+          }
+          
+          // If we have a data URL from the file preview, use that as a temporary image
+          // This allows us to display the image even if the server upload failed
+          const reader = new FileReader();
+          reader.onload = (e: any) => {
+            this.currentFollower.imageUrl = e.target.result;
+            
+            // Save the follower with the local image
+            this.saveFollowerToList();
+            
+            // Show a more helpful error message
+            console.warn('Using local image preview as fallback since upload failed.');
+            alert('Could not upload the follower image to the server, but the follower has been saved with a local image. The image may not persist after page refresh. Error: ' + (error.message || 'Unknown error'));
+          };
+          
+          reader.readAsDataURL(this.currentFollower.imageFile as File);
+        }
+      });
+    } else {
+      // Create a unique ID if we don't have one
+      if (!this.currentFollower.id) {
+        this.currentFollower.id = Date.now().toString();
+      }
+      
+      // Save without image upload
+      this.saveFollowerToList();
+    }
+  }
+  
+  // Helper method to save follower to the list
+  private saveFollowerToList(): void {
+    if (this.editingFollowerIndex >= 0) {
+      // Update existing follower
+      this.followers[this.editingFollowerIndex] = { ...this.currentFollower };
+    } else {
+      // Add new follower
+      this.followers.push({ ...this.currentFollower });
+    }
+    
+    this.closeFollowerDialog();
+  }
+  
+  onFollowerImageChange(event: any): void {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.currentFollower.imageUrl = e.target.result;
+        this.currentFollower.imageFile = file;
+      };
+      reader.readAsDataURL(file);
     }
   }
 }
