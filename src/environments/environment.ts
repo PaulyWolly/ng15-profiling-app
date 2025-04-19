@@ -5,7 +5,9 @@
 export const environment = {
     production: false,
     apiUrl: 'http://localhost:5001',
-    googleMapsApiKey: 'AIzaSyAKTHki3haMOQ5fhzKA5wbNVnuR_tv_zaY' // Replace with your actual API key
+    // API keys should not be stored in source code files
+    // Keys should be loaded from environment variables or a secure config file
+    googleMapsApiKey: '' // Load from secure source at runtime
 };
 
 /*

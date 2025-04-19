@@ -3,7 +3,8 @@ import { AccountService } from '@app/_services';
 import { Role } from '@app/_models';
 
 @Component({
-    templateUrl: 'home.component.html'
+    templateUrl: 'home.component.html',
+    styleUrls: ['home.component.css']
 })
 export class HomeComponent {
     Role = Role; // Expose Role enum to the template

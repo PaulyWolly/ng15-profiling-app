@@ -1,0 +1,15 @@
+<div class="profile-image-container">
+  <div class="oval-container" [class.loading]="loading">
+    <img *ngIf="imageUrl" [src]="imageUrl" alt="Profile Image" (load)="onImageLoaded()" (error)="onImageError()">
+    <div *ngIf="!imageUrl && !loading" class="profile-image-placeholder">
+      <mat-icon>person</mat-icon>
+    </div>
+    <div *ngIf="loading" class="loading-spinner">
+      <mat-spinner diameter="40"></mat-spinner>
+    </div>
+  </div>
+  <p class="mt-2 text-center">
+    <a *ngIf="isAdmin" [routerLink]="['/admin/accounts/edit', userId]" class="update-link">Update Your Account</a>
+    <a *ngIf="!isAdmin" routerLink="/profile" class="update-link">View Your Profile</a>
+  </p>
+</div> 

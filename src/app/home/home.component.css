@@ -36,7 +36,9 @@
 .update-link {
     margin-top: 1rem;
     color: #007bff;
-    text-decoration: none;
+    font-size: 1rem;
+    font-weight: normal;
+    text-decoration: underline;
 }
 
 .update-link:hover {
@@ -47,7 +49,7 @@
     font-size: 1rem;
     font-weight: normal;
     color: #007bff;
-    text-decoration: none;
+    text-decoration: underline;
 }
 
 .manage-users-link:hover {
