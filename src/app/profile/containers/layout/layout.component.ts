@@ -40,6 +40,17 @@ export class LayoutComponent implements OnInit {
     return result;
   }
   
+  // Check if we're on the edit profile page
+  isEditRoute(): boolean {
+    return this.currentUrl.includes('/profile/edit');
+  }
+  
+  // Check if the given template type is active
+  isTemplateActive(templateType: string): boolean {
+    const currentTemplate = this.profileTemplateService.currentTemplateValue;
+    return currentTemplate === ProfileTemplateType[templateType as keyof typeof ProfileTemplateType];
+  }
+  
   // Select template function that passes to the service
   selectTemplate(template: string): void {
     console.log('LayoutComponent - Selecting template:', template);

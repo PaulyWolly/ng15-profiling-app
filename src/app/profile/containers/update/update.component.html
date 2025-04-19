@@ -26,27 +26,14 @@
     </div>
     <div class="col-md-8">
       <div class="row">
-        <div class="mb-3 col-2">
-          <label class="form-label">Title</label>
-          <select formControlName="title" class="form-select" [ngClass]="{ 'is-invalid': submitted && f.title.errors }">
-            <option value=""></option>
-            <option value="Mr">Mr</option>
-            <option value="Mrs">Mrs</option>
-            <option value="Miss">Miss</option>
-            <option value="Ms">Ms</option>
-          </select>
-          <div *ngIf="submitted && f.title.errors" class="invalid-feedback">
-            <div *ngIf="f.title.errors.required">Title is required</div>
-          </div>
-        </div>
-        <div class="mb-3 col-5">
+        <div class="mb-3 col-6">
           <label class="form-label">First Name</label>
           <input type="text" formControlName="firstName" class="form-control" [ngClass]="{ 'is-invalid': submitted && f.firstName.errors }" />
           <div *ngIf="submitted && f.firstName.errors" class="invalid-feedback">
             <div *ngIf="f.firstName.errors.required">First Name is required</div>
           </div>
         </div>
-        <div class="mb-3 col-5">
+        <div class="mb-3 col-6">
           <label class="form-label">Last Name</label>
           <input type="text" formControlName="lastName" class="form-control" [ngClass]="{ 'is-invalid': submitted && f.lastName.errors }" />
           <div *ngIf="submitted && f.lastName.errors" class="invalid-feedback">

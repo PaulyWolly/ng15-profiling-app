@@ -4,6 +4,7 @@ import { RouterModule } from '@angular/router';
 import { ReactiveFormsModule } from '@angular/forms';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { Directive, HostListener, ElementRef } from '@angular/core';
+import { SharedModule } from '../shared/shared.module';
 
 // Material Modules
 import { MatButtonModule } from '@angular/material/button';
@@ -14,6 +15,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatBadgeModule } from '@angular/material/badge';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatDialogModule } from '@angular/material/dialog';
 
 // Routing
 import { ProfileRoutingModule } from './profile-routing.module';
@@ -29,6 +31,7 @@ import { UpdateComponent } from './containers/update/update.component';
 import { StandardProfileComponent } from './components/standard-profile/standard-profile.component';
 import { BusinessCardComponent } from './components/business-card/business-card.component';
 import { SocialMediaComponent } from './components/social-media/social-media.component';
+import { MapDialogComponent } from './components/map-dialog/map-dialog.component';
 
 // Custom Directive to prevent wheel event propagation
 @Directive({
@@ -38,36 +41,8 @@ export class PreventWheelPropagationDirective {
     constructor(private el: ElementRef) {}
 
     @HostListener('wheel', ['$event'])
-    onWheel(event: WheelEvent) {
-        const element = this.el.nativeElement;
-        
-        // Check if element is scrollable
-        const isScrollable = element.scrollHeight > element.clientHeight;
-        
-        if (!isScrollable) {
-            // Even if not scrollable, prevent propagation to body
-            event.stopPropagation();
-            event.preventDefault();
-            return;
-        }
-        
-        // Check if scroll is at top and scrolling up, or at bottom and scrolling down
-        const atTop = element.scrollTop === 0;
-        const atBottom = element.scrollHeight - element.clientHeight - element.scrollTop <= 1;
-        
-        if ((atTop && event.deltaY < 0) || (atBottom && event.deltaY > 0)) {
-            // Even at boundary, prevent propagation to body
-            event.stopPropagation();
-            event.preventDefault();
-            return;
-        }
-        
-        // Otherwise, prevent propagation and default behavior
+    onWheel(event: Event) {
         event.stopPropagation();
-        event.preventDefault();
-        
-        // Manually scroll the element
-        element.scrollTop += event.deltaY;
     }
 }
 
@@ -78,6 +53,7 @@ export class PreventWheelPropagationDirective {
         ReactiveFormsModule,
         RouterModule,
         ProfileRoutingModule,
+        SharedModule,
         // Angular CDK
         DragDropModule,
         // Material modules
@@ -88,7 +64,8 @@ export class PreventWheelPropagationDirective {
         MatProgressSpinnerModule,
         MatBadgeModule,
         MatInputModule,
-        MatFormFieldModule
+        MatFormFieldModule,
+        MatDialogModule
     ],
     declarations: [
         // Container Components
@@ -102,6 +79,7 @@ export class PreventWheelPropagationDirective {
         StandardProfileComponent,
         BusinessCardComponent,
         SocialMediaComponent,
+        MapDialogComponent,
         
         // Directives
         PreventWheelPropagationDirective

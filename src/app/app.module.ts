@@ -16,6 +16,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { AppRoutingModule } from '@app/app-routing.module';
 import { JwtInterceptor, ErrorInterceptor, appInitializer } from '@app/_helpers';
 import { AccountService } from '@app/_services';
+import { ConfigService } from '@app/_services/config.service';
 import { AppComponent } from '@app/app.component';
 import { AlertComponent } from '@app/_components';
 import { HomeModule } from '@app/home/home.module';
@@ -23,7 +24,12 @@ import { FooterComponent } from '@app/footer/footer.component';
 
 // Import AdminModule instead of individual components
 import { AdminModule } from './admin/admin.module';
+import { SharedModule } from './shared/shared.module';
 
+// Add factory function to initialize ConfigService
+export function configInitializer(configService: ConfigService) {
+    return () => configService.loadConfig();
+}
 
 @NgModule({
     imports: [
@@ -37,16 +43,18 @@ import { AdminModule } from './admin/admin.module';
         MatButtonModule,
         // Remove MatTable, MatPaginator, MatSort if moved to AdminModule
         HomeModule,
-        AdminModule       // Import AdminModule
+        AdminModule,      // Import AdminModule
+        SharedModule      // Import SharedModule
     ],
     declarations: [
         AppComponent,
         AlertComponent,
         FooterComponent
-        // Removed Admin components declarations
+        // Remove EditContentComponent from here
     ],
     providers: [
         { provide: APP_INITIALIZER, useFactory: appInitializer, multi: true, deps: [AccountService] },
+        { provide: APP_INITIALIZER, useFactory: configInitializer, multi: true, deps: [ConfigService] },
         { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },
         { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true }
     ],

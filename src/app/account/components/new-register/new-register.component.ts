@@ -24,8 +24,11 @@ export class NewRegisterComponent implements OnInit {
   ) { }
 
   ngOnInit() {
+    this.initForm();
+  }
+
+  private initForm(): void {
     this.form = this.formBuilder.group({
-      title: [''],
       firstName: ['', Validators.required],
       lastName: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],

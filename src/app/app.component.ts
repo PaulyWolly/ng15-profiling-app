@@ -171,13 +171,6 @@ export class AppComponent implements OnInit {
             return;
         }
         
-        // Don't force navigation on profile edit pages
-        const currentUrl = this.router.url;
-        if (currentUrl.startsWith('/profile/edit') && route === '/admin') {
-            console.log('On profile edit page, not forcing navigation to admin');
-            return;
-        }
-        
         // Force navigation by first going to root (skipLocationChange means URL doesn't change in browser)
         this.router.navigateByUrl('/', {skipLocationChange: true}).then(() => {
             // Then navigate to the intended route

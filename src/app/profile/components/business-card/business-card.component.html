@@ -38,8 +38,15 @@
             
             <div class="col-md-9">
                 <h2>{{profile.firstName}} {{profile.lastName}}</h2>
-                <p class="text-muted">{{profile.title || 'Product Designer'}}</p>
-                <p><mat-icon>place</mat-icon> {{profile.address || 'New York, NY'}}</p>
+                <p class="text-muted">{{profile.position || 'Product Designer'}}</p>
+                <p>
+                    <mat-icon class="location-icon" (click)="openMapDialog()">place</mat-icon> 
+                    {{profile.address || ''}}
+                    <span *ngIf="profile.city || profile.state || profile.zipCode">
+                        <span *ngIf="profile.address">, </span>{{profile.city || ''}}{{profile.city && profile.state ? ', ' : ''}}{{profile.state || ''}} {{profile.zipCode || ''}}
+                    </span>
+                    <span *ngIf="!profile.address && !profile.city && !profile.state && !profile.zipCode">New York, NY</span>
+                </p>
                 
                 <div class="rating mt-3 mb-3">
                     <h4>8.6</h4>
@@ -120,7 +127,14 @@
                                             </tr>
                                             <tr>
                                                 <td>Address:</td>
-                                                <td>{{profile.address || '525 E 68th Street, New York, NY'}}</td>
+                                                <td>
+                                                    <mat-icon class="location-icon small" (click)="openMapDialog()">place</mat-icon>
+                                                    {{profile.address || ''}}
+                                                    <span *ngIf="profile.city || profile.state || profile.zipCode">
+                                                        <span *ngIf="profile.address">, </span>{{profile.city || ''}}{{profile.city && profile.state ? ', ' : ''}}{{profile.state || ''}} {{profile.zipCode || ''}}
+                                                    </span>
+                                                    <span *ngIf="!profile.address && !profile.city && !profile.state && !profile.zipCode">525 E 68th Street, New York, NY</span>
+                                                </td>
                                             </tr>
                                             <tr>
                                                 <td>E-mail:</td>

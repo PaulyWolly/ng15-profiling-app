@@ -5,6 +5,7 @@ import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { AccountsRoutingModule } from './accounts-routing.module';
 import { ListComponent } from './list.component';
 import { AddEditComponent } from './add-edit.component';
+import { SharedModule } from '../../shared/shared.module';
 
 // Material Modules
 import { MatTableModule } from '@angular/material/table';
@@ -24,6 +25,7 @@ import { MatSelectModule } from '@angular/material/select';
         ReactiveFormsModule,
         FormsModule,
         AccountsRoutingModule,
+        SharedModule,
         MatTableModule,
         MatButtonModule,
         MatIconModule,

@@ -1,11 +1,11 @@
 <div class="layout-container">
-    <!-- Header with template buttons -->
-    <div class="profile-header">
+    <!-- Header with template buttons - hidden on edit page -->
+    <div class="profile-header" *ngIf="!isEditRoute()">
         <div class="template-selector" *ngIf="isDetailsRoute()">
             <span class="template-label">Template:</span>
-            <button mat-button color="primary" class="template-btn" (click)="selectTemplate('standard')">Standard</button>
-            <button mat-button color="accent" class="template-btn" (click)="selectTemplate('business-card')">Business</button>
-            <button mat-button color="warn" class="template-btn" (click)="selectTemplate('social-media')">Social</button>
+            <button mat-button color="primary" class="template-btn" [class.active-template]="isTemplateActive('STANDARD')" (click)="selectTemplate('standard')">Standard</button>
+            <button mat-button color="accent" class="template-btn" [class.active-template]="isTemplateActive('BUSINESS_CARD')" (click)="selectTemplate('business-card')">Business</button>
+            <button mat-button color="warn" class="template-btn" [class.active-template]="isTemplateActive('SOCIAL_MEDIA')" (click)="selectTemplate('social-media')">Social</button>
         </div>
     </div>
 

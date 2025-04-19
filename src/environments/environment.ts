@@ -4,6 +4,7 @@
 
 export const environment = {
     production: false,
+    googleMapsApiKey: '' // Load from secure source at runtime
     apiUrl: 'http://localhost:6001'
 };
 

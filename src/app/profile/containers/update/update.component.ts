@@ -19,6 +19,8 @@ export class UpdateComponent implements OnInit {
   deleting = false;
   selectedFile: File | null = null;
   previewUrl: string | null = null;
+  id!: string;
+  isAddMode!: boolean;
 
   constructor(
     private formBuilder: FormBuilder,
@@ -33,16 +35,35 @@ export class UpdateComponent implements OnInit {
   }
 
   ngOnInit() {
+    this.id = this.route.snapshot.params['id'];
+    this.isAddMode = !this.id;
+    
+    // password not required in edit mode
+    const passwordValidators = [Validators.minLength(6)];
+    if (this.isAddMode) {
+      passwordValidators.push(Validators.required);
+    }
+
     this.form = this.formBuilder.group({
-      title: [this.account.title, Validators.required],
-      firstName: [this.account.firstName, Validators.required],
-      lastName: [this.account.lastName, Validators.required],
-      email: [this.account.email, [Validators.required, Validators.email]],
-      password: ['', [Validators.minLength(6)]],
+      firstName: ['', Validators.required],
+      lastName: ['', Validators.required],
+      email: ['', [Validators.required, Validators.email]],
+      role: ['', Validators.required],
+      password: ['', passwordValidators],
       confirmPassword: ['']
     }, {
       validator: MustMatch('password', 'confirmPassword')
     });
+
+    // Patch values from account if in edit mode
+    if (!this.isAddMode && this.account) {
+      this.form.patchValue({
+        firstName: this.account.firstName,
+        lastName: this.account.lastName,
+        email: this.account.email,
+        role: this.account.role
+      });
+    }
   }
 
   onFileSelected(event: any) {
@@ -62,6 +83,7 @@ export class UpdateComponent implements OnInit {
 
     const formData = new FormData();
     formData.append('profileImage', this.selectedFile);
+    formData.append('userEmail', this.account.email || '');
 
     this.accountService.uploadImage(this.account.id, formData)
       .subscribe({

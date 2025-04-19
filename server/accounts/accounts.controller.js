@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const authenticate = require('../_middleware/authenticate');
-const { upload, uploadProfileImage } = require('./upload.controller');
+const { upload, uploadProfileImage, uploadFollowerImage } = require('./upload.controller');
 const accountService = require('./account.service');
 const Joi = require('joi');
 const validateRequest = require('../_middleware/validate-request');
@@ -49,6 +49,38 @@ router.post('/upload-profile-image',
             email: req.body.userEmail
         });
         uploadProfileImage(req, res, next);
+    }
+);
+
+// Add follower image upload route
+router.post('/upload-follower-image', 
+    authenticate(),
+    (req, res, next) => {
+        upload.single('followerImage')(req, res, (err) => {
+            if (err) {
+                console.error('Upload middleware error:', err);
+                return res.status(400).json({ message: err.message });
+            }
+            next();
+        });
+    },
+    (req, res, next) => {
+        console.log('Processing follower upload request:', {
+            file: req.file ? {
+                filename: req.file.filename,
+                mimetype: req.file.mimetype,
+                size: req.file.size
+            } : null,
+            user: req.user?.id,
+            followerName: req.body.followerName
+        });
+        
+        try {
+            uploadFollowerImage(req, res, next);
+        } catch (error) {
+            console.error('Error in upload follower image route:', error);
+            res.status(500).json({ message: 'Server error during upload' });
+        }
     }
 );
 
@@ -108,7 +140,6 @@ function revokeToken(req, res, next) {
 
 function registerSchema(req, res, next) {
     const schema = Joi.object({
-        title: Joi.string().required(),
         firstName: Joi.string().required(),
         lastName: Joi.string().required(),
         email: Joi.string().email().required(),
@@ -197,7 +228,6 @@ function getById(req, res, next) {
 
 function createSchema(req, res, next) {
     const schema = Joi.object({
-        title: Joi.string().required(),
         firstName: Joi.string().required(),
         lastName: Joi.string().required(),
         email: Joi.string().email().required(),
@@ -216,7 +246,6 @@ function create(req, res, next) {
 
 function updateSchema(req, res, next) {
     const schemaRules = {
-        title: Joi.string().empty(''),
         firstName: Joi.string().empty(''),
         lastName: Joi.string().empty(''),
         email: Joi.string().email().empty(''),
@@ -230,6 +259,9 @@ function updateSchema(req, res, next) {
         position: Joi.string().empty(''),
         company: Joi.string().empty(''),
         address: Joi.string().empty(''),
+        city: Joi.string().empty(''),
+        state: Joi.string().empty(''),
+        zipCode: Joi.string().empty(''),
         phone: Joi.string().empty(''),
         mobile: Joi.string().empty(''),
         bio: Joi.string().empty(''),
@@ -255,8 +287,10 @@ function updateSchema(req, res, next) {
         followerImages: Joi.array().items(
             Joi.object({
                 id: Joi.string().required(),
-                imageUrl: Joi.string().required(),
-                path: Joi.string().optional()
+                name: Joi.string().required(),
+                title: Joi.string().allow('', null),
+                imageUrl: Joi.string().allow('', null),
+                path: Joi.string().allow('', null)
             })
         ).optional()
     };

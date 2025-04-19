@@ -41,5 +41,11 @@ testem.log
 # System files
 .DS_Store
 Thumbs.db
+
+# Environment files and configuration
 /server/config.json
-server/config-bkup.json
+/server/config-bkup.json
+.env
+.env.*
+/src/environments/*.ts
+!/src/environments/*.example.ts

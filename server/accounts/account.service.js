@@ -267,7 +267,7 @@ async function create(params) {
 async function update(id, params) {
     const account = await getAccount(id);
 
-    // validate (if email was changed)
+    // validate (if email is already taken throw error)
     if (params.email && account.email !== params.email && await db.Account.findOne({ email: params.email })) {
         throw 'Email "' + params.email + '" is already taken';
     }
@@ -275,29 +275,26 @@ async function update(id, params) {
     // hash password if it was entered
     if (params.password) {
         params.passwordHash = hash(params.password);
-        // Don't store the plain text password in the DB
-        delete params.password;
     }
-    
-    // Remove confirmPassword if it exists (we don't store this)
-    if (params.confirmPassword) {
-        delete params.confirmPassword;
+
+    // Ensure proper handling of follower images
+    if (params.followerImages && Array.isArray(params.followerImages)) {
+        // Make sure all follower images have the required fields
+        params.followerImages = params.followerImages.map(follower => {
+            return {
+                id: follower.id,
+                name: follower.name,
+                title: follower.title || '',
+                imageUrl: follower.imageUrl || '',
+                path: follower.path || ''
+            };
+        });
     }
-    
-    // Handle skills array if it's provided as a string
-    if (params.skills && typeof params.skills === 'string') {
-        params.skills = params.skills.split(',').map(skill => skill.trim()).filter(Boolean);
-    }
-    
-    // Log the parameters we're about to save
-    console.log('Updating account with these parameters:', JSON.stringify(params, null, 2));
 
     // copy params to account and save
     Object.assign(account, params);
     account.updated = Date.now();
     await account.save();
-    
-    console.log('Account updated successfully');
 
     return basicDetails(account);
 }
@@ -361,17 +358,17 @@ function randomTokenString() {
 }
 
 function basicDetails(account) {
-    const { id, title, firstName, lastName, email, role, created, updated, isVerified, profileImage,
+    const { id, firstName, lastName, email, role, created, updated, isVerified, profileImage,
           // Include all the new fields
-          profileTemplateType, position, company, address, phone, mobile, bio,
+          profileTemplateType, position, company, address, city, state, zipCode, phone, mobile, bio,
           website, github, twitter, instagram, facebook,
-          followersCount, followingCount, skills } = account;
+          followersCount, followingCount, skills, followerImages } = account;
     
-    return { id, title, firstName, lastName, email, role, created, updated, isVerified, profileImage,
+    return { id, firstName, lastName, email, role, created, updated, isVerified, profileImage,
            // Return all the new fields
-           profileTemplateType, position, company, address, phone, mobile, bio,
+           profileTemplateType, position, company, address, city, state, zipCode, phone, mobile, bio,
            website, github, twitter, instagram, facebook,
-           followersCount, followingCount, skills };
+           followersCount, followingCount, skills, followerImages };
 }
 
 async function sendVerificationEmail(account, origin) {

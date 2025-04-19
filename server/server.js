@@ -9,7 +9,7 @@ const errorHandler = require('./_middleware/error-handler');
 
 // get DB name from config.json
 const config = require('./config.json');
-const DBName = config.DBName;
+const DBName = config.dbName || "angular-profiling-app";
 
 // Configure body parser
 app.use(bodyParser.json());
@@ -28,18 +28,30 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
-// Ensure uploads directory exists
+// Ensure uploads directories exist
 const fs = require('fs');
-const uploadsDir = path.join(__dirname, 'uploads', 'profiles');
-if (!fs.existsSync(uploadsDir)) {
-    fs.mkdirSync(uploadsDir, { recursive: true });
+const profilesDir = path.join(__dirname, 'uploads', 'profiles');
+const followersDir = path.join(__dirname, 'uploads', 'followers');
+
+// Create all required directories
+if (!fs.existsSync(profilesDir)) {
+    fs.mkdirSync(profilesDir, { recursive: true });
+    console.log('Created profiles directory:', profilesDir);
 }
 
-// Serve static files from the uploads directory
+if (!fs.existsSync(followersDir)) {
+    fs.mkdirSync(followersDir, { recursive: true });
+    console.log('Created followers directory:', followersDir);
+}
+
+// Serve static files from the uploads directory (includes both profiles and followers)
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // api routes
 app.use('/accounts', require('./accounts/accounts.controller'));
+app.use('/uploads', require('./uploads/upload.controller'));
+// Add config route
+app.use('/config', require('./config/config.controller'));
 
 // swagger docs route
 app.use('/api-docs', require('./_helpers/swagger'));
@@ -53,5 +65,5 @@ app.listen(port, () => {
     console.log('Server listening on port ' + port);
     console.log('Connected to DB:', DBName);
     console.log('Environment:', process.env.NODE_ENV || 'development');
-    console.log('Uploads directory:', uploadsDir);
+    console.log('Uploads directory:', profilesDir);
 });
