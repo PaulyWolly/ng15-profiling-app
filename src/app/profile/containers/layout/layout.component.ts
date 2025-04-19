@@ -40,9 +40,11 @@ export class LayoutComponent implements OnInit {
     return result;
   }
   
-  // Check if we're on the edit profile page
+  // Check if we're on the edit profile page or account settings page
   isEditRoute(): boolean {
-    return this.currentUrl.includes('/profile/edit');
+    return this.currentUrl.includes('/profile/edit') || 
+           this.currentUrl.includes('/profile/update') ||
+           this.currentUrl.includes('/profile/account-settings');
   }
   
   // Check if the given template type is active

@@ -20,7 +20,7 @@ import { ConfigService } from '@app/_services/config.service';
 import { AppComponent } from '@app/app.component';
 import { AlertComponent } from '@app/_components';
 import { HomeModule } from '@app/home/home.module';
-import { FooterComponent } from '@app/footer/footer.component';
+import { FooterComponent } from './footer/footer.component';
 
 // Import AdminModule instead of individual components
 import { AdminModule } from './admin/admin.module';
@@ -50,7 +50,6 @@ export function configInitializer(configService: ConfigService) {
         AppComponent,
         AlertComponent,
         FooterComponent
-        // Remove EditContentComponent from here
     ],
     providers: [
         { provide: APP_INITIALIZER, useFactory: appInitializer, multi: true, deps: [AccountService] },

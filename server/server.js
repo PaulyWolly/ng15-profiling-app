@@ -9,7 +9,7 @@ const errorHandler = require('./_middleware/error-handler');
 
 // get DB name from config.json
 const config = require('./config.json');
-const DBName = config.dbName || "angular-profiling-app";
+const DBName = config.DBName;
 
 // Configure body parser
 app.use(bodyParser.json());
@@ -49,9 +49,11 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // api routes
 app.use('/accounts', require('./accounts/accounts.controller'));
-app.use('/uploads', require('./uploads/upload.controller'));
-// Add config route
-app.use('/config', require('./config/config.controller'));
+app.use('/upload', require('./uploads/upload.controller.js'));
+
+// Add config route - use the specific function as middleware
+const configController = require('./config/config.controller');
+app.get('/config', configController.getPublicConfig);
 
 // swagger docs route
 app.use('/api-docs', require('./_helpers/swagger'));

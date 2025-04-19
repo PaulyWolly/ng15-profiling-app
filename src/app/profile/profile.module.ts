@@ -26,6 +26,7 @@ import { LayoutComponent } from './containers/layout/layout.component';
 import { DetailsComponent } from './containers/details/details.component';
 import { EditComponent } from './containers/edit/edit.component';
 import { UpdateComponent } from './containers/update/update.component';
+import { AccountSettingsComponent } from './containers/account-settings/account-settings.component';
 
 // Presentational Components
 import { StandardProfileComponent } from './components/standard-profile/standard-profile.component';
@@ -74,6 +75,7 @@ export class PreventWheelPropagationDirective {
         DetailsComponent,
         EditComponent,
         UpdateComponent,
+        AccountSettingsComponent,
         
         // Presentational Components
         StandardProfileComponent,

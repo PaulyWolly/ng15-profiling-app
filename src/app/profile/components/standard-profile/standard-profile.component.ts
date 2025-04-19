@@ -38,7 +38,6 @@ export class StandardProfileComponent implements OnInit {
   // Open the map dialog with the profile address
   openMapDialog(): void {
     this.dialog.open(MapDialogComponent, {
-      width: '600px',
       data: {
         address: this.profile?.address || '',
         city: this.profile?.city || '',

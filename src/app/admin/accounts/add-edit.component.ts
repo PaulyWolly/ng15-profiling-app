@@ -379,7 +379,8 @@ export class AddEditComponent implements OnInit, OnDestroy {
             lastName: formData.lastName,
             email: formData.email,
             role: formData.role,
-            password: formData.password
+            password: formData.password,
+            confirmPassword: formData.confirmPassword
         };
         
         return this.isAddMode

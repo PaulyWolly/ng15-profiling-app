@@ -1,9 +1,11 @@
-﻿import { Component, OnInit, HostListener, Renderer2, ViewEncapsulation } from '@angular/core';
+﻿import { Component, OnInit, HostListener, Renderer2, ViewEncapsulation, AfterViewInit } from '@angular/core';
 import { Router, NavigationEnd, Event } from '@angular/router';
 import { filter } from 'rxjs/operators';
 
 import { AccountService } from './_services';
 import { Account, Role } from './_models';
+
+declare var bootstrap: any;
 
 @Component({
     selector: 'app-root',
@@ -11,10 +13,11 @@ import { Account, Role } from './_models';
     styleUrls: ['./app.component.css'],
     encapsulation: ViewEncapsulation.None
 })
-export class AppComponent implements OnInit {
+export class AppComponent implements OnInit, AfterViewInit {
     Role = Role;
     account?: Account | null;
     currentUrl: string = '';
+    isDropdownOpen = false;
 
     constructor(
         private accountService: AccountService,
@@ -195,10 +198,77 @@ export class AppComponent implements OnInit {
             
             // Profile routes should highlight Profile link
             if (route === '/profile' && this.currentUrl.startsWith('/profile')) {
+                // Don't highlight profile for account settings
+                if (this.currentUrl.includes('/profile/account-settings') && route === '/profile') {
+                    return false;
+                }
+                return true;
+            }
+            
+            // Account settings route
+            if (route === '/profile/account-settings' && this.currentUrl.includes('/profile/account-settings')) {
                 return true;
             }
         }
         
         return false;
+    }
+
+    ngAfterViewInit() {
+        // Initialize all dropdowns
+        this.initializeDropdowns();
+        
+        // Re-initialize dropdowns after route changes
+        this.router.events.pipe(
+            filter((event): event is NavigationEnd => event instanceof NavigationEnd)
+        ).subscribe(() => {
+            setTimeout(() => {
+                this.initializeDropdowns();
+            }, 100);
+        });
+    }
+    
+    // Initialize Bootstrap dropdowns
+    private initializeDropdowns() {
+        try {
+            // Check if bootstrap is available
+            if (typeof bootstrap !== 'undefined') {
+                // Get all dropdown elements and initialize them
+                const dropdownElementList = [].slice.call(document.querySelectorAll('.dropdown-toggle'));
+                const dropdownList = dropdownElementList.map(function (dropdownToggleEl) {
+                    return new bootstrap.Dropdown(dropdownToggleEl, {
+                        // Ensure it only opens on click, not hover
+                        hover: false,
+                        // Prevent auto close when clicking inside the dropdown
+                        autoClose: 'outside'
+                    });
+                });
+                
+                // Add click handlers to ensure dropdown links work properly
+                document.querySelectorAll('.dropdown-menu a.dropdown-item').forEach(item => {
+                    item.addEventListener('click', function() {
+                        // Close any open dropdowns when clicking a dropdown item
+                        const openDropdowns = document.querySelectorAll('.dropdown-menu.show');
+                        openDropdowns.forEach(dropdown => {
+                            bootstrap.Dropdown.getInstance(
+                                dropdown.previousElementSibling
+                            )?.hide();
+                        });
+                    });
+                });
+                
+                console.log('Dropdowns initialized with click behavior');
+            }
+        } catch (error) {
+            console.error('Error initializing dropdowns:', error);
+        }
+    }
+
+    toggleDropdown() {
+        this.isDropdownOpen = !this.isDropdownOpen;
+    }
+    
+    closeDropdown() {
+        this.isDropdownOpen = false;
     }
 }
