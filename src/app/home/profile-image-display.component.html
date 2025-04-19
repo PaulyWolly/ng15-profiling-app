@@ -8,8 +8,4 @@
       <mat-spinner diameter="40"></mat-spinner>
     </div>
   </div>
-  <p class="mt-2 text-center">
-    <a *ngIf="isAdmin" [routerLink]="['/admin/accounts/edit', userId]" class="update-link">Update Your Account</a>
-    <a *ngIf="!isAdmin" routerLink="/profile" class="update-link">View Your Profile</a>
-  </p>
 </div> 

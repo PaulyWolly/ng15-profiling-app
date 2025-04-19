@@ -1,0 +1,14 @@
+h1 {
+  margin-bottom: 1rem;
+  color: #333;
+}
+
+.lead {
+  color: #666;
+  margin-bottom: 2rem;
+}
+
+.container {
+  max-width: 100%;
+  padding: 0;
+} 

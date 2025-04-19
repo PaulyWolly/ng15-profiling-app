@@ -6,6 +6,7 @@ import { ProfileComponent } from './containers/profile/profile.component';
 import { DetailsComponent } from './containers/details/details.component';
 import { EditComponent } from './containers/edit/edit.component';
 import { UpdateComponent } from './containers/update/update.component';
+import { AccountSettingsComponent } from './containers/account-settings/account-settings.component';
 
 const routes: Routes = [
     {
@@ -15,6 +16,7 @@ const routes: Routes = [
             { path: '', component: DetailsComponent, pathMatch: 'full' },
             { path: 'edit', component: EditComponent },
             { path: 'update', component: UpdateComponent },
+            { path: 'account-settings', component: AccountSettingsComponent },
             { path: ':id', component: ProfileComponent }
         ]
     }
