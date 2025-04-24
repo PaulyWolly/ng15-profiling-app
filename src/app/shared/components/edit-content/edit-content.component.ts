@@ -189,10 +189,39 @@ export class EditContentComponent implements OnInit, OnChanges, EditContentState
       email: ['', [Validators.required, Validators.email]],
       role: [roleControl.value, { disabled: roleControl.disabled }],
       password: ['', [Validators.minLength(6), ...(!this.isAddMode ? [] : [Validators.required])]],
-      confirmPassword: ['']
+      confirmPassword: [''],
+      
+      // Profile template type
+      profileTemplateType: [ProfileTemplateType.STANDARD],
+      
+      // Contact Information
+      address: [''],
+      city: [''],
+      state: [''],
+      zipCode: [''],
+      phone: [''],
+      mobile: [''],
+      
+      // Professional Information
+      position: [''],
+      company: [''],
+      bio: [''],
+      skills: [{ value: '', disabled: true }], // Initially disabled, enabled for Business Card template
+      
+      // Social Media Information
+      website: [''],
+      twitter: [''],
+      facebook: [''],
+      instagram: [''],
+      github: [''],
+      followersCount: [{ value: 0, disabled: true }], // Initially disabled, enabled for Social Media template
+      followingCount: [{ value: 0, disabled: true }]  // Initially disabled, enabled for Social Media template
     }, {
       validator: MustMatch('password', 'confirmPassword')
     });
+
+    // Initialize form based on template type
+    this.onTemplateChange();
 
     console.log('Form initialized with role control disabled:', !this.isCurrentUserAdmin);
   }
@@ -343,21 +372,55 @@ export class EditContentComponent implements OnInit, OnChanges, EditContentState
     const templateType = this.form.get('profileTemplateType')?.value;
     console.log('Template changed to:', templateType);
     
-    // Update form validation based on template type
+    // Update form validation and UI based on template type
     if (this.isSocialMediaTemplate()) {
+      // Enable social media specific fields
       this.form.get('followersCount')?.enable();
       this.form.get('followingCount')?.enable();
       this.form.get('skills')?.disable();
+      
+      // Social media fields are required
+      this.form.get('twitter')?.setValidators([Validators.required]);
+      this.form.get('instagram')?.setValidators([Validators.required]);
+      
+      // Show follower section
+      console.log('Enabling social media features');
     } else if (this.isBusinessCardTemplate()) {
+      // Enable business card specific fields
       this.form.get('followersCount')?.disable();
       this.form.get('followingCount')?.disable();
       this.form.get('skills')?.enable();
+      
+      // Business fields are required
+      this.form.get('position')?.setValidators([Validators.required]);
+      this.form.get('company')?.setValidators([Validators.required]);
+      this.form.get('skills')?.setValidators([Validators.required]);
+      
+      // Remove social media requirements
+      this.form.get('twitter')?.clearValidators();
+      this.form.get('instagram')?.clearValidators();
+      
+      console.log('Enabling business card features');
     } else {
-      // Standard template
+      // Standard template - disable special features
       this.form.get('followersCount')?.disable();
       this.form.get('followingCount')?.disable();
       this.form.get('skills')?.disable();
+      
+      // Clear special requirements
+      this.form.get('position')?.clearValidators();
+      this.form.get('company')?.clearValidators();
+      this.form.get('skills')?.clearValidators();
+      this.form.get('twitter')?.clearValidators();
+      this.form.get('instagram')?.clearValidators();
+      
+      console.log('Using standard template features');
     }
+    
+    // Update all validators
+    ['position', 'company', 'skills', 'twitter', 'instagram'].forEach(field => {
+      this.form.get(field)?.updateValueAndValidity();
+    });
     
     // Force change detection
     this.form.updateValueAndValidity();
