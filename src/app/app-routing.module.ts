@@ -15,7 +15,7 @@ const routes: Routes = [
     { path: 'profile', loadChildren: profileModule, canActivate: [AuthGuard] },
     { path: 'admin', loadChildren: adminModule, canActivate: [AuthGuard], data: { roles: [Role.Admin] } },
 
-    // otherwise redirect to home
+    // Only redirect for truly unknown routes, not page refreshes
     { path: '**', redirectTo: '' }
 ];
 
@@ -23,7 +23,11 @@ const routes: Routes = [
     imports: [RouterModule.forRoot(routes, {
         preloadingStrategy: PreloadAllModules,
         onSameUrlNavigation: 'reload',
-        scrollPositionRestoration: 'enabled'
+        scrollPositionRestoration: 'enabled',
+        useHash: false,
+        anchorScrolling: 'enabled',
+        initialNavigation: 'enabledBlocking',
+        enableTracing: true // Enable for debugging
     })],
     exports: [RouterModule]
 })

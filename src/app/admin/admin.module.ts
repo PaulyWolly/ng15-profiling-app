@@ -1,5 +1,5 @@
 import { NgModule } from '@angular/core';
-import { ReactiveFormsModule } from '@angular/forms';
+import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 
 // Material Modules needed for Admin section
@@ -14,6 +14,8 @@ import { AdminRoutingModule } from './admin-routing.module';
 import { SubNavComponent } from './subnav.component';
 import { LayoutComponent } from './layout.component';
 import { OverviewComponent } from './overview.component';
+import { MonitorComponent } from './monitor.component';
+import { SettingsComponent } from './settings.component';
 // Removed ListComponent and AddEditComponent declarations here
 // They should be declared in AccountsModule if it exists, or here if not
 
@@ -21,6 +23,7 @@ import { OverviewComponent } from './overview.component';
     imports: [
         CommonModule,
         ReactiveFormsModule,
+        FormsModule, // Add FormsModule for ngModel support
         AdminRoutingModule,
         // Add Material Modules
         MatIconModule,
@@ -33,7 +36,9 @@ import { OverviewComponent } from './overview.component';
     declarations: [
         SubNavComponent,
         LayoutComponent,
-        OverviewComponent
+        OverviewComponent,
+        MonitorComponent,
+        SettingsComponent
         // Removed ListComponent, AddEditComponent 
     ]
 })

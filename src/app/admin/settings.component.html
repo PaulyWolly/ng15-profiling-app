@@ -1,0 +1,80 @@
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header">
+            <h2>System Settings</h2>
+        </div>
+        <div class="card-body">
+            <!-- Session Management Section -->
+            <div class="mb-4">
+                <h3>Session Management</h3>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <h4>Session Cleanup Status</h4>
+                                <div class="mb-3">
+                                    <strong>Active Sessions:</strong>
+                                    <span class="badge bg-primary ms-2">{{settings.activeSessionCount}}</span>
+                                </div>
+                                <div class="mb-3">
+                                    <strong>Last Cleanup:</strong>
+                                    <span class="text-muted ms-2">
+                                        <ng-container *ngIf="settings.lastSessionCleanup; else neverRun">
+                                            {{settings.lastSessionCleanup | date:'medium'}}
+                                        </ng-container>
+                                        <ng-template #neverRun>Never</ng-template>
+                                    </span>
+                                </div>
+                                <div class="mb-3">
+                                    <strong>Next Scheduled:</strong>
+                                    <span class="text-muted ms-2">
+                                        <ng-container *ngIf="settings.nextScheduledCleanup; else notScheduled">
+                                            {{settings.nextScheduledCleanup | date:'medium'}}
+                                        </ng-container>
+                                        <ng-template #notScheduled>Not scheduled</ng-template>
+                                    </span>
+                                </div>
+                                <button class="btn btn-primary" 
+                                        (click)="runCleanup()"
+                                        [disabled]="loading">
+                                    <span *ngIf="loading" class="spinner-border spinner-border-sm me-1"></span>
+                                    Run Cleanup Now
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-body">
+                                <h4>Cleanup Schedule</h4>
+                                <div class="mb-3">
+                                    <label class="form-label">Cron Schedule</label>
+                                    <div class="input-group">
+                                        <input type="text" 
+                                               class="form-control" 
+                                               [(ngModel)]="settings.cleanupSchedule"
+                                               [disabled]="loading"
+                                               placeholder="0 0 * * *">
+                                        <button class="btn btn-primary" 
+                                                (click)="updateSchedule()"
+                                                [disabled]="loading">
+                                            <span *ngIf="loading" class="spinner-border spinner-border-sm me-1"></span>
+                                            Update
+                                        </button>
+                                    </div>
+                                    <small class="text-muted d-block mt-2">
+                                        <i class="fas fa-info-circle me-1"></i>
+                                        Current schedule: Runs at midnight daily (0 0 * * *)
+                                    </small>
+                                    <small class="text-muted d-block mt-1">
+                                        Format: minute hour day month weekday
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> 

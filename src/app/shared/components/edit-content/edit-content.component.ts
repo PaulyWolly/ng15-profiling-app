@@ -1,12 +1,17 @@
 import { Component, OnInit, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
-import { FormGroup, FormBuilder, Validators } from '@angular/forms';
+import { FormGroup, FormBuilder, Validators, FormControl } from '@angular/forms';
 import { MustMatch } from '../../../_helpers/must-match.validator';
 import { PROFILE_TEMPLATES, ProfileTemplate, ProfileTemplateType } from '@app/_models/profile-template';
 import { environment } from '@environments/environment';
 import { FormsModule } from '@angular/forms';
 import { FollowerImage } from '@app/_models/account';
 import { UploadService } from '@app/_services/upload.service';
+import { AlertService } from '@app/_services/alert.service';
+import { AccountService } from '@app/_services/account.service';
+import { Account, AccountUpdate } from '@app/_models/account';
 import { first } from 'rxjs/operators';
+import { Role } from '@app/_models';
+import { Router, ActivatedRoute } from '@angular/router';
 
 // Extending FollowerImage for local use
 export interface Follower extends FollowerImage {
@@ -18,18 +23,37 @@ export enum EditMode {
   ACCOUNT = 'account'
 }
 
+interface AccountFormData {
+  firstName: string;
+  lastName: string;
+  email: string;
+  role: Role;
+  password?: string;
+  confirmPassword?: string;
+}
+
+interface EditContentState {
+  id?: string;
+  title: string;
+  loading: boolean;
+  submitting: boolean;
+  submitted: boolean;
+  isCurrentUserAdmin: boolean;
+}
+
 @Component({
   selector: 'app-edit-content',
   templateUrl: './edit-content.component.html',
   styleUrls: ['./edit-content.component.css']
 })
-export class EditContentComponent implements OnInit, OnChanges {
+export class EditContentComponent implements OnInit, OnChanges, EditContentState {
   @Input() editMode: EditMode = EditMode.PROFILE;
   @Input() isAddMode: boolean = false;
   @Input() initialData: any = null;
   @Input() submitting: boolean = false;
   @Input() loading: boolean = false;
   @Input() submitted: boolean = false;
+  @Input() accountId: string | null = null;
   
   @Output() save = new EventEmitter<any>();
   @Output() cancel = new EventEmitter<void>();
@@ -39,7 +63,8 @@ export class EditContentComponent implements OnInit, OnChanges {
   form!: FormGroup;
   profileTemplates: ProfileTemplate[] = PROFILE_TEMPLATES;
   imageUrl: string | null = null;
-  isAdmin: boolean = false;
+  isCurrentUserAdmin: boolean = false;
+  Role = Role; // Expose Role enum to template
   
   // Follower management
   followers: Follower[] = [];
@@ -47,14 +72,51 @@ export class EditContentComponent implements OnInit, OnChanges {
   currentFollower: Follower = { name: '' };
   editingFollowerIndex: number = -1;
   
+  // Image upload properties
+  imageConflict: boolean = false;
+  imageConflictMessage: string = '';
+  error: string = '';
+  selectedFile: File | null = null;
+  pendingFormData: FormData | null = null;
+  
+  id?: string;
+  title: string = '';
+  
   constructor(
     private formBuilder: FormBuilder,
-    private uploadService: UploadService
+    private uploadService: UploadService,
+    private alertService: AlertService,
+    public accountService: AccountService,
+    private router: Router,
+    private route: ActivatedRoute
   ) { }
 
   ngOnInit(): void {
+    this.id = this.route.snapshot.params['id'];
+    this.isAddMode = !this.id;
+    
+    // Check if current user is admin
+    this.isCurrentUserAdmin = this.accountService.isAdmin;
+    console.log('Current user admin status:', this.isCurrentUserAdmin);
+
     this.initializeForm();
-    this.updateDataFromInput();
+    this.title = this.isAddMode ? 'Add User' : 'Edit User';
+
+    if (!this.isAddMode && this.id) {
+      this.loading = true;
+      this.accountService.getById(this.id)
+        .pipe(first())
+        .subscribe({
+          next: (account: Account) => {
+            this.patchFormValues(account);
+            this.loading = false;
+          },
+          error: error => {
+            this.alertService.error(error);
+            this.loading = false;
+          }
+        });
+    }
   }
   
   ngOnChanges(changes: SimpleChanges): void {
@@ -99,13 +161,14 @@ export class EditContentComponent implements OnInit, OnChanges {
   private updateDataFromInput(): void {
     if (this.initialData) {
       console.log('EditContentComponent - Initial data received:', this.initialData);
-      this.patchFormValues();
       
       // Set the image URL from profile data
-      this.imageUrl = this.initialData.profileImage || null;
+      if (this.initialData.profileImage) {
+        this.imageUrl = this.initialData.profileImage;
+      } else {
+        this.imageUrl = null;
+      }
       console.log('EditContentComponent - Image URL set to:', this.imageUrl);
-      
-      this.isAdmin = this.initialData.role === 'Admin';
       
       // Load existing followers if available
       if (this.initialData.followerImages && Array.isArray(this.initialData.followerImages)) {
@@ -115,70 +178,39 @@ export class EditContentComponent implements OnInit, OnChanges {
   }
   
   private initializeForm() {
-    // password not required in edit mode
-    const passwordValidators = [Validators.minLength(6)];
-    if (this.isAddMode) {
-      passwordValidators.push(Validators.required);
-    }
+    const roleControl = {
+      value: Role.User,
+      disabled: !this.isCurrentUserAdmin
+    };
 
     this.form = this.formBuilder.group({
-      // Common fields
       firstName: ['', Validators.required],
       lastName: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
-      password: ['', passwordValidators],
-      confirmPassword: [''],
-      
-      // Admin-specific fields (hidden in profile mode)
-      role: ['User', this.editMode === EditMode.ACCOUNT ? Validators.required : null],
-      
-      // Profile template selection
-      profileTemplateType: [ProfileTemplateType.STANDARD],
-      
-      // Personal & Professional Details
-      position: [''],
-      company: [''],
-      address: [''],
-      city: [''],
-      state: [''],
-      zipCode: [''],
-      phone: [''],
-      mobile: [''],
-      bio: [''],
-      
-      // Social Media Links
-      website: [''],
-      github: [''],
-      twitter: [''],
-      instagram: [''],
-      facebook: [''],
-      
-      // Social Media Stats
-      followersCount: [0],
-      followingCount: [0],
-      
-      // Professional Skills (stored as comma-separated string in form)
-      skills: ['']
+      role: [roleControl.value, { disabled: roleControl.disabled }],
+      password: ['', [Validators.minLength(6), ...(!this.isAddMode ? [] : [Validators.required])]],
+      confirmPassword: ['']
     }, {
       validator: MustMatch('password', 'confirmPassword')
     });
+
+    console.log('Form initialized with role control disabled:', !this.isCurrentUserAdmin);
   }
   
-  private patchFormValues() {
-    // Only patch the fields that exist in the initialData
-    const formValues: any = {};
+  private patchFormValues(account?: Account) {
+    if (!account) {
+        console.warn('No account data provided for patch');
+        return;
+    }
     
-    Object.keys(this.form.controls).forEach(key => {
-      if (this.initialData.hasOwnProperty(key)) {
-        // Handle special cases like skills which might be an array in the data
-        if (key === 'skills' && Array.isArray(this.initialData.skills)) {
-          formValues[key] = this.initialData.skills.join(', ');
-        } else {
-          formValues[key] = this.initialData[key];
-        }
-      }
-    });
-    
+    console.log('Patching form values with account:', account);
+    const formValues: AccountUpdate = {
+        firstName: account.firstName,
+        lastName: account.lastName,
+        email: account.email,
+        role: account.role as Role  // Explicitly cast to Role
+    };
+    console.log('Setting role value:', formValues.role, 'Disabled:', !this.isCurrentUserAdmin);
     this.form.patchValue(formValues);
   }
 
@@ -206,46 +238,43 @@ export class EditContentComponent implements OnInit, OnChanges {
   
   // Event handlers
   onSubmit() {
+    this.submitted = true;
+    this.alertService.clear();
+
+    // Mark all fields as touched to trigger validation
+    Object.keys(this.form.controls).forEach(key => {
+        const control = this.form.get(key);
+        control?.markAsTouched();
+    });
+
     if (this.form.invalid) {
-      return;
+        // Log the specific validation errors
+        console.log('Form validation errors:', {
+            formValue: this.form.value,
+            formErrors: Object.keys(this.form.controls).reduce((acc, key) => {
+                const control = this.form.get(key);
+                if (control?.errors) {
+                    acc[key] = control.errors;
+                }
+                return acc;
+            }, {} as any)
+        });
+        return;
     }
-    
-    const formData = this.form.value;
-    
-    // Process skills if present
-    if (formData.skills) {
-      if (typeof formData.skills === 'string') {
-        formData.skills = formData.skills.split(',').map((skill: string) => skill.trim());
-      } else if (Array.isArray(formData.skills)) {
-        formData.skills = formData.skills.map((skill: string) => skill.trim());
-      } else {
-        formData.skills = [];
-      }
-    } else {
-      formData.skills = [];
-    }
-    
-    // Security check: If user is not an admin, ensure they cannot promote themselves
-    if (this.editMode === EditMode.ACCOUNT && !this.isAdmin && formData.role === 'Admin') {
-      console.warn('Attempted role escalation blocked: Non-admin user tried to set role to Admin');
-      formData.role = 'User'; // Force back to User role
-    }
-    
-    // Add followers to the form data
-    if (this.isSocialMediaTemplate()) {
-      // Make sure we're only including necessary properties and properly formatted followers
-      formData.followerImages = this.followers.map(follower => ({
-        id: follower.id,
-        name: follower.name,
-        title: follower.title || '',
-        imageUrl: follower.imageUrl || '',
-        path: follower.path || ''
-      }));
-      
-      console.log('Submitting followers:', formData.followerImages);
-    }
-    
-    this.save.emit(formData);
+
+    this.submitting = true;
+    this.saveAccount()
+        .pipe(first())
+        .subscribe({
+            next: () => {
+                this.alertService.success('Account saved', { keepAfterRouteChange: true });
+                this.router.navigateByUrl('/admin/accounts');
+            },
+            error: (error: Error) => {
+                this.alertService.error(error.message);
+                this.submitting = false;
+            }
+        });
   }
   
   onCancel() {
@@ -255,8 +284,16 @@ export class EditContentComponent implements OnInit, OnChanges {
   onImageChange(event: any) {
     if (event.target.files && event.target.files[0]) {
       const file = event.target.files[0];
-      const reader = new FileReader();
       
+      // Check if this is the same image
+      if (this.initialData?.profileImage) {
+        this.imageConflict = true;
+        this.imageConflictMessage = 'There is already an image for this account, do you want to overwrite it?';
+        this.selectedFile = file;
+        return;
+      }
+      
+      const reader = new FileReader();
       reader.onload = (e: any) => {
         this.imageUrl = e.target.result as string;
         this.imageChange.emit({
@@ -264,8 +301,36 @@ export class EditContentComponent implements OnInit, OnChanges {
           dataUrl: e.target.result
         });
       };
-      
       reader.readAsDataURL(file);
+    }
+  }
+  
+  confirmOverwrite() {
+    if (this.selectedFile) {
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.imageUrl = e.target.result as string;
+        this.imageChange.emit({
+          file: this.selectedFile,
+          dataUrl: e.target.result,
+          confirmed: true
+        });
+      };
+      reader.readAsDataURL(this.selectedFile);
+      this.imageConflict = false;
+      this.imageConflictMessage = '';
+      this.selectedFile = null;
+    }
+  }
+
+  cancelOverwrite() {
+    this.imageConflict = false;
+    this.imageConflictMessage = '';
+    this.selectedFile = null;
+    // Reset the file input
+    const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.value = '';
     }
   }
   
@@ -275,8 +340,27 @@ export class EditContentComponent implements OnInit, OnChanges {
   }
   
   onTemplateChange() {
-    // You can add template-specific logic here
-    console.log('Template changed to:', this.form.get('profileTemplateType')?.value);
+    const templateType = this.form.get('profileTemplateType')?.value;
+    console.log('Template changed to:', templateType);
+    
+    // Update form validation based on template type
+    if (this.isSocialMediaTemplate()) {
+      this.form.get('followersCount')?.enable();
+      this.form.get('followingCount')?.enable();
+      this.form.get('skills')?.disable();
+    } else if (this.isBusinessCardTemplate()) {
+      this.form.get('followersCount')?.disable();
+      this.form.get('followingCount')?.disable();
+      this.form.get('skills')?.enable();
+    } else {
+      // Standard template
+      this.form.get('followersCount')?.disable();
+      this.form.get('followingCount')?.disable();
+      this.form.get('skills')?.disable();
+    }
+    
+    // Force change detection
+    this.form.updateValueAndValidity();
   }
   
   // Utility methods for template
@@ -417,5 +501,55 @@ export class EditContentComponent implements OnInit, OnChanges {
       };
       reader.readAsDataURL(file);
     }
+  }
+
+  // Handle role changes
+  onRoleChange(event: any) {
+    if (!this.isCurrentUserAdmin) {
+        console.log('[DEBUG] Non-admin tried to change role - reverting');
+        const roleControl = this.form.get('role');
+        if (roleControl) {
+            roleControl.setValue(this.initialData?.role || Role.User, { emitEvent: false });
+        }
+        return;
+    }
+
+    const newRole = event.target.value;
+    console.log('[DEBUG] Role change by admin:', {
+        newRole,
+        oldRole: this.initialData?.role,
+        formValue: this.form.get('role')?.value
+    });
+  }
+
+  // Add this getter to filter role options based on user permissions
+  get availableRoles(): Role[] {
+    if (this.isCurrentUserAdmin) {
+      return [Role.Admin, Role.User];
+    }
+    return [Role.User];
+  }
+
+  private saveAccount() {
+    const formData = this.form.getRawValue() as AccountUpdate;
+    
+    // If user is not admin, preserve the original role
+    if (!this.isCurrentUserAdmin) {
+      delete formData.role;
+    }
+
+    // Clean up the form data by removing empty strings
+    const cleanedData = Object.entries(formData).reduce((acc, [key, value]) => {
+        if (value !== '') {
+            acc[key as keyof AccountUpdate] = value;
+        }
+        return acc;
+    }, {} as AccountUpdate);
+
+    console.log('Saving account with data:', cleanedData);
+
+    return this.id
+        ? this.accountService.update(this.id, cleanedData)
+        : this.accountService.create(cleanedData);
   }
 }

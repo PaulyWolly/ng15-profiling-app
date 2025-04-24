@@ -80,24 +80,39 @@ export class AccountSettingsComponent implements OnInit {
     const currentUser = this.accountService.accountValue;
     
     if (currentUser && currentUser.id && event && event.file) {
-      const formData = new FormData();
-      formData.append('profileImage', event.file);
-      formData.append('userId', currentUser.id);
-      formData.append('userEmail', currentUser.email || '');
-      
-      this.accountService.uploadImage(currentUser.id, formData)
-        .pipe(first())
-        .subscribe({
-          next: (response) => {
-            this.alertService.success('Profile image uploaded successfully');
-            // Update the image in the account object so it displays immediately
-            if (response.profileImage) {
-              this.account.profileImage = response.profileImage;
-            }
-          },
-          error: (error) => {
-            this.alertService.error(error);
-          }
+        console.log('[AccountSettings] Processing image upload:', {
+            userId: currentUser.id,
+            email: currentUser.email,
+            file: event.file.name
+        });
+
+        const formData = new FormData();
+        formData.append('profileImage', event.file);
+        formData.append('userId', currentUser.id);
+        formData.append('userEmail', currentUser.email || '');
+        
+        this.accountService.uploadImage(currentUser.id, formData)
+            .pipe(first())
+            .subscribe({
+                next: (response) => {
+                    console.log('[AccountSettings] Upload successful:', response);
+                    this.alertService.success('Profile image uploaded successfully');
+                    // Update the image in the account object so it displays immediately
+                    if (response.profileImage) {
+                        this.account.profileImage = response.profileImage;
+                    }
+                },
+                error: (error) => {
+                    console.error('[AccountSettings] Upload failed:', error);
+                    this.alertService.error(error);
+                }
+            });
+    } else {
+        console.error('[AccountSettings] Invalid upload state:', {
+            hasCurrentUser: !!currentUser,
+            hasUserId: currentUser?.id,
+            hasEvent: !!event,
+            hasFile: event?.file
         });
     }
   }
@@ -119,6 +134,24 @@ export class AccountSettingsComponent implements OnInit {
             this.alertService.error(error);
           }
         });
+    }
+  }
+
+  fixProfileImage() {
+    if (this.account?.id) {
+        this.accountService.fixProfileImage(this.account.id)
+            .pipe(first())
+            .subscribe({
+                next: (response) => {
+                    this.alertService.success('Profile image path fixed successfully');
+                    if (response.profileImage) {
+                        this.account.profileImage = response.profileImage;
+                    }
+                },
+                error: (error) => {
+                    this.alertService.error(error);
+                }
+            });
     }
   }
 } 

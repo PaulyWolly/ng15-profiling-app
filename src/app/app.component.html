@@ -1,5 +1,5 @@
 ﻿<!-- Main application container -->
-<div class="app-container">
+<div class="app-container" [ngClass]="{ 'bg-light': account && account.role === Role.Admin }">
     <!-- Header with navigation -->
     <nav class="navbar navbar-expand navbar-dark bg-dark px-3" *ngIf="account">
         <!-- <a class="navbar-brand" href="#">Angular App</a> -->

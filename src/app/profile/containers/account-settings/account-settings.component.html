@@ -14,4 +14,13 @@
     (imageChange)="onImageChange($event)"
     (imageRemove)="onImageRemove()">
   </app-edit-content>
+
+  <!-- Add this button near your profile image section -->
+  <button *ngIf="account?.profileImage && !account.profileImage.includes('uploads/profiles/profileImage-')"
+          mat-button
+          color="primary"
+          (click)="fixProfileImage()">
+      <mat-icon>build</mat-icon>
+      Fix Image Path
+  </button>
 </div> 

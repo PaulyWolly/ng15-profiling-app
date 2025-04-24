@@ -1,52 +1,28 @@
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const crypto = require('crypto');
-const { secret, emailFrom, smtpOptions } = require('../config.json');
+const { secret } = require('../config.json');
 const db = require('../_helpers/db');
 const Role = require('../_helpers/role');
-const nodemailer = require('nodemailer');
-
-// Configure SMTP options with environment variable for password
-const smtpConfig = {
-    ...smtpOptions,
-    auth: {
-        ...smtpOptions.auth,
-        pass: process.env.SMTP_APP_PASSWORD || smtpOptions.auth.pass
-    }
-};
-
-// Check if SMTP password is properly configured
-if (smtpConfig.auth.pass === 'SMTP_APP_PASSWORD') {
-    throw new Error('SMTP App Password not found in environment variables');
-}
-
-// create reusable transporter object using the SMTP transport
-const transporter = nodemailer.createTransport(smtpConfig);
-
-// verify connection configuration
-transporter.verify(function (error, success) {
-    if (error) {
-        console.log("SMTP Error:", error);
-    } else {
-        console.log("SMTP Server is ready to take our messages");
-    }
-});
+const path = require('path');
+const fs = require('fs').promises;
+const fsSync = require('fs');
 
 module.exports = {
     authenticate,
     refreshToken,
     revokeToken,
     register,
-    verifyEmail,
-    forgotPassword,
-    validateResetToken,
-    resetPassword,
     getAll,
     getById,
     create,
     update,
     delete: _delete,
-    uploadImage
+    uploadImage,
+    getActiveSessions,
+    cleanupRefreshTokens,
+    migrateAllLegacyImages,
+    logAllImagePaths
 };
 
 async function authenticate({ email, password, ipAddress }) {
@@ -86,6 +62,20 @@ async function authenticate({ email, password, ipAddress }) {
             });
             throw 'Email or password is incorrect';
         }
+
+        // Revoke any existing active sessions for this user
+        await db.RefreshToken.updateMany(
+            { 
+                account: account.id,
+                revoked: null,
+                expires: { $gt: new Date() }
+            },
+            {
+                revoked: new Date(),
+                revokedByIp: ipAddress,
+                revokedReason: 'New login detected'
+            }
+        );
 
         // authentication successful so generate jwt and refresh tokens
         console.log('Authentication successful, generating tokens');
@@ -143,22 +133,18 @@ async function revokeToken({ token, ipAddress }) {
     const refreshToken = await getRefreshToken(token);
 
     // revoke token and save
-    refreshToken.revoked = Date.now();
+    refreshToken.revoked = new Date();
     refreshToken.revokedByIp = ipAddress;
+    refreshToken.revokedReason = 'User logout';
     await refreshToken.save();
 }
 
 async function register(params, origin) {
     // validate
     if (await db.Account.findOne({ email: params.email })) {
-        // send already registered error in email to prevent account enumeration
-        return await sendAlreadyRegisteredEmail(params.email, origin);
+        // Just throw an error instead of sending email
+        throw 'Email "' + params.email + '" is already registered';
     }
-
-    console.log('Registering new account:', {
-        email: params.email,
-        requestedRole: params.role
-    });
 
     // create account object
     const account = new db.Account(params);
@@ -180,60 +166,7 @@ async function register(params, origin) {
     await account.save();
 
     console.log('Account saved with role:', account.role);
-
-    // send email
-    await sendVerificationEmail(account, origin);
-}
-
-async function verifyEmail({ token }) {
-    const account = await db.Account.findOne({ verificationToken: token });
-
-    if (!account) throw 'Verification failed';
-
-    account.verified = Date.now();
-    account.verificationToken = undefined;
-    await account.save();
-}
-
-async function forgotPassword({ email }, origin) {
-    const account = await db.Account.findOne({ email });
-
-    // always return ok response to prevent email enumeration
-    if (!account) return;
-
-    // create reset token that expires after 24 hours
-    account.resetToken = {
-        token: randomTokenString(),
-        expires: new Date(Date.now() + 24*60*60*1000)
-    };
-    await account.save();
-
-    // send email
-    await sendPasswordResetEmail(account, origin);
-}
-
-async function validateResetToken({ token }) {
-    const account = await db.Account.findOne({
-        'resetToken.token': token,
-        'resetToken.expires': { $gt: Date.now() }
-    });
-
-    if (!account) throw 'Invalid token';
-}
-
-async function resetPassword({ token, password }) {
-    const account = await db.Account.findOne({
-        'resetToken.token': token,
-        'resetToken.expires': { $gt: Date.now() }
-    });
-
-    if (!account) throw 'Invalid token';
-
-    // update password and remove reset token
-    account.passwordHash = hash(password);
-    account.passwordReset = Date.now();
-    account.resetToken = undefined;
-    await account.save();
+    return account;
 }
 
 async function getAll() {
@@ -272,29 +205,54 @@ async function update(id, params) {
         throw 'Email "' + params.email + '" is already taken';
     }
 
+    console.log('[AccountService] Updating account:', {
+        id: account.id,
+        email: account.email,
+        currentRole: account.role,
+        newRole: params.role,
+        updateParams: Object.keys(params)
+    });
+
     // hash password if it was entered
     if (params.password) {
         params.passwordHash = hash(params.password);
     }
 
-    // Ensure proper handling of follower images
-    if (params.followerImages && Array.isArray(params.followerImages)) {
-        // Make sure all follower images have the required fields
-        params.followerImages = params.followerImages.map(follower => {
-            return {
-                id: follower.id,
-                name: follower.name,
-                title: follower.title || '',
-                imageUrl: follower.imageUrl || '',
-                path: follower.path || ''
-            };
+    // Handle role update explicitly
+    if (params.role) {
+        // Validate role value
+        if (![Role.Admin, Role.User].includes(params.role)) {
+            console.error('[AccountService] Invalid role provided:', params.role);
+            throw 'Role must be either "Admin" or "User"';
+        }
+
+        console.log('[AccountService] Role update requested:', {
+            from: account.role,
+            to: params.role,
+            accountId: account.id,
+            email: account.email
         });
+        account.role = params.role;
     }
 
-    // copy params to account and save
+    // copy remaining params to account and save
     Object.assign(account, params);
     account.updated = Date.now();
+    
+    console.log('[AccountService] Saving account with updates:', {
+        id: account.id,
+        email: account.email,
+        role: account.role,
+        updated: account.updated
+    });
+
     await account.save();
+
+    console.log('[AccountService] Account updated successfully:', {
+        id: account.id,
+        email: account.email,
+        role: account.role
+    });
 
     return basicDetails(account);
 }
@@ -304,11 +262,193 @@ async function _delete(id) {
     await account.deleteOne();
 }
 
-async function uploadImage(accountId, imagePath) {
-    const account = await getAccount(accountId);
-    account.profileImage = imagePath;
+async function uploadImage(userId, imagePath) {
+    console.log('[AccountService] Uploading image:', {
+        userId,
+        imagePath,
+        type: 'profile'
+    });
+
+    const account = await db.Account.findById(userId);
+    if (!account) {
+        console.error('[AccountService] Account not found:', userId);
+        throw new Error('Account not found');
+    }
+
+    // Ensure the image path starts with /uploads/profiles/
+    let normalizedPath = imagePath;
+    if (!normalizedPath.startsWith('/uploads/profiles/')) {
+        const filename = path.basename(imagePath);
+        normalizedPath = `/uploads/profiles/${filename}`;
+        console.log('[AccountService] Normalized image path:', {
+            original: imagePath,
+            normalized: normalizedPath
+        });
+    }
+
+    // Update with new image path
+    account.profileImage = normalizedPath;
+    console.log('[AccountService] Updating account with new image path:', normalizedPath);
+    
     await account.save();
-    return basicDetails(account);
+    console.log('[AccountService] Account updated successfully');
+
+    return account;
+}
+
+async function migrateLegacyImage(account) {
+    try {
+        console.log('[AccountService] Starting legacy image migration for account:', account.id);
+        
+        if (!account.profileImage) {
+            console.log('[AccountService] No profile image to migrate');
+            return;
+        }
+
+        // Get the old and new paths
+        const oldPath = path.join(__dirname, '..', account.profileImage);
+        const newFilename = `profileImage-${account.email}${path.extname(account.profileImage)}`;
+        const newRelativePath = `/uploads/profiles/${newFilename}`;
+        const newAbsolutePath = path.join(__dirname, '..', 'uploads', 'profiles', newFilename);
+
+        console.log('[AccountService] Migration paths:', {
+            oldPath,
+            newAbsolutePath,
+            newRelativePath
+        });
+
+        // Check if old file exists
+        if (fsSync.existsSync(oldPath)) {
+            console.log('[AccountService] Found old image file, moving to new location');
+            
+            // Ensure the profiles directory exists
+            const profilesDir = path.join(__dirname, '..', 'uploads', 'profiles');
+            if (!fsSync.existsSync(profilesDir)) {
+                fsSync.mkdirSync(profilesDir, { recursive: true });
+            }
+
+            // Move the file to the new location
+            fsSync.renameSync(oldPath, newAbsolutePath);
+            console.log('[AccountService] Moved file to new location');
+
+            // Update the database with the new path
+            account.profileImage = newRelativePath;
+            await account.save();
+            console.log('[AccountService] Updated database with new path');
+        } else {
+            console.log('[AccountService] Old image file not found:', oldPath);
+            // Clear the image path if the file doesn't exist
+            account.profileImage = null;
+            await account.save();
+        }
+    } catch (error) {
+        console.error('[AccountService] Error migrating legacy image:', error);
+        // Don't throw, just log the error
+    }
+}
+
+// Add this function to migrate all accounts
+async function migrateAllLegacyImages() {
+    console.log('[AccountService] Starting migration of all legacy images');
+    
+    const accounts = await db.Account.find({
+        profileImage: { $exists: true, $ne: null }
+    });
+
+    console.log('[AccountService] Found accounts to migrate:', accounts.length);
+
+    for (const account of accounts) {
+        if (account.profileImage && !account.profileImage.startsWith('/uploads/')) {
+            console.log('[AccountService] Migrating account:', account.id);
+            await migrateLegacyImage(account);
+        }
+    }
+
+    console.log('[AccountService] Migration complete');
+}
+
+// Add this after the migrateAllLegacyImages function
+
+async function logAllImagePaths() {
+    console.log('[AccountService] Checking all account image paths');
+    
+    const accounts = await db.Account.find({
+        profileImage: { $exists: true }
+    });
+
+    console.log('[AccountService] Found accounts:', accounts.length);
+    
+    accounts.forEach(account => {
+        console.log('[AccountService] Account image path:', {
+            id: account.id,
+            email: account.email,
+            profileImage: account.profileImage
+        });
+    });
+}
+
+// New function to get active sessions
+async function getActiveSessions() {
+    const now = new Date();
+    
+    // First cleanup any expired sessions
+    await db.RefreshToken.deleteMany({
+        expires: { $lt: now }
+    });
+
+    // Get all non-expired sessions
+    const refreshTokens = await db.RefreshToken.find({
+        expires: { $gt: now }
+    }).populate('account', 'id email firstName lastName role isVerified');
+    
+    return refreshTokens.map(token => {
+        const hoursTillExpiry = (token.expires.getTime() - now.getTime()) / (1000 * 60 * 60);
+        
+        // Check if the session is truly active by verifying:
+        // 1. Not revoked
+        // 2. Not expired
+        // 3. Has valid account
+        const isActive = !token.revoked && 
+                        token.expires > now && 
+                        token.account;
+
+        let status = 'Active';
+        if (token.revoked) {
+            status = 'Revoked';
+        } else if (hoursTillExpiry < 1) {
+            status = 'Warning';
+        }
+
+        return {
+            id: token._id,
+            email: token.account.email,
+            firstName: token.account.firstName,
+            lastName: token.account.lastName,
+            role: token.account.role,
+            isVerified: token.account.isVerified,
+            lastActivity: token.created.toISOString(),
+            status: status,
+            createdByIp: token.createdByIp,
+            expires: token.expires.toISOString(),
+            isActive: isActive,
+            revokedReason: token.revokedReason || null
+        };
+    }).filter(session => session.isActive); // Only return active sessions
+}
+
+// New function to clean up old refresh tokens
+async function cleanupRefreshTokens() {
+    const now = new Date();
+    const result = await db.RefreshToken.deleteMany({
+        $or: [
+            { expires: { $lt: now } },
+            { revoked: { $ne: null } }
+        ]
+    });
+    
+    return {
+        message: `Cleaned up ${result.deletedCount} expired or revoked sessions`
+    };
 }
 
 // helper functions
@@ -338,8 +478,15 @@ function generateJwtToken(account) {
         role: account.role
     });
     
-    const token = jwt.sign({ sub: account.id, id: account.id }, secret, { expiresIn: '15m' });
-    console.log('JWT token generated successfully');
+    // Add the role to the JWT payload
+    const payload = {
+        sub: account.id, // Standard subject claim (user ID)
+        id: account.id,  // Including id for consistency if frontend uses it
+        role: account.role // Add the role claim
+    };
+    
+    const token = jwt.sign(payload, secret, { expiresIn: '15m' });
+    console.log('JWT token generated successfully with payload:', payload);
     return token;
 }
 
@@ -359,53 +506,25 @@ function randomTokenString() {
 
 function basicDetails(account) {
     const { id, firstName, lastName, email, role, created, updated, isVerified, profileImage,
-          // Include all the new fields
           profileTemplateType, position, company, address, city, state, zipCode, phone, mobile, bio,
           website, github, twitter, instagram, facebook,
           followersCount, followingCount, skills, followerImages } = account;
     
-    return { id, firstName, lastName, email, role, created, updated, isVerified, profileImage,
-           // Return all the new fields
-           profileTemplateType, position, company, address, city, state, zipCode, phone, mobile, bio,
-           website, github, twitter, instagram, facebook,
-           followersCount, followingCount, skills, followerImages };
-}
-
-async function sendVerificationEmail(account, origin) {
-    let message;
-    if (origin) {
-        const verifyUrl = `${origin}/account/verify-email?token=${account.verificationToken}`;
-        message = `<p>Please click the below link to verify your email address:</p>
-                   <p><a href="${verifyUrl}">${verifyUrl}</a></p>`;
-    } else {
-        message = `<p>Please use the below token to verify your email address with the <code>/accounts/verify-email</code> api route:</p>
-                   <p><code>${account.verificationToken}</code></p>`;
+    // Ensure profile image path is properly formatted
+    let formattedProfileImage = profileImage;
+    if (profileImage && !profileImage.startsWith('/uploads/')) {
+        formattedProfileImage = `/uploads/profiles/${path.basename(profileImage)}`;
+        console.log('[AccountService] Formatted profile image path:', {
+            original: profileImage,
+            formatted: formattedProfileImage
+        });
     }
-
-    await transporter.sendMail({
-        from: emailFrom,
-        to: account.email,
-        subject: 'Sign-up Verification API - Verify Email',
-        html: `<h4>Verify Email</h4>
-               <p>Thanks for registering!</p>
-               ${message}`
-    });
-}
-
-async function sendAlreadyRegisteredEmail(email, origin) {
-    let message;
-    if (origin) {
-        message = `<p>If you don't know your password please visit the <a href="${origin}/account/forgot-password">forgot password</a> page.</p>`;
-    } else {
-        message = '<p>If you don\'t know your password you can reset it via the <code>/accounts/forgot-password</code> api route.</p>';
-    }
-
-    await transporter.sendMail({
-        from: emailFrom,
-        to: email,
-        subject: 'Sign-up Verification API - Email Already Registered',
-        html: `<h4>Email Already Registered</h4>
-               <p>Your email <strong>${email}</strong> is already registered.</p>
-               ${message}`
-    });
+    
+    return { 
+        id, firstName, lastName, email, role, created, updated, isVerified,
+        profileImage: formattedProfileImage,
+        profileTemplateType, position, company, address, city, state, zipCode, phone, mobile, bio,
+        website, github, twitter, instagram, facebook,
+        followersCount, followingCount, skills, followerImages 
+    };
 } 

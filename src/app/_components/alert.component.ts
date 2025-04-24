@@ -2,7 +2,7 @@
 import { Router, NavigationStart } from '@angular/router';
 import { Subscription } from 'rxjs';
 
-import { Alert, AlertType } from '@app/_models';
+import { Alert, AlertType, AlertButton } from '@app/_models';
 import { AlertService } from '@app/_services';
 
 @Component({ 
@@ -39,7 +39,7 @@ export class AlertComponent implements OnInit, OnDestroy {
 
                 // auto close alert if required
                 if (alert.autoClose) {
-                    setTimeout(() => this.removeAlert(alert), 3000);
+                    setTimeout(() => this.removeAlert(alert), 5000);
                 }
             });
 
@@ -72,6 +72,21 @@ export class AlertComponent implements OnInit, OnDestroy {
         } else {
             // remove alert
             this.alerts = this.alerts.filter(x => x !== alert);
+        }
+    }
+
+    onButtonClick(button: AlertButton, alert: Alert) {
+        // Execute the button action if provided
+        if (button.action) {
+            button.action();
+        }
+        
+        // Remove the alert after button click (both Yes and Cancel should continue the session)
+        if (button.text.toLowerCase() === 'yes' || button.text.toLowerCase() === 'cancel') {
+            this.removeAlert(alert);
+        } else if (button.text.toLowerCase() !== 'continue') {
+            // For any other buttons (except "continue" for backwards compatibility)
+            this.removeAlert(alert);
         }
     }
 

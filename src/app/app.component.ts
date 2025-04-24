@@ -1,8 +1,8 @@
-﻿import { Component, OnInit, HostListener, Renderer2, ViewEncapsulation, AfterViewInit } from '@angular/core';
+﻿import { Component, OnInit, HostListener, Renderer2, ViewEncapsulation, AfterViewInit, OnDestroy } from '@angular/core';
 import { Router, NavigationEnd, Event } from '@angular/router';
 import { filter } from 'rxjs/operators';
-
-import { AccountService } from './_services';
+import { AccountService } from '@app/_services';
+import { Subscription } from 'rxjs';
 import { Account, Role } from './_models';
 
 declare var bootstrap: any;
@@ -13,25 +13,48 @@ declare var bootstrap: any;
     styleUrls: ['./app.component.css'],
     encapsulation: ViewEncapsulation.None
 })
-export class AppComponent implements OnInit, AfterViewInit {
+export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     Role = Role;
     account?: Account | null;
     currentUrl: string = '';
     isDropdownOpen = false;
+    private initialNavigation = true;
+    private subscriptions: Subscription = new Subscription();
 
     constructor(
         private accountService: AccountService,
         private router: Router,
         private renderer: Renderer2
     ) {
-        this.accountService.account.subscribe(x => this.account = x);
+        this.accountService.account.subscribe(x => {
+            this.account = x;
+            
+            // Get the current URL
+            const currentUrl = window.location.pathname || '/';
+            console.log('[AppComponent] Account state changed. Current URL:', currentUrl);
+            
+            // Only redirect on initial navigation
+            if (this.initialNavigation) {
+                this.initialNavigation = false;
+                
+                // If we're on the root path and logged in as admin, redirect to admin page
+                if (x?.role === Role.Admin && (currentUrl === '/' || currentUrl === '')) {
+                    console.log('[AppComponent] Redirecting admin to default page');
+                    this.router.navigate(['/admin']);
+                }
+                // Otherwise stay on current page if it's a valid route
+                else if (currentUrl && currentUrl !== '/' && !currentUrl.includes('/account/')) {
+                    console.log('[AppComponent] Staying on current page after authentication:', currentUrl);
+                }
+            }
+        });
         
         // Track navigation for active link highlighting
         this.router.events.pipe(
             filter((event): event is NavigationEnd => event instanceof NavigationEnd)
         ).subscribe(event => {
             this.currentUrl = event.url;
-            console.log('Navigation to:', this.currentUrl);
+            console.log('[AppComponent] Navigation to:', this.currentUrl);
             
             // Check for account pages and apply no-scroll class
             this.handleAccountPagesScrolling(this.currentUrl);
@@ -158,6 +181,16 @@ export class AppComponent implements OnInit, AfterViewInit {
                 document.documentElement.classList.remove('no-scroll');
             }
         });
+    }
+
+    ngOnDestroy() {
+        // Clean up subscriptions
+        this.subscriptions.unsubscribe();
+        
+        // Remove any remaining classes
+        this.renderer.removeClass(document.documentElement, 'no-scroll');
+        this.renderer.removeClass(document.body, 'no-scroll');
+        this.renderer.removeClass(document.body, 'account-page');
     }
 
     logout() {

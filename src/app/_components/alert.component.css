@@ -24,9 +24,27 @@
     line-height: 1.5;
 }
 
+.alert-content {
+    display: flex;
+    align-items: flex-start;
+}
+
 .alert-message {
     display: block;
     word-wrap: break-word; /* Allow long text to wrap */
+}
+
+.alert-actions {
+    display: flex;
+    flex-wrap: wrap;
+    margin-left: 25px;
+}
+
+.alert-actions button {
+    margin-right: 8px;
+    margin-bottom: 5px;
+    font-size: 14px;
+    padding: 5px 10px;
 }
 
 i {
