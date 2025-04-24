@@ -92,16 +92,18 @@ export class EditContentComponent implements OnInit, OnChanges, EditContentState
   ) { }
 
   ngOnInit(): void {
-    this.id = this.route.snapshot.params['id'];
-    this.isAddMode = !this.id;
-    
+    // this.id = this.route.snapshot.params['id']; // REMOVE - Not needed for profile edit, parent provides data
+    // this.isAddMode = !this.id; // REMOVE - isAddMode is an @Input
+
     // Check if current user is admin
     this.isCurrentUserAdmin = this.accountService.isAdmin;
     console.log('Current user admin status:', this.isCurrentUserAdmin);
 
     this.initializeForm();
-    this.title = this.isAddMode ? 'Add User' : 'Edit User';
+    // this.title = this.isAddMode ? 'Add User' : 'Edit User'; // REMOVE - Title is handled by getPageTitle()
 
+    // REMOVE Redundant getById call - Data should come from initialData Input
+    /*
     if (!this.isAddMode && this.id) {
       this.loading = true;
       this.accountService.getById(this.id)
@@ -117,12 +119,19 @@ export class EditContentComponent implements OnInit, OnChanges, EditContentState
           }
         });
     }
+    */
   }
   
   ngOnChanges(changes: SimpleChanges): void {
     // If initialData changes and the component is already initialized
     if (changes.initialData && this.form) {
-      this.updateDataFromInput();
+       // Check if initialData has a value and it's not the first change (form is ready)
+       if (changes.initialData.currentValue && !changes.initialData.firstChange) {
+         this.updateDataFromInput();
+       } else if (changes.initialData.currentValue && changes.initialData.firstChange) {
+         // Handle the very first data received, might need immediate update
+         this.updateDataFromInput();
+       }
     }
   }
   
@@ -160,8 +169,11 @@ export class EditContentComponent implements OnInit, OnChanges, EditContentState
   
   private updateDataFromInput(): void {
     if (this.initialData) {
-      console.log('EditContentComponent - Initial data received:', this.initialData);
+      console.log('EditContentComponent - Initial data received, updating form:', this.initialData); // Modified log
       
+      // Patch the form with all available data
+      this.patchFormValues(this.initialData); // ADDED THIS LINE
+
       // Set the image URL from profile data
       if (this.initialData.profileImage) {
         this.imageUrl = this.initialData.profileImage;
@@ -171,9 +183,14 @@ export class EditContentComponent implements OnInit, OnChanges, EditContentState
       console.log('EditContentComponent - Image URL set to:', this.imageUrl);
       
       // Load existing followers if available
+      this.followers = []; // Clear existing followers before loading new ones
       if (this.initialData.followerImages && Array.isArray(this.initialData.followerImages)) {
-        this.followers = [...this.initialData.followerImages];
+        // Ensure we have a deep copy to avoid modifying the original input data
+        this.followers = JSON.parse(JSON.stringify(this.initialData.followerImages)); 
       }
+       console.log('EditContentComponent - Followers set to:', this.followers);
+    } else {
+       console.log('EditContentComponent - Initial data is null, cannot update form.');
     }
   }
   
@@ -233,14 +250,65 @@ export class EditContentComponent implements OnInit, OnChanges, EditContentState
     }
     
     console.log('Patching form values with account:', account);
-    const formValues: AccountUpdate = {
-        firstName: account.firstName,
-        lastName: account.lastName,
-        email: account.email,
-        role: account.role as Role  // Explicitly cast to Role
+    
+    // Use getRawValue to include disabled fields like 'role' if needed during patching
+    const currentFormValues = this.form.getRawValue(); 
+    
+    // Prepare the values to patch, including all fields from the Account model
+    const formValuesToPatch: Partial<Account> & { profileTemplateType?: ProfileTemplateType } = {
+        firstName: account.firstName || '',
+        lastName: account.lastName || '',
+        email: account.email || '',
+        role: account.role as Role, // Keep role from account data
+        profileTemplateType: account.profileTemplateType || ProfileTemplateType.STANDARD,
+        address: account.address || '',
+        city: account.city || '',
+        state: account.state || '',
+        zipCode: account.zipCode || '',
+        phone: account.phone || '',
+        mobile: account.mobile || '',
+        position: account.position || '',
+        company: account.company || '',
+        bio: account.bio || '',
+        skills: account.skills || [], // Assign array directly, or empty array
+        website: account.website || '',
+        twitter: account.twitter || '',
+        facebook: account.facebook || '',
+        instagram: account.instagram || '',
+        github: account.github || '',
+        followersCount: account.followersCount || 0,
+        followingCount: account.followingCount || 0
     };
-    console.log('Setting role value:', formValues.role, 'Disabled:', !this.isCurrentUserAdmin);
-    this.form.patchValue(formValues);
+
+    // Only patch values that are different from the current form values
+    // or if the field is explicitly part of the account data being passed in.
+    // This avoids overwriting user input unnecessarily if patchFormValues is called multiple times.
+    const finalPatchValues: any = {};
+    for (const key in formValuesToPatch) {
+      if (formValuesToPatch.hasOwnProperty(key) && 
+          (currentFormValues[key] !== formValuesToPatch[key as keyof typeof formValuesToPatch] || account.hasOwnProperty(key))) {
+            finalPatchValues[key] = formValuesToPatch[key as keyof typeof formValuesToPatch];
+      }
+    }
+
+    console.log('Final values being patched:', finalPatchValues);
+    this.form.patchValue(finalPatchValues);
+    
+    // Re-evaluate template-based field states after patching
+    this.onTemplateChange(); 
+    
+    // Ensure role is correctly set and disabled status is maintained
+    const roleControl = this.form.get('role');
+    if (roleControl) {
+        roleControl.setValue(account.role as Role, { emitEvent: false }); // Set value without triggering change event loop
+        if (!this.isCurrentUserAdmin) {
+            roleControl.disable({ emitEvent: false });
+        } else {
+            roleControl.enable({ emitEvent: false });
+        }
+    }
+    
+    console.log('Role value after patch:', this.form.get('role')?.value, 'Disabled:', this.form.get('role')?.disabled);
   }
 
   // convenience getter for easy access to form fields
@@ -267,43 +335,43 @@ export class EditContentComponent implements OnInit, OnChanges, EditContentState
   
   // Event handlers
   onSubmit() {
-    this.submitted = true;
-    this.alertService.clear();
-
-    // Mark all fields as touched to trigger validation
+    console.log('EditContentComponent onSubmit triggered.');
+    console.log('Form status:', this.form.status);
+    console.log('Form value:', this.form.value);
+    console.log('Form errors:', this.form.errors);
+    // Log errors for each control
     Object.keys(this.form.controls).forEach(key => {
-        const control = this.form.get(key);
-        control?.markAsTouched();
+      const controlErrors = this.form.controls[key].errors;
+      if (controlErrors != null) {
+        console.log('Control error - ' + key + ':', controlErrors);
+      }
     });
 
+    this.submitted = true;
+
+    // stop here if form is invalid
     if (this.form.invalid) {
-        // Log the specific validation errors
-        console.log('Form validation errors:', {
-            formValue: this.form.value,
-            formErrors: Object.keys(this.form.controls).reduce((acc, key) => {
-                const control = this.form.get(key);
-                if (control?.errors) {
-                    acc[key] = control.errors;
-                }
-                return acc;
-            }, {} as any)
-        });
-        return;
+      console.log('Form is invalid. Submission stopped.');
+      return;
     }
 
-    this.submitting = true;
-    this.saveAccount()
-        .pipe(first())
-        .subscribe({
-            next: () => {
-                this.alertService.success('Account saved', { keepAfterRouteChange: true });
-                this.router.navigateByUrl('/admin/accounts');
-            },
-            error: (error: Error) => {
-                this.alertService.error(error.message);
-                this.submitting = false;
-            }
-        });
+    // If validation passes, prepare data and emit save event
+    this.submitting = true; // Assuming parent handles the actual submission state via input
+    const saveData = { ...this.form.value };
+
+    // Include follower data if applicable
+    if (this.isSocialMediaTemplate() && this.followers.length > 0) {
+      saveData.followerImages = this.followers.map(f => ({
+        id: f.id, // Ensure ID is included
+        name: f.name,
+        title: f.title,
+        imageUrl: f.imageUrl,
+        path: f.path
+      }));
+    }
+    
+    console.log('Emitting save event with data:', saveData);
+    this.save.emit(saveData);
   }
   
   onCancel() {
@@ -379,12 +447,12 @@ export class EditContentComponent implements OnInit, OnChanges, EditContentState
       this.form.get('followingCount')?.enable();
       this.form.get('skills')?.disable();
       
-      // Social media fields are required
-      this.form.get('twitter')?.setValidators([Validators.required]);
-      this.form.get('instagram')?.setValidators([Validators.required]);
+      // Social media fields are NO LONGER required
+      // this.form.get('twitter')?.setValidators([Validators.required]); // REMOVED
+      // this.form.get('instagram')?.setValidators([Validators.required]); // REMOVED
       
       // Show follower section
-      console.log('Enabling social media features');
+      console.log('Enabling social media features (Twitter/Instagram now optional)'); // Updated log
     } else if (this.isBusinessCardTemplate()) {
       // Enable business card specific fields
       this.form.get('followersCount')?.disable();
@@ -396,7 +464,7 @@ export class EditContentComponent implements OnInit, OnChanges, EditContentState
       this.form.get('company')?.setValidators([Validators.required]);
       this.form.get('skills')?.setValidators([Validators.required]);
       
-      // Remove social media requirements
+      // Remove social media requirements (if they were previously set)
       this.form.get('twitter')?.clearValidators();
       this.form.get('instagram')?.clearValidators();
       
@@ -411,8 +479,8 @@ export class EditContentComponent implements OnInit, OnChanges, EditContentState
       this.form.get('position')?.clearValidators();
       this.form.get('company')?.clearValidators();
       this.form.get('skills')?.clearValidators();
-      this.form.get('twitter')?.clearValidators();
-      this.form.get('instagram')?.clearValidators();
+      this.form.get('twitter')?.clearValidators(); // Ensure these are cleared for Standard too
+      this.form.get('instagram')?.clearValidators(); // Ensure these are cleared for Standard too
       
       console.log('Using standard template features');
     }
@@ -456,6 +524,7 @@ export class EditContentComponent implements OnInit, OnChanges, EditContentState
   }
   
   openFollowerDialog(): void {
+    console.log('[EditContentComponent] openFollowerDialog called');
     this.currentFollower = { name: '' };
     this.editingFollowerIndex = -1;
     this.showFollowerDialog = true;
@@ -559,7 +628,9 @@ export class EditContentComponent implements OnInit, OnChanges, EditContentState
     if (file) {
       const reader = new FileReader();
       reader.onload = (e: any) => {
-        this.currentFollower.imageUrl = e.target.result;
+        const dataUrl = e.target.result as string;
+        console.log('[EditContentComponent] Generated Follower Image Data URL (length: ' + dataUrl.length + '):', dataUrl.substring(0, 100) + '...'); // Log start of URL
+        this.currentFollower.imageUrl = dataUrl;
         this.currentFollower.imageFile = file;
       };
       reader.readAsDataURL(file);
@@ -601,13 +672,29 @@ export class EditContentComponent implements OnInit, OnChanges, EditContentState
       delete formData.role;
     }
 
-    // Clean up the form data by removing empty strings
+    // Clean up the form data by removing empty strings, but preserve arrays and objects
     const cleanedData = Object.entries(formData).reduce((acc, [key, value]) => {
-        if (value !== '') {
-            acc[key as keyof AccountUpdate] = value;
+        if (value !== '' && value !== null && value !== undefined) {
+            // Special handling for arrays and objects
+            if (Array.isArray(value) || typeof value === 'object') {
+                acc[key as keyof AccountUpdate] = value;
+            } else {
+                acc[key as keyof AccountUpdate] = value;
+            }
         }
         return acc;
     }, {} as AccountUpdate);
+
+    // Ensure followerImages is included if it exists
+    if (this.followers.length > 0) {
+        cleanedData.followerImages = this.followers.map(follower => ({
+            id: follower.id,
+            name: follower.name,
+            title: follower.title || '',
+            imageUrl: follower.imageUrl || '',
+            path: follower.path || ''
+        }));
+    }
 
     console.log('Saving account with data:', cleanedData);
 

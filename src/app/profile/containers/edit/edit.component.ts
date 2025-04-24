@@ -40,6 +40,7 @@ export class EditComponent implements OnInit, OnDestroy {
         .pipe(first())
         .subscribe({
           next: (account) => {
+            console.log('[EditComponent] Received account details from getById:', account);
             this.account = account;
             this.loading = false;
           },

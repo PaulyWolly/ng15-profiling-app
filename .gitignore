@@ -49,3 +49,7 @@ Thumbs.db
 .env.*
 /src/environments/*.ts
 !/src/environments/*.example.ts
+
+# Reference repo
+/reference_repo
+reference_repo/

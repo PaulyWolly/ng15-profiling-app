@@ -85,7 +85,12 @@ export class ProfileComponent implements OnInit {
     
     // Update profile first with selected template
     if (this.account?.id) {
-      const updateData = { profileTemplateType: template };
+      // Preserve existing profile data when updating template
+      const updateData = {
+        profileTemplateType: template,
+        profileImage: this.profileUser.profileImage, // Preserve profile image
+        followerImages: this.profileUser.followerImages // Preserve follower images
+      };
       
       this.accountService.update(this.account.id, updateData)
         .pipe(first())
