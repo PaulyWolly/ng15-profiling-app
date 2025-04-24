@@ -49,14 +49,14 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
             }
         });
         
-        // Track navigation for active link highlighting
+        // Track navigation for active link highlighting and page-specific handling
         this.router.events.pipe(
             filter((event): event is NavigationEnd => event instanceof NavigationEnd)
         ).subscribe(event => {
             this.currentUrl = event.url;
             console.log('[AppComponent] Navigation to:', this.currentUrl);
             
-            // Check for account pages and apply no-scroll class
+            // Handle account pages scrolling and classes
             this.handleAccountPagesScrolling(this.currentUrl);
         });
     }
@@ -70,15 +70,19 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
                              url.includes('/reset-password');
                              
         if (isAccountPage) {
-            // Add classes to disable scrolling on account pages
+            // Add classes for account pages
             this.renderer.addClass(document.documentElement, 'no-scroll');
             this.renderer.addClass(document.body, 'no-scroll');
             this.renderer.addClass(document.body, 'account-page');
+            this.renderer.addClass(document.body, 'login-page');
+            this.renderer.addClass(document.documentElement, 'login-page');
         } else {
             // Remove classes when not on account pages
             this.renderer.removeClass(document.documentElement, 'no-scroll');
             this.renderer.removeClass(document.body, 'no-scroll');
             this.renderer.removeClass(document.body, 'account-page');
+            this.renderer.removeClass(document.body, 'login-page');
+            this.renderer.removeClass(document.documentElement, 'login-page');
         }
     }
 
@@ -155,32 +159,6 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     ngOnInit() {
         // Initialize the account service to restore the session
         this.accountService.initialize();
-
-        // Listen to route changes to apply body classes for account pages
-        this.router.events.pipe(
-            filter(event => event instanceof NavigationEnd)
-        ).subscribe((event: any) => {
-            const url = event.url;
-            // Check if we're on a login or account page
-            if (url.includes('/account/login') || 
-                url.includes('/account/register') || 
-                url.includes('/account/forgot-password') || 
-                url.includes('/account/reset-password')) {
-                document.body.classList.add('login-page');
-                document.documentElement.classList.add('login-page');
-                
-                // Also add CSS class to prevent scrolling
-                document.body.classList.add('no-scroll');
-                document.documentElement.classList.add('no-scroll');
-            } else {
-                document.body.classList.remove('login-page');
-                document.documentElement.classList.remove('login-page');
-                
-                // Remove the no-scroll class on non-account pages
-                document.body.classList.remove('no-scroll');
-                document.documentElement.classList.remove('no-scroll');
-            }
-        });
     }
 
     ngOnDestroy() {

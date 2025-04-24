@@ -356,17 +356,49 @@ export class AccountService {
         return this.getHttp().post<Account>(`${baseUrl}`, params);
     }
 
-    update(id: string, params: AccountUpdate) {
-        return this.getHttp().put<Account>(`${baseUrl}/${id}`, params)
-            .pipe(map((account) => {
-                const currentAccount = this.accountValue;
-                if (account.id && currentAccount?.id && account.id === currentAccount.id) {
-                    const updatedAccount = { ...account, jwtToken: currentAccount.jwtToken! };
-                    this.accountSubject.next(updatedAccount);
-                    return updatedAccount;
-                }
-                return account;
-            }));
+    update(id: string, params: any) {
+        const url = `${baseUrl}/${id}`;
+        console.log('Updating account with data:', params);
+        return this.getHttp().put<Account>(url, params)
+            .pipe(
+                map(account => {
+                    // Update stored account if the current user updated their own record
+                    if (account.id === this.accountValue?.id) {
+                        // Format profile image URL if needed
+                        if (account.profileImage && !account.profileImage.startsWith('http')) {
+                            account.profileImage = this.formatImageUrl(account.profileImage);
+                        }
+                        
+                        // Format follower image URLs if they exist
+                        if (account.followerImages) {
+                            account.followerImages = account.followerImages.map(follower => ({
+                                ...follower,
+                                imageUrl: follower.imageUrl ? this.formatImageUrl(follower.imageUrl) : undefined
+                            }));
+                        }
+                        
+                        // Update account in subject
+                        account = { ...this.accountValue, ...account };
+                        this.accountSubject.next(account);
+                        
+                        // Store authentication data based on whether this was a remembered login
+                        const isRemembered = !!localStorage.getItem(this.REMEMBER_ME_KEY);
+                        if (isRemembered && account.jwtToken) {
+                            localStorage.setItem(this.JWT_TOKEN_KEY, account.jwtToken);
+                            if (account.refreshToken) {
+                                localStorage.setItem(this.REFRESH_TOKEN_KEY, account.refreshToken);
+                            }
+                        } else if (account.jwtToken) {
+                            sessionStorage.setItem(this.JWT_TOKEN_KEY, account.jwtToken);
+                            if (account.refreshToken) {
+                                sessionStorage.setItem(this.REFRESH_TOKEN_KEY, account.refreshToken);
+                            }
+                        }
+                    }
+                    
+                    return account;
+                })
+            );
     }
 
     delete(id: string) {
@@ -471,10 +503,12 @@ export class AccountService {
             }
 
             const decodedToken = this.jwtHelper.decodeToken(jwtToken);
-            console.log('[DEBUG] Decoded token:', {
-                raw: decodedToken,
-                keys: Object.keys(decodedToken),
-                role: decodedToken.role
+            console.log('[DEBUG] Raw Decoded Token:', decodedToken); 
+            console.log('[DEBUG] Checking for claims:', { 
+                id: decodedToken.id, 
+                sub: decodedToken.sub, 
+                role: decodedToken.role, 
+                email: decodedToken.email 
             });
 
             // Extract user data from token

@@ -10,7 +10,12 @@ export class SafeUrlPipe implements PipeTransform {
     transform(url: string | undefined): SafeUrl {
         if (!url) return '';
         
-        // Remove any double slashes that aren't part of http://
+        // Skip cleaning for data URLs
+        if (url.startsWith('data:')) {
+            return this.sanitizer.bypassSecurityTrustUrl(url);
+        }
+        
+        // Clean regular URLs by removing double slashes that aren't part of http://
         const cleanUrl = url.replace(/([^:]\/)\/+/g, '$1');
         return this.sanitizer.bypassSecurityTrustUrl(cleanUrl);
     }

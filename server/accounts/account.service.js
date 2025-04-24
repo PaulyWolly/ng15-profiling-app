@@ -235,16 +235,28 @@ async function update(id, params) {
         account.role = params.role;
     }
 
+    // Explicitly handle followerImages update
+    if (params.followerImages && Array.isArray(params.followerImages)) {
+        console.log('[AccountService] Updating followerImages:', params.followerImages);
+        account.followerImages = params.followerImages;
+    } else if (params.hasOwnProperty('followerImages') && params.followerImages === null) {
+        // Handle case where frontend explicitly sends null to clear followers
+        console.log('[AccountService] Clearing followerImages');
+        account.followerImages = [];
+    }
+
     // copy remaining params to account and save
-    Object.assign(account, params);
+    // Make sure NOT to overwrite followerImages again if it was handled above
+    const updateData = { ...params };
+    delete updateData.followerImages; // Remove followerImages from params before Object.assign
+    delete updateData.role; // Remove role as it was handled explicitly
+    delete updateData.password; // Remove password as hash is handled
+
+    Object.assign(account, updateData);
     account.updated = Date.now();
     
-    console.log('[AccountService] Saving account with updates:', {
-        id: account.id,
-        email: account.email,
-        role: account.role,
-        updated: account.updated
-    });
+    // ADD LOGGING HERE to see the account object just before saving
+    console.log('[AccountService] Account object BEFORE save:', JSON.stringify(account, null, 2)); 
 
     await account.save();
 
@@ -478,11 +490,12 @@ function generateJwtToken(account) {
         role: account.role
     });
     
-    // Add the role to the JWT payload
+    // Add the role AND EMAIL to the JWT payload
     const payload = {
         sub: account.id, // Standard subject claim (user ID)
         id: account.id,  // Including id for consistency if frontend uses it
-        role: account.role // Add the role claim
+        role: account.role, // Add the role claim
+        email: account.email // ADDED EMAIL CLAIM
     };
     
     const token = jwt.sign(payload, secret, { expiresIn: '15m' });
@@ -510,19 +523,9 @@ function basicDetails(account) {
           website, github, twitter, instagram, facebook,
           followersCount, followingCount, skills, followerImages } = account;
     
-    // Ensure profile image path is properly formatted
-    let formattedProfileImage = profileImage;
-    if (profileImage && !profileImage.startsWith('/uploads/')) {
-        formattedProfileImage = `/uploads/profiles/${path.basename(profileImage)}`;
-        console.log('[AccountService] Formatted profile image path:', {
-            original: profileImage,
-            formatted: formattedProfileImage
-        });
-    }
-    
     return { 
         id, firstName, lastName, email, role, created, updated, isVerified,
-        profileImage: formattedProfileImage,
+        profileImage: profileImage,
         profileTemplateType, position, company, address, city, state, zipCode, phone, mobile, bio,
         website, github, twitter, instagram, facebook,
         followersCount, followingCount, skills, followerImages 

@@ -57,4 +57,5 @@ export interface AccountUpdate {
     confirmPassword?: string;
     profileTemplateType?: ProfileTemplateType;
     profileImage?: string | null;
+    followerImages?: FollowerImage[];
 }

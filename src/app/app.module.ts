@@ -24,7 +24,6 @@ import { FooterComponent } from './footer/footer.component';
 
 // Import AdminModule instead of individual components
 import { AdminModule } from './admin/admin.module';
-import { SharedModule } from './shared/shared.module';
 
 // Add factory function to initialize ConfigService
 export function configInitializer(configService: ConfigService) {
@@ -43,8 +42,7 @@ export function configInitializer(configService: ConfigService) {
         MatButtonModule,
         // Remove MatTable, MatPaginator, MatSort if moved to AdminModule
         HomeModule,
-        AdminModule,      // Import AdminModule
-        SharedModule      // Import SharedModule
+        AdminModule      // Import AdminModule
     ],
     declarations: [
         AppComponent,
