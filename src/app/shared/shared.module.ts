@@ -2,10 +2,12 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { EditContentComponent } from './components/edit-content/edit-content.component';
+import { SafeUrlPipe } from './pipes/safe-url.pipe';
 
 @NgModule({
   declarations: [
-    EditContentComponent
+    EditContentComponent,
+    SafeUrlPipe
   ],
   imports: [
     CommonModule,
@@ -13,7 +15,11 @@ import { EditContentComponent } from './components/edit-content/edit-content.com
     FormsModule
   ],
   exports: [
-    EditContentComponent
+    EditContentComponent,
+    SafeUrlPipe,
+    CommonModule,
+    ReactiveFormsModule,
+    FormsModule
   ]
 })
 export class SharedModule { }

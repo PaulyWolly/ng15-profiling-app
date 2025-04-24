@@ -12,28 +12,45 @@ export class AuthGuard implements CanActivate {
 
     canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot) {
         const account = this.accountService.accountValue;
-        console.log('AuthGuard: Checking activation for', state.url);
-        if (account) {
-            console.log('AuthGuard: Account found', { id: account.id, role: account.role });
-            // check if route is restricted by role
-            if (route.data.roles) {
-                console.log('AuthGuard: Route requires roles:', route.data.roles);
-                if (!route.data.roles.includes(account.role)) {
-                    // role not authorized so redirect to home page
-                    console.log(`AuthGuard: Role '${account.role}' NOT authorized. Redirecting to /`);
+        console.log('[AuthGuard] Checking activation for', state.url);
+        
+        // Check for stored tokens
+        const jwtToken = localStorage.getItem('jwt') || sessionStorage.getItem('jwt');
+        const refreshToken = localStorage.getItem('refreshToken') || sessionStorage.getItem('refreshToken');
+        
+        if (jwtToken || refreshToken) {
+            console.log('[AuthGuard] Tokens found, checking authorization');
+            
+            // Check if route is restricted by role
+            if (route.data.roles && route.data.roles.length) {
+                // Get role from account or JWT token
+                let accountRole = account?.role;
+                if (!accountRole && jwtToken) {
+                    try {
+                        const decodedToken = JSON.parse(atob(jwtToken.split('.')[1]));
+                        accountRole = decodedToken.role;
+                        console.log('[AuthGuard] Extracted role from JWT:', accountRole);
+                    } catch (e) {
+                        console.error('[AuthGuard] Error parsing JWT token:', e);
+                    }
+                }
+
+                // Check if user has required role
+                if (!accountRole || !route.data.roles.includes(accountRole)) {
+                    console.log(`[AuthGuard] Role '${accountRole}' not authorized for route. Required roles:`, route.data.roles);
+                    // Redirect to home page if not in required role
                     this.router.navigate(['/']);
                     return false;
                 }
-                 console.log(`AuthGuard: Role '${account.role}' IS authorized.`);
+                
+                console.log(`[AuthGuard] Role '${accountRole}' is authorized for route`);
             }
-
-            // authorized so return true
-            console.log('AuthGuard: Access granted.');
+            
             return true;
         }
 
-        // not logged in so redirect to login page with the return url 
-        console.log('AuthGuard: Not logged in. Redirecting to login.');
+        // Not logged in - redirect to login page with return url
+        console.log('[AuthGuard] No tokens found, redirecting to login');
         this.router.navigate(['/account/login'], { queryParams: { returnUrl: state.url } });
         return false;
     }

@@ -6,6 +6,7 @@ const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
 const errorHandler = require('./_middleware/error-handler');
+const fs = require('fs');
 
 // get DB name from config.json
 const config = require('./config.json');
@@ -13,12 +14,12 @@ const DBName = config.DBName;
 
 // Configure body parser
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 
 // Configure CORS
 const corsOptions = {
-    origin: true, // reflect the request origin
+    origin: (origin, callback) => callback(null, true),
     credentials: true,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     allowedHeaders: ['Content-Type', 'Authorization'],
@@ -28,28 +29,40 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
-// Ensure uploads directories exist
-const fs = require('fs');
+// Create uploads directories if they don't exist
+const uploadsDir = path.join(__dirname, 'uploads');
 const profilesDir = path.join(__dirname, 'uploads', 'profiles');
 const followersDir = path.join(__dirname, 'uploads', 'followers');
 
-// Create all required directories
-if (!fs.existsSync(profilesDir)) {
-    fs.mkdirSync(profilesDir, { recursive: true });
-    console.log('Created profiles directory:', profilesDir);
-}
+console.log('Ensuring upload directories exist:', {
+    uploadsDir,
+    profilesDir,
+    followersDir
+});
 
-if (!fs.existsSync(followersDir)) {
-    fs.mkdirSync(followersDir, { recursive: true });
-    console.log('Created followers directory:', followersDir);
-}
+[uploadsDir, profilesDir, followersDir].forEach(dir => {
+    if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+        console.log(`Created directory: ${dir}`);
+    }
+});
 
-// Serve static files from the uploads directory (includes both profiles and followers)
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// Serve static files from the uploads directory
+app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
+    setHeaders: (res, filePath) => {
+        if (filePath.endsWith('.jpg') || filePath.endsWith('.png') || filePath.endsWith('.gif')) {
+            res.setHeader('Cache-Control', 'no-cache');
+            res.setHeader('Content-Type', `image/${path.extname(filePath).substring(1)}`);
+        }
+    }
+}));
+
+// Mount the upload routes
+app.use('/upload', require('./uploads/upload.routes'));
 
 // api routes
 app.use('/accounts', require('./accounts/accounts.controller'));
-app.use('/upload', require('./uploads/upload.controller.js'));
+app.use('/admin', require('./controllers/admin.controller'));
 
 // Add config route - use the specific function as middleware
 const configController = require('./config/config.controller');
@@ -62,7 +75,7 @@ app.use('/api-docs', require('./_helpers/swagger'));
 app.use(errorHandler);
 
 // start server
-const port = process.env.NODE_ENV === 'production' ? (process.env.PORT || 80) : 6001;
+const port = process.env.NODE_ENV === 'production' ? (process.env.PORT || 80) : 5001;
 app.listen(port, () => {
     console.log('Server listening on port ' + port);
     console.log('Connected to DB:', DBName);

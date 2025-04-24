@@ -16,23 +16,28 @@ export class AlertService {
 
     // convenience methods
     success(message: string, options?: AlertOptions) {
+        console.log('[AlertService] Creating success alert:', message);
         this.alert(new Alert({ ...options, type: AlertType.Success, message }));
     }
 
     error(message: string, options?: AlertOptions) {
+        console.log('[AlertService] Creating error alert:', message);
         this.alert(new Alert({ ...options, type: AlertType.Error, message }));
     }
 
     info(message: string, options?: AlertOptions) {
+        console.log('[AlertService] Creating info alert:', message);
         this.alert(new Alert({ ...options, type: AlertType.Info, message }));
     }
 
     warn(message: string, options?: AlertOptions) {
+        console.log('[AlertService] Creating warning alert:', message);
         this.alert(new Alert({ ...options, type: AlertType.Warning, message }));
     }
 
     // core alert method
     alert(alert: Alert) {
+        console.log('[AlertService] Emitting alert:', alert);
         alert.id = alert.id || this.defaultId;
         alert.autoClose = (alert.autoClose === undefined ? true : alert.autoClose);
         this.subject.next(alert);
@@ -40,6 +45,7 @@ export class AlertService {
 
     // clear alerts
     clear(id = this.defaultId) {
+        console.log('[AlertService] Clearing alerts for id:', id);
         this.subject.next(new Alert({ id }));
     }
 }

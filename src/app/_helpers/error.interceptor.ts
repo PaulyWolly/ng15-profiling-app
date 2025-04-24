@@ -34,10 +34,14 @@ export class ErrorInterceptor implements HttpInterceptor {
                 this.accountService.logout();
             }
 
-            // Handle other errors
-            const error = err.error?.message || err.statusText || 'An error occurred';
-            console.error('[ErrorInterceptor] Error:', error);
-            return throwError(() => error);
+            // Handle other errors - Re-throw a structured error or the original HttpErrorResponse
+            // This provides more context to the component catching the error.
+            const errorPayload = err.error || { message: err.statusText || 'An unknown error occurred' };
+            console.error(`[ErrorInterceptor] Passing error downstream: Status ${err.status}`, errorPayload);
+            // Option 1: Re-throw a custom object (allows component to check status)
+            // return throwError(() => ({ status: err.status, message: errorPayload.message, error: err })); 
+            // Option 2: Re-throw the original HttpErrorResponse (gives full context)
+            return throwError(() => err); 
         }));
     }
 }

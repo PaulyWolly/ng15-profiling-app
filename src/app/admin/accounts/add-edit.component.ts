@@ -209,141 +209,108 @@ export class AddEditComponent implements OnInit, OnDestroy {
     get f() { return this.form.controls; }
 
     onImageChange(event: any) {
-        const file = event.target.files[0];
-        if (file) {
+        if (event && event.file) {
             // Validate file type
-            if (!file.type.match(/image\/*/) || !file.type.match(/\/(jpg|jpeg|png|gif)$/)) {
+            if (!event.file.type.match(/image\/*/) || !event.file.type.match(/\/(jpg|jpeg|png|gif)$/)) {
                 this.alertService.error('Please select a valid image file (jpg, jpeg, png, or gif)');
                 return;
             }
             
             // Validate file size (5MB max)
-            if (file.size > 5 * 1024 * 1024) {
+            if (event.file.size > 5 * 1024 * 1024) {
                 this.alertService.error('File size must be less than 5MB');
                 return;
             }
             
-            this.selectedFile = file;
-            
-            // Show preview immediately
-            const reader = new FileReader();
-            reader.onload = (e: any) => {
-                this.previewUrl = e.target.result;
-                this.imageUrl = e.target.result; // Update imageUrl for immediate display
-                
-                // Update the account object so it passes to the edit-content component
-                if (this.account) {
-                    this.account.profileImage = e.target.result;
-                }
-            };
-            reader.readAsDataURL(file);
-            
-            // Upload immediately if we have an ID (edit mode)
-            if (this.id) {
-                this.uploadImage();
-            }
-        }
-    }
-
-    onImageRemove() {
-        this.selectedFile = null;
-        this.previewUrl = null;
-        this.imageUrl = null;
-        
-        // Update the account object so it passes to the edit-content component
-        if (this.account) {
-            this.account.profileImage = null;
-        }
-        
-        this.alertService.info('Image removed. Save to apply changes.');
-    }
-
-    async uploadImage() {
-        if (!this.selectedFile || !this.id) {
-            this.alertService.error('Please select a file to upload');
-            return;
-        }
-
-        if (!this.account?.email) {
-            this.alertService.error('Account email is required for upload');
-            return;
-        }
+            // Create form data and upload
+            const formData = new FormData();
+            formData.append('profileImage', event.file);
+            formData.append('userId', this.id!);
+            formData.append('userEmail', this.account?.email || '');
+            formData.append('confirmed', event.confirmed ? 'true' : 'false');
 
         this.uploading = true;
-        this.error = '';
-        this.imageConflict = false;
-        this.imageConflictMessage = '';
-
-        const formData = new FormData();
-        formData.append('profileImage', this.selectedFile);
-        formData.append('userId', this.id);
-        formData.append('userEmail', this.account.email);
-        this.pendingFormData = formData;
-
-        try {
-            const response = await this.accountService.uploadImage(this.id, formData)
+            this.accountService.uploadImage(this.id!, formData)
                 .pipe(first())
-                .toPromise();
-
-            if (response.exists) {
-                this.imageConflict = true;
-                this.imageConflictMessage = response.message;
+                .subscribe({
+                    next: (response) => {
+                        if (response.profileImage) {
+                            this.account.profileImage = response.profileImage.startsWith('http') 
+                                ? response.profileImage 
+                                : `${environment.apiUrl}/${response.profileImage}`;
+                            this.imageUrl = this.account.profileImage;
+                        }
+                        // Show success alert with the response message
+                        this.alertService.success(response.message || 'Profile image uploaded successfully');
                 this.uploading = false;
-            } else {
-                this.handleUploadSuccess(response);
-            }
-        } catch (error: any) {
-            console.error('Upload failed:', error);
-            if (error.exists) {
-                this.imageConflict = true;
-                this.imageConflictMessage = error.message || 'An image already exists for this profile';
-                this.uploading = false;
-            } else {
+                    },
+                    error: (error) => {
                 this.error = error.message || 'Failed to upload image';
+                        this.alertService.error(this.error);
                 this.uploading = false;
-                this.alertService.error(this.error);
-            }
+                    }
+                });
         }
     }
 
-    async confirmOverwrite() {
-        if (!this.pendingFormData || !this.id) return;
+    confirmOverwrite() {
+        if (this.pendingFormData) {
+            // Update the confirmed flag in the existing FormData
+            this.pendingFormData.set('confirmed', 'true');
         
         this.uploading = true;
-        // Add overwrite flag to form data
-        this.pendingFormData.append('overwrite', 'true');
-        
-        try {
-            const response = await this.accountService.uploadImage(this.id, this.pendingFormData)
+            this.accountService.uploadImage(this.id!, this.pendingFormData)
                 .pipe(first())
-                .toPromise();
-            this.handleUploadSuccess(response);
-        } catch (error: any) {
+                .subscribe({
+                    next: (response) => {
+                        if (response.profileImage) {
+                            // Update the account's profile image
+                            this.account.profileImage = response.profileImage;
+                            this.imageUrl = response.profileImage;
+                            
+                            // Clear states
+                            this.imageConflict = false;
+                            this.selectedFile = null;
+                            this.pendingFormData = null;
+                            
+                            // Show success alert
+                            this.alertService.success(response.message || 'Profile image uploaded successfully');
+                            
+                            // Save the account to persist the changes
+                            this.saveAccount(this.form.value)
+                                .pipe(first())
+                                .subscribe({
+                                    next: () => {
+                                        console.log('[AddEdit] Account saved with new image');
+                                    },
+                                    error: error => {
+                                        console.error('[AddEdit] Error saving account:', error);
+                                        this.alertService.error('Failed to save account changes');
+                                    }
+                                });
+                        }
+                        this.uploading = false;
+                    },
+                    error: (error) => {
+                        console.error('[AddEdit] Upload error:', error);
             this.error = error.message || 'Failed to upload image';
+                        this.alertService.error(this.error);
             this.uploading = false;
-            this.alertService.error(this.error);
+                    }
+                });
         }
     }
 
     cancelOverwrite() {
         this.imageConflict = false;
         this.imageConflictMessage = '';
-        this.pendingFormData = null;
-        this.error = '';
-    }
-
-    private handleUploadSuccess(response: any) {
-        this.uploading = false;
-        this.imageConflict = false;
         this.selectedFile = null;
-        if (response.profileImage) {
-            this.account.profileImage = response.profileImage.startsWith('http') 
-                ? response.profileImage 
-                : `${environment.apiUrl}/${response.profileImage}`;
-            this.imageUrl = this.account.profileImage;
-            console.log('Image updated after upload:', this.account.profileImage);
+        this.pendingFormData = null;
+        // Reset the file input
+        const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+        if (fileInput) {
+            fileInput.value = '';
         }
-        this.alertService.success('Image uploaded successfully');
     }
 
     onSave(formData: any) {
@@ -409,5 +376,24 @@ export class AddEditComponent implements OnInit, OnDestroy {
     selectedTemplateChanged() {
         // You can add template-specific logic here
         console.log('Template changed to:', this.form.get('profileTemplateType')?.value);
+    }
+
+    onImageRemove() {
+        this.selectedFile = null;
+        this.imageUrl = null;
+        this.pendingFormData = null;
+        
+        // Update the account object so it passes to the edit-content component
+        if (this.account) {
+            this.account.profileImage = null;
+        }
+        
+        // Reset the file input
+        const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
+        if (fileInput) {
+            fileInput.value = '';
+        }
+        
+        this.alertService.info('Image removed. Save to apply changes.');
     }
 }

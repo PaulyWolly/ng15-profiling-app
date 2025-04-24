@@ -1,11 +1,16 @@
 const express = require('express');
 const router = express.Router();
+console.log('[!!!] Loading accounts.controller.js...');
 const authenticate = require('../_middleware/authenticate');
 const { upload, uploadProfileImage, uploadFollowerImage } = require('./upload.controller');
 const accountService = require('./account.service');
 const Joi = require('joi');
 const validateRequest = require('../_middleware/validate-request');
 const Role = require('../_helpers/role');
+const db = require('../_helpers/db');
+const fs = require('fs').promises;
+const path = require('path');
+const Account = require('./account.model');
 
 console.log('Setting up accounts routes...');
 
@@ -20,6 +25,7 @@ router.post('/validate-reset-token', validateResetTokenSchema, validateResetToke
 router.post('/reset-password', resetPasswordSchema, resetPassword);
 
 // account routes
+router.get('/active-sessions', getActiveSessions);
 router.get('/', authenticate(), getAll);
 router.get('/:id', authenticate(), getById);
 router.post('/', authenticate(), createSchema, create);
@@ -83,6 +89,107 @@ router.post('/upload-follower-image',
         }
     }
 );
+
+// Add new route for cleaning up tokens (requires Admin role)
+router.delete('/refresh-tokens/cleanup', authenticate(Role.Admin), cleanupTokensHandler);
+
+// New routes for force logout and session cleanup
+router.post('/force-logout/:id', authenticate(Role.Admin), forceLogoutHandler);
+router.post('/force-logout-bulk', authenticate(Role.Admin), forceLogoutBulkHandler);
+router.post('/cleanup-all-sessions', authenticate(Role.Admin), cleanupAllSessionsHandler);
+
+// Add this route after your other routes
+router.post('/:id/fix-profile-image', authenticate(), async (req, res, next) => {
+    try {
+        const account = await db.Account.findById(req.params.id);
+        if (!account) {
+            return res.status(404).json({ message: 'Account not found' });
+        }
+
+        if (!account.profileImage) {
+            return res.status(400).json({ message: 'No profile image to fix' });
+        }
+
+        // Re-upload the image to trigger the fix
+        const result = await accountService.uploadImage(account.id, account.profileImage);
+        res.json(result);
+    } catch (error) {
+        next(error);
+    }
+});
+
+// Add migration route
+router.post('/migrate-images', authenticate(Role.Admin), async (req, res, next) => {
+    try {
+        console.log('[AccountsController] Starting image migration');
+        const accounts = await Account.find();
+        const results = [];
+
+        for (const account of accounts) {
+            if (account.profileImage) {
+                const oldPath = path.join(__dirname, '..', 'uploads', 'profiles', account.profileImage);
+                const newFilename = `profileImage-${account.email}${path.extname(account.profileImage)}`;
+                const newPath = path.join(__dirname, '..', 'uploads', 'profiles', newFilename);
+
+                try {
+                    // Check if old file exists
+                    await fs.access(oldPath);
+                    // Rename the file
+                    await fs.rename(oldPath, newPath);
+                    // Update the database
+                    account.profileImage = newFilename;
+                    await account.save();
+                    results.push({ email: account.email, success: true, newPath: newFilename });
+                } catch (error) {
+                    results.push({ email: account.email, success: false, error: error.message });
+                }
+            }
+
+            // Handle follower images if they exist
+            if (account.followerImages && account.followerImages.length > 0) {
+                for (const followerImage of account.followerImages) {
+                    if (followerImage.path) {
+                        const oldPath = path.join(__dirname, '..', 'uploads', 'followers', followerImage.path);
+                        const newFilename = `followerImage-${account.email}${path.extname(followerImage.path)}`;
+                        const newPath = path.join(__dirname, '..', 'uploads', 'followers', newFilename);
+
+                        try {
+                            // Check if old file exists
+                            await fs.access(oldPath);
+                            // Rename the file
+                            await fs.rename(oldPath, newPath);
+                            // Update the database
+                            followerImage.path = newFilename;
+                            followerImage.imageUrl = `/uploads/followers/${newFilename}`;
+                            await account.save();
+                            results.push({ email: account.email, type: 'follower', success: true, newPath: newFilename });
+                        } catch (error) {
+                            results.push({ email: account.email, type: 'follower', success: false, error: error.message });
+                        }
+                    }
+                }
+            }
+        }
+
+        res.json({
+            message: 'Image migration completed',
+            results: results
+        });
+    } catch (error) {
+        next(error);
+    }
+});
+
+// Add check-image-paths route before module.exports
+router.get('/check-image-paths', authenticate(Role.Admin), async (req, res, next) => {
+    try {
+        console.log('[AccountsController] Checking image paths');
+        await accountService.logAllImagePaths();
+        res.json({ message: 'Image paths checked and logged' });
+    } catch (error) {
+        next(error);
+    }
+});
 
 module.exports = router;
 
@@ -292,25 +399,89 @@ function updateSchema(req, res, next) {
                 imageUrl: Joi.string().allow('', null),
                 path: Joi.string().allow('', null)
             })
-        ).optional()
-    };
+        ).optional(),
 
-    if (req.user.role === Role.Admin) {
-        schemaRules.role = Joi.string().valid(Role.Admin, Role.User).empty('');
-    }
+        // Role field - always allow it in schema but validate in update handler
+        role: Joi.string().valid(Role.Admin, Role.User).empty('')
+    };
 
     const schema = Joi.object(schemaRules).with('password', 'confirmPassword');
     validateRequest(req, next, schema);
 }
 
 function update(req, res, next) {
+    // Log the update request
+    console.log('[AccountsController] Update request received:', {
+        requesterId: req.user.id,
+        targetId: req.params.id,
+        requesterRole: req.user.role,
+        requestedUpdates: Object.keys(req.body)
+    });
+
+    // Check if user is authorized to update this account
     if (req.params.id !== req.user.id && req.user.role !== Role.Admin) {
-        return res.status(401).json({ message: 'Unauthorized' });
+        console.log('[AccountsController] Unauthorized update attempt:', {
+            requesterId: req.user.id,
+            targetId: req.params.id,
+            requesterRole: req.user.role
+        });
+        return res.status(401).json({ 
+            message: 'Unauthorized: Only admins can update other accounts',
+            error: 'UNAUTHORIZED_UPDATE'
+        });
     }
 
+    // Handle role updates
+    if (req.body.role) {
+        // Only admins can change roles
+        if (req.user.role !== Role.Admin) {
+            console.log('[AccountsController] Attempted role escalation blocked:', {
+                userId: req.params.id,
+                requesterRole: req.user.role,
+                attemptedRole: req.body.role
+            });
+            return res.status(403).json({ 
+                message: 'Attempted role escalation blocked: Non-admin user tried to set role to ' + req.body.role,
+                error: 'ROLE_ESCALATION_BLOCKED'
+            });
+        }
+
+        // Validate role value
+        if (![Role.Admin, Role.User].includes(req.body.role)) {
+            console.log('[AccountsController] Invalid role value:', {
+                userId: req.params.id,
+                invalidRole: req.body.role
+            });
+            return res.status(400).json({ 
+                message: 'Invalid role value. Must be either "Admin" or "User"',
+                error: 'INVALID_ROLE'
+            });
+        }
+
+        console.log('[AccountsController] Admin role update allowed:', {
+            userId: req.params.id,
+            currentRole: req.user.role,
+            newRole: req.body.role
+        });
+    }
+
+    // Proceed with update
     accountService.update(req.params.id, req.body)
-        .then(account => res.json(account))
-        .catch(next);
+        .then(account => {
+            console.log('[AccountsController] Account updated successfully:', {
+                id: account.id,
+                email: account.email,
+                role: account.role
+            });
+            res.json(account);
+        })
+        .catch(error => {
+            console.error('[AccountsController] Update failed:', {
+                userId: req.params.id,
+                error: error.message || error
+            });
+            next(error);
+        });
 }
 
 function _delete(req, res, next) {
@@ -330,4 +501,94 @@ function setTokenCookie(res, token) {
         expires: new Date(Date.now() + 7*24*60*60*1000)
     };
     res.cookie('refreshToken', token, cookieOptions);
+}
+
+// New handler function for the active sessions route
+async function getActiveSessions(req, res, next) {
+    try {
+        const sessions = await accountService.getActiveSessions();
+        res.json(sessions);
+    } catch (error) {
+        next(error);
+    }
+}
+
+// New handler function for the token cleanup route
+function cleanupTokensHandler(req, res, next) {
+    console.log('[Backend - Controller] DELETE /accounts/refresh-tokens/cleanup called');
+    accountService.cleanupRefreshTokens()
+        .then(result => res.json(result))
+        .catch(next);
+}
+
+// Handler for forcing logout of a single session
+async function forceLogoutHandler(req, res, next) {
+    try {
+        const sessionId = req.params.id;
+        const now = new Date();
+        
+        const result = await db.RefreshToken.findByIdAndUpdate(sessionId, {
+            revoked: now,
+            revokedByIp: req.ip,
+            revokedReason: 'Admin force logout'
+        });
+
+        if (!result) {
+            return res.status(404).json({ message: 'Session not found' });
+        }
+
+        res.json({ message: 'Session revoked successfully' });
+    } catch (error) {
+        next(error);
+    }
+}
+
+// Handler for forcing logout of multiple sessions
+async function forceLogoutBulkHandler(req, res, next) {
+    try {
+        const { sessionIds } = req.body;
+        if (!Array.isArray(sessionIds)) {
+            return res.status(400).json({ message: 'sessionIds must be an array' });
+        }
+
+        const now = new Date();
+        const result = await db.RefreshToken.updateMany(
+            { _id: { $in: sessionIds } },
+            {
+                revoked: now,
+                revokedByIp: req.ip,
+                revokedReason: 'Admin bulk force logout'
+            }
+        );
+
+        res.json({ 
+            message: `Successfully revoked ${result.modifiedCount} sessions`,
+            modifiedCount: result.modifiedCount
+        });
+    } catch (error) {
+        next(error);
+    }
+}
+
+// Handler for cleaning up all sessions
+async function cleanupAllSessionsHandler(req, res, next) {
+    try {
+        const now = new Date();
+        
+        // Delete all sessions except the current one
+        const result = await db.RefreshToken.deleteMany({
+            $or: [
+                { expires: { $lt: now } },
+                { revoked: { $ne: null } }
+            ],
+            _id: { $ne: req.cookies.refreshToken }  // Don't delete current session
+        });
+
+        res.json({ 
+            message: `Successfully cleaned up ${result.deletedCount} sessions`,
+            deletedCount: result.deletedCount
+        });
+    } catch (error) {
+        next(error);
+    }
 } 

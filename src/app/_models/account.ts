@@ -9,15 +9,17 @@ export interface FollowerImage {
     path?: string;
 }
 
-export class Account {
-    id?: string;
-    firstName?: string;
-    lastName?: string;
-    email?: string;
-    role?: Role;
-    jwtToken?: string;
+export interface Account {
+    id: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    role: Role;
+    jwtToken: string;
     refreshToken?: string;
-    isVerified?: boolean = false;
+    isVerified: boolean;
+    created?: Date;
+    updated?: Date;
     profileImage?: string;
     isDeleting?: boolean;
     imagePath?: string;
@@ -44,4 +46,15 @@ export class Account {
     followingCount?: number;
     // Follower images for social media template
     followerImages?: FollowerImage[];
+}
+
+export interface AccountUpdate {
+    email?: string;
+    firstName?: string;
+    lastName?: string;
+    role?: Role;
+    password?: string;
+    confirmPassword?: string;
+    profileTemplateType?: ProfileTemplateType;
+    profileImage?: string | null;
 }

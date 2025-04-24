@@ -5,10 +5,17 @@ export class Alert {
     autoClose?: boolean;
     keepAfterRouteChange?: boolean;
     fade?: boolean;
+    buttons?: AlertButton[];
 
     constructor(init?: Partial<Alert>) {
         Object.assign(this, init);
     }
+}
+
+export interface AlertButton {
+    text: string;
+    action: () => void;
+    cssClass?: string;
 }
 
 export enum AlertType {
@@ -22,4 +29,5 @@ export class AlertOptions {
     id?: string;
     autoClose?: boolean;
     keepAfterRouteChange?: boolean;
+    buttons?: AlertButton[];
 }

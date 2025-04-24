@@ -43,7 +43,8 @@
         </div>
         <div class="card-body">
           <div class="profile-image-container mb-3">
-            <img *ngIf="imageUrl" [src]="imageUrl" 
+            <img *ngIf="imageUrl" 
+                [src]="imageUrl | safeUrl" 
                 [ngClass]="{'profile-image': true, 'rounded-circle': isSocialMediaTemplate()}" 
                 alt="Profile picture">
             <div *ngIf="!imageUrl" class="text-muted d-flex flex-column align-items-center justify-content-center h-100 w-100">
@@ -63,6 +64,28 @@
             <button type="button" *ngIf="imageUrl" class="btn btn-sm btn-outline-danger" (click)="onImageRemove()">
               Remove
             </button>
+          </div>
+
+          <!-- Image Conflict Dialog -->
+          <div *ngIf="imageConflict" class="alert alert-warning mt-3">
+            <p>{{imageConflictMessage}}</p>
+            <div class="mt-2">
+              <button type="button" 
+                      class="btn btn-warning btn-sm me-2" 
+                      (click)="confirmOverwrite()">
+                Overwrite
+              </button>
+              <button type="button" 
+                      class="btn btn-secondary btn-sm" 
+                      (click)="cancelOverwrite()">
+                Cancel
+              </button>
+            </div>
+          </div>
+
+          <!-- Error Message -->
+          <div *ngIf="error" class="alert alert-danger mt-3">
+            {{error}}
           </div>
         </div>
       </div>
@@ -106,22 +129,18 @@
                 </div>
                 <!-- Role selection (only visible in account mode) -->
                 <div class="col-md-5" *ngIf="editMode === 'account'">
-                  <label class="form-label">User Role</label>
-                  <select formControlName="role" class="form-select" [ngClass]="{ 'is-invalid': submitted && f.role.errors }" [disabled]="!isAdmin">
-                    <option value="User">User</option>
-                    <option value="Admin" *ngIf="isAdmin">Admin</option>
-                  </select>
-                  <div *ngIf="submitted && f.role.errors" class="invalid-feedback">
-                    <div *ngIf="f.role.errors.required">Role is required</div>
+                  <div class="form-group">
+                    <label>
+                      Role
+                      <i *ngIf="!isCurrentUserAdmin" class="fas fa-lock text-warning" title="Only administrators can change roles"></i>
+                    </label>
+                    <select formControlName="role" class="form-select" [class.is-invalid]="submitted && f.role.errors" (change)="onRoleChange($event)">
+                      <option *ngFor="let role of availableRoles" [value]="role">{{role}}</option>
+                    </select>
+                    <div *ngIf="submitted && f.role.errors" class="invalid-feedback">
+                      <div *ngIf="f.role.errors.required">Role is required</div>
+                    </div>
                   </div>
-                  <small class="text-muted d-block mt-2" *ngIf="isAdmin">
-                    <strong>Admin:</strong> Full system access<br>
-                    <strong>User:</strong> Limited account access
-                  </small>
-                  <small class="text-warning d-block mt-2" *ngIf="!isAdmin">
-                    <i class="material-icons small-icon align-middle">lock</i>
-                    Only administrators can change user roles.
-                  </small>
                 </div>
               </div>
 

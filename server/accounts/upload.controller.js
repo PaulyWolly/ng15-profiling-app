@@ -3,58 +3,60 @@ const path = require('path');
 const fs = require('fs');
 const accountService = require('./account.service');
 const crypto = require('crypto');
-const config = require('../config.json');
 
 // Get the absolute path to the uploads directories
-const uploadsDir = path.join(__dirname, '..', 'uploads', 'profiles');
-const followerUploadsDir = path.join(__dirname, '..', 'uploads', 'followers');
+const uploadsDir = path.join(__dirname, '..', 'uploads');
+const profilesDir = path.join(__dirname, '..', 'uploads', 'profiles');
+const followersDir = path.join(__dirname, '..', 'uploads', 'followers');
 
-// Ensure both upload directories exist
-console.log('Upload directory configured as:', uploadsDir);
-console.log('Follower uploads directory configured as:', followerUploadsDir);
-
-if (!fs.existsSync(uploadsDir)) {
-    fs.mkdirSync(uploadsDir, { recursive: true });
-    console.log('Created profile uploads directory');
-}
-
-if (!fs.existsSync(followerUploadsDir)) {
-    fs.mkdirSync(followerUploadsDir, { recursive: true });
-    console.log('Created follower uploads directory');
-}
-
-// Helper function to check if file exists for an email
-function getExistingProfileImage(userEmail) {
-    if (!fs.existsSync(uploadsDir)) {
-        return null;
+console.log('[UploadController] Initialization - Directories configured:', {
+    uploadsDir,
+    profilesDir,
+    followersDir,
+    exists: {
+        uploadsDir: fs.existsSync(uploadsDir),
+        profilesDir: fs.existsSync(profilesDir),
+        followersDir: fs.existsSync(followersDir)
     }
-    const filename = `profileImage-${userEmail}.png`;
-    const filePath = path.join(uploadsDir, filename);
-    return fs.existsSync(filePath) ? filePath : null;
-}
+});
 
 // Configure multer for file upload with dynamic destination
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
+        console.log('[UploadController:storage] Processing upload request:', {
+            originalUrl: req.originalUrl,
+            fileType: file.mimetype,
+            fileName: file.originalname,
+            headers: req.headers,
+            body: req.body
+        });
+
         // Use different directories based on the endpoint
-        let uploadPath = uploadsDir;
+        const uploadPath = req.originalUrl.includes('upload-follower-image') ? followersDir : profilesDir;
         
-        // If this is a follower image upload, use the followers directory
-        if (req.originalUrl.includes('upload-follower-image')) {
-            uploadPath = followerUploadsDir;
-        }
+        console.log('[UploadController:storage] Selected upload path:', {
+            uploadPath,
+            exists: fs.existsSync(uploadPath),
+            isDirectory: fs.existsSync(uploadPath) ? fs.statSync(uploadPath).isDirectory() : false
+        });
         
         // Ensure directory exists
         if (!fs.existsSync(uploadPath)) {
+            console.log('[UploadController:storage] Creating directory:', uploadPath);
             fs.mkdirSync(uploadPath, { recursive: true });
         }
         
         cb(null, uploadPath);
     },
     filename: function (req, file, cb) {
-        // Use a temporary filename initially
+        // Generate a temporary filename
         const timestamp = Date.now();
         const tempFilename = `temp_${timestamp}${path.extname(file.originalname)}`;
+        console.log('[UploadController:storage] Generated temp filename:', {
+            originalName: file.originalname,
+            tempFilename,
+            timestamp
+        });
         cb(null, tempFilename);
     }
 });
@@ -66,75 +68,151 @@ const upload = multer({
         fileSize: 5 * 1024 * 1024 // 5MB limit
     },
     fileFilter: function (req, file, cb) {
+        console.log('[UploadController:multer] Checking file:', {
+            originalname: file.originalname,
+            mimetype: file.mimetype,
+            size: file.size,
+            headers: file.headers
+        });
+
         // Accept only images
-        if (!file.originalname.match(/\.(jpg|jpeg|png|gif)$/)) {
-            return cb(new Error('Only image files (jpg, jpeg, png, gif) are allowed!'), false);
+        if (!file.mimetype.startsWith('image/')) {
+            console.error('[UploadController:multer] File rejected - not an image:', file.mimetype);
+            return cb(new Error('Only image files are allowed!'), false);
         }
+        console.log('[UploadController:multer] File accepted');
         cb(null, true);
     }
 });
 
 // Upload profile image
 async function uploadProfileImage(req, res, next) {
+    console.log('[UploadController:uploadProfileImage] Starting upload process:', {
+        hasFile: !!req.file,
+        fileDetails: req.file ? {
+            path: req.file.path,
+            filename: req.file.filename,
+            mimetype: req.file.mimetype,
+            size: req.file.size
+        } : null,
+        userId: req.user?.id,
+        userEmail: req.body?.userEmail,
+        body: req.body,
+        headers: req.headers
+    });
+
     try {
         if (!req.file) {
+            console.error('[UploadController:uploadProfileImage] No file in request');
             return res.status(400).json({ message: 'No file uploaded' });
         }
 
         if (!req.user || !req.user.id) {
-            // Clean up temp file
+            console.error('[UploadController:uploadProfileImage] Authentication failed:', {
+                user: req.user,
+                headers: req.headers
+            });
             if (fs.existsSync(req.file.path)) {
                 fs.unlinkSync(req.file.path);
+                console.log('[UploadController:uploadProfileImage] Cleaned up temp file after auth failure');
             }
             return res.status(401).json({ message: 'Unauthorized' });
         }
 
         if (!req.body.userEmail) {
-            // Clean up temp file
+            console.error('[UploadController:uploadProfileImage] Missing email in request');
             if (fs.existsSync(req.file.path)) {
                 fs.unlinkSync(req.file.path);
+                console.log('[UploadController:uploadProfileImage] Cleaned up temp file after missing email');
             }
             return res.status(400).json({ message: 'User email is required' });
         }
 
         // Create the final filename with email
         const finalFilename = `profileImage-${req.body.userEmail}${path.extname(req.file.originalname)}`;
-        const finalPath = path.join(uploadsDir, finalFilename);
+        const finalPath = path.join(profilesDir, finalFilename);
+        
+        console.log('[UploadController:uploadProfileImage] File paths:', {
+            tempPath: req.file.path,
+            finalPath,
+            finalFilename,
+            tempExists: fs.existsSync(req.file.path),
+            finalExists: fs.existsSync(finalPath)
+        });
 
-        // Check if an image already exists
-        if (fs.existsSync(finalPath)) {
-            // If no confirmation, ask for it
-            if (req.body.confirmed !== 'true') {
-                // Clean up temp file
-                if (fs.existsSync(req.file.path)) {
-                    fs.unlinkSync(req.file.path);
-                }
-                return res.status(409).json({
-                    message: 'An image already exists for this profile. Do you want to overwrite it?',
-                    exists: true
-                });
-            }
-            // If confirmed, delete existing file
-            fs.unlinkSync(finalPath);
+        // Check if the file exists and log its existence
+        const fileExists = fs.existsSync(finalPath);
+        if (fileExists) {
+            console.log('[UploadController:uploadProfileImage] Existing file details:', {
+                path: finalPath,
+                stats: fs.statSync(finalPath)
+            });
         }
 
-        // Rename temp file to final filename
-        fs.renameSync(req.file.path, finalPath);
+        // If a file exists at the destination, delete it first
+        if (fileExists) {
+            console.log('[UploadController:uploadProfileImage] Attempting to delete existing file:', finalPath);
+            try {
+                fs.unlinkSync(finalPath);
+                console.log('[UploadController:uploadProfileImage] Successfully deleted existing file');
+            } catch (err) {
+                console.error('[UploadController:uploadProfileImage] Error deleting existing file:', {
+                    error: err,
+                    errorMessage: err.message,
+                    errorCode: err.code
+                });
+            }
+        }
 
-        // Create URL-friendly path
-        const urlPath = ['uploads', 'profiles', finalFilename].join('/');
-        
-        // Update database
-        await accountService.uploadImage(req.body.userId || req.user.id, urlPath);
-        
-        res.json({
-            message: 'Profile image uploaded successfully',
-            imagePath: urlPath
+        // Move the uploaded file to the final location
+        console.log('[UploadController:uploadProfileImage] Moving file:', {
+            from: req.file.path,
+            to: finalPath,
+            sourceExists: fs.existsSync(req.file.path),
+            destExists: fs.existsSync(finalPath)
         });
+
+        fs.renameSync(req.file.path, finalPath);
+        console.log('[UploadController:uploadProfileImage] File move completed');
+
+        // Create URL-friendly path that matches the static file serving configuration
+        const urlPath = `/uploads/profiles/${finalFilename}`;
+        
+        console.log('[UploadController:uploadProfileImage] Updating database:', {
+            userId: req.body.userId || req.user.id,
+            urlPath
+        });
+
+        // Update database with the consistent path format
+        const account = await accountService.uploadImage(req.body.userId || req.user.id, urlPath);
+        console.log('[UploadController:uploadProfileImage] Database updated:', {
+            account,
+            urlPath
+        });
+        
+        const response = {
+            message: 'Profile image uploaded successfully',
+            imagePath: urlPath,
+            profileImage: urlPath
+        };
+
+        console.log('[UploadController:uploadProfileImage] Sending response:', response);
+        res.json(response);
     } catch (error) {
+        console.error('[UploadController:uploadProfileImage] Error in upload process:', {
+            error: error,
+            message: error.message,
+            stack: error.stack,
+            code: error.code
+        });
         // Clean up temp file if it exists
         if (req.file && fs.existsSync(req.file.path)) {
-            fs.unlinkSync(req.file.path);
+            try {
+                fs.unlinkSync(req.file.path);
+                console.log('[UploadController:uploadProfileImage] Cleaned up temp file after error');
+            } catch (cleanupError) {
+                console.error('[UploadController:uploadProfileImage] Error cleaning up temp file:', cleanupError);
+            }
         }
         next(error);
     }
@@ -169,7 +247,7 @@ async function uploadFollowerImage(req, res, next) {
         // Create the final filename with follower name and timestamp
         const timestamp = Date.now();
         const finalFilename = `follower-${sanitizedName}-${timestamp}${path.extname(req.file.originalname)}`;
-        const finalPath = path.join(followerUploadsDir, finalFilename);
+        const finalPath = path.join(followersDir, finalFilename);
 
         // Rename temp file to final filename
         fs.renameSync(req.file.path, finalPath);
