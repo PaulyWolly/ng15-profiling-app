@@ -37,13 +37,13 @@ yarn-error.log
 /libpeerconnection.log
 testem.log
 /typings
-/server/config.json
 
 # System files
 .DS_Store
 Thumbs.db
 
 # Environment files and configuration
+/server/config.json
 /server/config-bkup.json
 .env
 .env.*
