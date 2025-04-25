@@ -1,0 +1,91 @@
+<div class="business-layout">
+  <div class="business-header">
+    <div class="profile-basics">
+      <div class="profile-image">
+        <img [src]="profile.imageUrl" [alt]="profile.name">
+      </div>
+      <div class="profile-intro">
+        <h1>{{profile.name}}</h1>
+        <h2>{{profile.title}}</h2>
+        <div class="location">
+          <mat-icon>location_on</mat-icon>
+          <span>{{profile.location}}</span>
+        </div>
+      </div>
+    </div>
+    <div class="action-buttons">
+      <button mat-raised-button color="primary">
+        <mat-icon>email</mat-icon>
+        Contact
+      </button>
+      <button mat-stroked-button color="primary">
+        <mat-icon>share</mat-icon>
+        Share
+      </button>
+    </div>
+  </div>
+
+  <div class="content-container">
+    <div class="professional-info">
+      <div class="rating-section">
+        <div class="rating-header">
+          <span class="rating-score">{{profile.rating}}</span>
+          <div class="rating-stars">
+            <mat-icon [class.filled]="i < profile.rating" *ngFor="let star of [1,2,3,4,5,6,7,8,9,10]; let i = index">
+              star
+            </mat-icon>
+          </div>
+        </div>
+      </div>
+
+      <div class="contact-section">
+        <h3>Contact Information</h3>
+        <div class="contact-grid">
+          <div class="contact-item">
+            <mat-icon>phone</mat-icon>
+            <span>{{profile.phone}}</span>
+          </div>
+          <div class="contact-item">
+            <mat-icon>email</mat-icon>
+            <span>{{profile.email}}</span>
+          </div>
+          <div class="contact-item">
+            <mat-icon>language</mat-icon>
+            <span>{{profile.website}}</span>
+          </div>
+          <div class="contact-item">
+            <mat-icon>location_city</mat-icon>
+            <span>{{profile.address}}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="expertise-section">
+        <h3>Areas of Expertise</h3>
+        <div class="skills-container">
+          <span class="skill-chip" *ngFor="let skill of profile.skills">
+            {{skill}}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div class="activity-section">
+      <h3>Recent Activity</h3>
+      <div class="activity-feed">
+        <div class="activity-card" *ngFor="let activity of profile.timeline">
+          <div class="activity-header">
+            <img [src]="activity.authorImage" [alt]="activity.author" class="author-image">
+            <div class="activity-meta">
+              <h4>{{activity.author}}</h4>
+              <span class="activity-date">{{activity.date}}</span>
+            </div>
+          </div>
+          <div class="activity-content">
+            {{activity.content}}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div> 

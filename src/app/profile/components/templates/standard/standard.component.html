@@ -1,0 +1,98 @@
+<div class="standard-layout">
+  <div class="profile-header">
+    <div class="search-section">
+      <div class="logo">Kodecolor</div>
+      <div class="search-bar">
+        <input type="text" placeholder="Search">
+      </div>
+    </div>
+    <div class="nav-actions">
+      <button>Find people</button>
+      <button>Messages</button>
+      <button>My Contacts</button>
+    </div>
+  </div>
+
+  <div class="content-grid">
+    <!-- Profile Column -->
+    <div class="profile-column">
+      <div class="profile-image">
+        <img [src]="profile.imageUrl" [alt]="profile.name">
+      </div>
+      <div class="profile-actions">
+        <button mat-raised-button color="primary">Send message</button>
+        <button mat-button>Contacts</button>
+        <button mat-button color="warn">Report user</button>
+      </div>
+    </div>
+
+    <!-- Info Column -->
+    <div class="info-column">
+      <h1>{{profile.name}}</h1>
+      <p class="title">{{profile.title}}</p>
+      <p class="location">
+        <mat-icon>location_on</mat-icon>
+        {{profile.location}}
+      </p>
+      <div class="rating">
+        {{profile.rating}}
+        <div class="stars">
+          <mat-icon *ngFor="let star of [1,2,3,4,5]">star</mat-icon>
+        </div>
+      </div>
+
+      <section class="contact-info">
+        <h2>CONTACT INFORMATION</h2>
+        <div class="info-grid">
+          <div class="info-item">
+            <label>Phone:</label>
+            <span>{{profile.phone}}</span>
+          </div>
+          <div class="info-item">
+            <label>Address:</label>
+            <span>{{profile.address}}</span>
+          </div>
+          <div class="info-item">
+            <label>E-mail:</label>
+            <span>{{profile.email}}</span>
+          </div>
+          <div class="info-item">
+            <label>Site:</label>
+            <span>{{profile.website}}</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="skills">
+        <h2>SKILLS</h2>
+        <div class="skills-grid">
+          <span class="skill-tag" *ngFor="let skill of profile.skills">
+            {{skill}}
+          </span>
+        </div>
+      </section>
+    </div>
+
+    <!-- Timeline Column -->
+    <div class="timeline-column">
+      <h2>Timeline</h2>
+      <div class="timeline-feed">
+        <div class="timeline-post" *ngFor="let post of profile.timeline">
+          <div class="post-header">
+            <img [src]="post.authorImage" [alt]="post.author">
+            <div class="post-meta">
+              <h3>{{post.author}}</h3>
+              <span>{{post.date}}</span>
+            </div>
+          </div>
+          <p class="post-content">{{post.content}}</p>
+          <div class="post-actions">
+            <button mat-button>Like</button>
+            <button mat-button>Comment</button>
+            <button mat-button>Share</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div> 

@@ -419,10 +419,16 @@ async function getActiveSessions() {
         // Check if the session is truly active by verifying:
         // 1. Not revoked
         // 2. Not expired
-        // 3. Has valid account
+        // 3. Has valid account with email
         const isActive = !token.revoked && 
                         token.expires > now && 
-                        token.account;
+                        token.account && 
+                        token.account.email;
+
+        // If account is missing or session is not active, return null
+        if (!token.account || !isActive) {
+            return null;
+        }
 
         let status = 'Active';
         if (token.revoked) {
@@ -445,7 +451,9 @@ async function getActiveSessions() {
             isActive: isActive,
             revokedReason: token.revokedReason || null
         };
-    }).filter(session => session.isActive); // Only return active sessions
+    })
+    .filter(session => session !== null) // Remove any null sessions
+    .filter(session => session.isActive); // Only return active sessions
 }
 
 // New function to clean up old refresh tokens
