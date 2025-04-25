@@ -4,13 +4,14 @@
     <nav class="navbar navbar-expand navbar-dark bg-dark px-3" *ngIf="account">
         <!-- <a class="navbar-brand" href="#">Angular App</a> -->
         <div class="navbar-nav">
-            <li class="nav-item" routerLinkActive="active">
-                <a class="nav-link" [routerLink]="['/']" [class.active]="isActiveRoute('/')">Home</a>
-            </li>
-            
             <!-- Regular Profile link instead of dropdown -->
             <li class="nav-item" routerLinkActive="active">
                 <a class="nav-link" routerLink="/profile" [class.active]="isActiveRoute('/profile')">Profile</a>
+            </li>
+            
+            <!-- New Profile Templates link -->
+            <li class="nav-item" routerLinkActive="active">
+                <a class="nav-link" routerLink="/profile-templates" [class.active]="isActiveRoute('/profile-templates')">Profiles</a>
             </li>
             
             <li class="nav-item" routerLinkActive="active">

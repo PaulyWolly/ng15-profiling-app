@@ -1,12 +1,32 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatButtonModule } from '@angular/material/button';
+import { MatCardModule } from '@angular/material/card';
+import { MatIconModule } from '@angular/material/icon';
+import { Subscription } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '@environments/environment';
+import { AlertService } from '@app/_services';
+import { TitleComponent } from '@app/shared/components/title/title.component';
 import { first } from 'rxjs/operators';
-import { AccountService, SystemSettings, CleanupResult, AlertService } from '@app/_services';
-import { CleanupHistoryRecord } from '@app/_services/account.service';
+import { AccountService, SystemSettings, CleanupResult, CleanupHistoryRecord } from '@app/_services';
 
 @Component({
-    templateUrl: 'settings.component.html'
+    selector: 'app-settings',
+    standalone: true,
+    imports: [
+        CommonModule,
+        MatProgressSpinnerModule,
+        MatButtonModule,
+        MatCardModule,
+        MatIconModule,
+        TitleComponent
+    ],
+    templateUrl: './settings.component.html',
+    styleUrls: ['./settings.component.css']
 })
-export class SettingsComponent implements OnInit {
+export class SettingsComponent implements OnInit, OnDestroy {
     settings: SystemSettings = {
         activeSessionCount: 0,
         lastSessionCleanup: null,
@@ -16,15 +36,16 @@ export class SettingsComponent implements OnInit {
     loading = false;
     historyLoading = false;
     cleanupHistory: CleanupHistoryRecord[] = [];
-    currentPage = 0;
-    pageSize = 5;
+    currentPage = 1;
+    pageSize = 2;
     totalRecords = 0;
-    hasMoreRecords = false;
+    totalPages = 0;
     loadError: string | null = null;
 
     constructor(
         private accountService: AccountService,
-        private alertService: AlertService
+        private alertService: AlertService,
+        private http: HttpClient
     ) {}
 
     ngOnInit() {
@@ -103,12 +124,29 @@ export class SettingsComponent implements OnInit {
 
     loadCleanupHistory() {
         this.historyLoading = true;
-        this.accountService.getCleanupHistory(this.pageSize, this.currentPage * this.pageSize)
+        const params = {
+            limit: this.pageSize.toString(),
+            skip: ((this.currentPage - 1) * this.pageSize).toString()
+        };
+        
+        this.http.get<any>(`${environment.apiUrl}/admin/cleanup-history`, { params })
             .subscribe({
                 next: (response) => {
-                    this.cleanupHistory = response.history;
-                    this.totalRecords = response.pagination.total;
-                    this.hasMoreRecords = response.pagination.hasMore;
+                    this.cleanupHistory = response.history || [];
+                    if (response.pagination) {
+                        this.totalRecords = response.pagination.total;
+                        this.totalPages = Math.ceil(this.totalRecords / this.pageSize);
+                        if (this.currentPage > this.totalPages && this.totalPages > 0) {
+                            this.currentPage = this.totalPages;
+                        }
+                        if (this.totalRecords > 0 && this.currentPage < 1) {
+                            this.currentPage = 1;
+                        }
+                    } else {
+                        this.totalRecords = this.cleanupHistory.length;
+                        this.totalPages = 1;
+                        this.currentPage = 1;
+                    }
                     this.historyLoading = false;
                 },
                 error: (error) => {
@@ -126,7 +164,7 @@ export class SettingsComponent implements OnInit {
                 .subscribe({
                     next: () => {
                         this.alertService.success('Record deleted successfully');
-                        this.loadCleanupHistory(); // Reload the list
+                        this.loadCleanupHistory();
                     },
                     error: (error) => {
                         console.error('Error deleting record:', error);
@@ -138,16 +176,20 @@ export class SettingsComponent implements OnInit {
     }
 
     previousPage() {
-        if (this.currentPage > 0) {
+        if (this.currentPage > 1) {
             this.currentPage--;
             this.loadCleanupHistory();
         }
     }
 
     nextPage() {
-        if (this.hasMoreRecords) {
+        if (this.currentPage < this.totalPages) {
             this.currentPage++;
             this.loadCleanupHistory();
         }
+    }
+
+    ngOnDestroy() {
+        // Cleanup code if needed
     }
 } 

@@ -1,123 +1,136 @@
-<div class="container mt-4">
-    <div class="card">
+<div class="container-fluid px-4 pb-4">
+    <!-- Removed settings-header div -->
+    <app-title [text]="'System Settings'" [level]="1" [marginBottom]="'small'"></app-title>
+    <p class="mb-4 mt-0">Configure various application settings and manage cleanup tasks.</p>
+
+    <!-- Session Management Card -->
+    <div class="card mb-4">
         <div class="card-header">
-            <h2>System Settings</h2>
+             <!-- Use app-title for card title -->
+             <app-title [text]="'Session Management'" [level]="2" [marginBottom]="'none'"></app-title>
         </div>
         <div class="card-body">
-            <!-- Session Management Section -->
-            <div class="card mt-4">
-                <div class="card-header">
-                    <h4 class="mb-0">Session Management</h4>
+            <div *ngIf="loading" class="d-flex justify-content-center">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
                 </div>
-                <div class="card-body">
-                    <div *ngIf="loading" class="d-flex justify-content-center">
-                        <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">Loading...</span>
-                        </div>
-                    </div>
+            </div>
 
-                    <div *ngIf="loadError" class="alert alert-danger" role="alert">
-                        {{ loadError }}
-                    </div>
+            <div *ngIf="loadError" class="alert alert-danger" role="alert">
+                {{ loadError }}
+            </div>
 
-                    <div *ngIf="!loading && !loadError" class="d-flex flex-row align-items-center justify-content-between">
-                        <div class="d-flex align-items-center">
-                            <i class="fas fa-users me-2"></i>
-                            <span>Active Sessions: {{ settings.activeSessionCount || 0 }}</span>
-                        </div>
-                        
-                        <div class="d-flex align-items-center">
-                            <i class="fas fa-clock me-2"></i>
-                            <span>Last Cleanup: {{ settings.lastSessionCleanup ? (settings.lastSessionCleanup | date:'medium') : 'Never' }}</span>
-                        </div>
+            <div *ngIf="!loading && !loadError" class="d-flex flex-row align-items-center justify-content-between">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-users me-2"></i>
+                    <span>Active Sessions: {{ settings.activeSessionCount || 0 }}</span>
+                </div>
+                
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-clock me-2"></i>
+                    <span>Last Cleanup: {{ settings.lastSessionCleanup ? (settings.lastSessionCleanup | date:'medium') : 'Never' }}</span>
+                </div>
 
-                        <div class="d-flex align-items-center">
-                            <i class="fas fa-calendar me-2"></i>
-                            <span>Next Scheduled: {{ settings.nextScheduledCleanup ? (settings.nextScheduledCleanup | date:'medium') : 'Not scheduled' }}</span>
-                        </div>
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-calendar me-2"></i>
+                    <span>Next Scheduled: {{ settings.nextScheduledCleanup ? (settings.nextScheduledCleanup | date:'medium') : 'Not scheduled' }}</span>
+                </div>
 
-                        <button (click)="runCleanup()" class="btn btn-primary" [disabled]="loading">
-                            <i class="fas fa-broom me-2"></i>
-                            Run Cleanup Now
+                <button (click)="runCleanup()" class="btn btn-primary" [disabled]="loading">
+                    <i class="fas fa-broom me-2"></i>
+                    Run Cleanup Now
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cleanup History Card -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <!-- Use app-title for card title -->
+            <app-title [text]="'Cleanup History'" [level]="2" [marginBottom]="'none'"></app-title>
+        </div>
+        <div class="card-body px-5">
+            <div *ngIf="historyLoading && !cleanupHistory.length" class="text-center p-3">
+                <div class="spinner-border" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+
+            <div *ngIf="!historyLoading && !cleanupHistory.length" class="alert alert-info">
+                No cleanup history found. Run a cleanup to create history records.
+            </div>
+
+            <div *ngIf="cleanupHistory.length > 0" class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Executed By</th>
+                            <th>Results</th>
+                            <th>Duration</th>
+                            <th>Type</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let record of cleanupHistory">
+                            <td>{{record.timestamp | date:'medium'}}</td>
+                            <td>{{record.executedByEmail}}</td>
+                            <td>
+                                <div>Sessions cleaned: {{record.sessionsCleaned}}</div>
+                                <div>Tokens revoked: {{record.tokensRevoked}}</div>
+                            </td>
+                            <td>{{record.executionTime}}ms</td>
+                            <td>
+                                <span class="badge" [class.bg-info]="record.isAutomatic" [class.bg-primary]="!record.isAutomatic">
+                                    {{record.isAutomatic ? 'Automatic' : 'Manual'}}
+                                </span>
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-danger"
+                                        (click)="deleteRecord(record.id)"
+                                        [disabled]="historyLoading">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <!-- Pagination -->
+                <div *ngIf="!cleanupHistory?.length && !historyLoading" class="text-center p-3">
+                    <p class="text-muted mb-0">No cleanup history found</p>
+                </div>
+                
+                <!-- Pagination Controls -->
+                <div *ngIf="totalPages > 1" class="card-footer d-flex justify-content-between align-items-center">
+                    <span>Page {{currentPage}} of {{totalPages}} (Total: {{totalRecords}})</span>
+                    <div class="btn-group">
+                        <button class="btn btn-outline-secondary btn-sm" 
+                                (click)="previousPage()" 
+                                [disabled]="currentPage <= 1 || historyLoading">
+                            <i class="fas fa-chevron-left"></i> Previous
+                        </button>
+                        <button class="btn btn-outline-secondary btn-sm" 
+                                (click)="nextPage()" 
+                                [disabled]="currentPage >= totalPages || historyLoading">
+                            Next <i class="fas fa-chevron-right"></i>
                         </button>
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
 
-            <!-- Cleanup History Section -->
-            <div class="card mt-4">
-                <div class="card-header">
-                    <h4 class="mb-0">Cleanup History</h4>
-                </div>
-                <div class="card-body px-5">
-                    <div *ngIf="historyLoading && !cleanupHistory.length" class="text-center p-3">
-                        <div class="spinner-border" role="status">
-                            <span class="visually-hidden">Loading...</span>
-                        </div>
-                    </div>
-
-                    <div *ngIf="!historyLoading && !cleanupHistory.length" class="alert alert-info">
-                        No cleanup history found. Run a cleanup to create history records.
-                    </div>
-
-                    <div *ngIf="cleanupHistory.length > 0" class="table-responsive">
-                        <table class="table table-striped">
-                            <thead>
-                                <tr>
-                                    <th>Date</th>
-                                    <th>Executed By</th>
-                                    <th>Results</th>
-                                    <th>Duration</th>
-                                    <th>Type</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr *ngFor="let record of cleanupHistory">
-                                    <td>{{record.timestamp | date:'medium'}}</td>
-                                    <td>{{record.executedByEmail}}</td>
-                                    <td>
-                                        <div>Sessions cleaned: {{record.sessionsCleaned}}</div>
-                                        <div>Tokens revoked: {{record.tokensRevoked}}</div>
-                                    </td>
-                                    <td>{{record.executionTime}}ms</td>
-                                    <td>
-                                        <span class="badge" [class.bg-info]="record.isAutomatic" [class.bg-primary]="!record.isAutomatic">
-                                            {{record.isAutomatic ? 'Automatic' : 'Manual'}}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <button class="btn btn-sm btn-danger"
-                                                (click)="deleteRecord(record.id)"
-                                                [disabled]="historyLoading">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-
-                        <!-- Pagination -->
-                        <div class="d-flex justify-content-between align-items-center mt-3">
-                            <div>
-                                Showing {{cleanupHistory.length}} of {{totalRecords}} records
-                            </div>
-                            <div>
-                                <button class="btn btn-sm btn-primary me-2"
-                                        [disabled]="currentPage === 0"
-                                        (click)="previousPage()">
-                                    Previous
-                                </button>
-                                <button class="btn btn-sm btn-primary"
-                                        [disabled]="!hasMoreRecords"
-                                        (click)="nextPage()">
-                                    Next
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    <!-- Other Settings Placeholder -->
+    <div class="card">
+        <div class="card-header">
+             <!-- Use app-title for card title -->
+             <app-title [text]="'Other Configuration'" [level]="2" [marginBottom]="'none'"></app-title>
+        </div>
+        <div class="card-body text-muted">
+            Placeholder for future application-wide settings.
         </div>
     </div>
 </div> 

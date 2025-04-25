@@ -1,4 +1,4 @@
-﻿<div *ngIf="alerts.length" class="alert-container">
+<div *ngIf="alerts.length" class="alert-container">
     <div *ngFor="let alert of alerts" class="{{cssClasses(alert)}}">
         <div class="alert-content">
             <i class="{{getAlertIcon(alert)}}"></i>
@@ -16,4 +16,4 @@
         
         <button class="btn-close" (click)="removeAlert(alert)">×</button>
     </div>
-</div>
+</div> 

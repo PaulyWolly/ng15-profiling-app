@@ -231,6 +231,7 @@ export class EditContentComponent implements OnInit, OnChanges, EditContentState
       facebook: [''],
       instagram: [''],
       github: [''],
+      linkedin: [''],
       followersCount: [{ value: 0, disabled: true }], // Initially disabled, enabled for Social Media template
       followingCount: [{ value: 0, disabled: true }]  // Initially disabled, enabled for Social Media template
     }, {
@@ -276,6 +277,7 @@ export class EditContentComponent implements OnInit, OnChanges, EditContentState
         facebook: account.facebook || '',
         instagram: account.instagram || '',
         github: account.github || '',
+        linkedin: account.linkedin || '',
         followersCount: account.followersCount || 0,
         followingCount: account.followingCount || 0
     };

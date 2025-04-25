@@ -1,4 +1,4 @@
-﻿import { Component, OnInit, OnDestroy, Input } from '@angular/core';
+import { Component, OnInit, OnDestroy, Input } from '@angular/core';
 import { Router, NavigationStart } from '@angular/router';
 import { Subscription } from 'rxjs';
 
@@ -7,8 +7,8 @@ import { AlertService } from '@app/_services';
 
 @Component({ 
     selector: 'alert', 
-    templateUrl: 'alert.component.html',
-    styleUrls: ['alert.component.css']
+    templateUrl: './alert.component.html',
+    styleUrls: ['./alert.component.css']
 })
 export class AlertComponent implements OnInit, OnDestroy {
     @Input() id = 'default-alert';
@@ -125,4 +125,4 @@ export class AlertComponent implements OnInit, OnDestroy {
         
         return alert.type ? iconClass[alert.type] : '';
     }
-}
+} 

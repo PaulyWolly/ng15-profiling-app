@@ -1,6 +1,5 @@
 .profile-container {
-  height: calc(100vh - 120px);
-  overflow: hidden;
+  width: 100%;
 }
 
 .template-selector {
@@ -69,6 +68,7 @@
 .profile-business-card, 
 .profile-social-media {
   padding: 10px;
+  width: 100%;
 }
 
 /* Responsive adjustments */

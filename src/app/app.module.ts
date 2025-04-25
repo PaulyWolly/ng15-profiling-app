@@ -5,24 +5,17 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { RouterModule } from '@angular/router';
 
-// Material Modules (Keep essential ones needed globally or in HomeModule)
+// Material Modules (Keep essential ones needed globally)
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
-// Remove Material Table modules if only used in AdminModule
-// import { MatTableModule } from '@angular/material/table';
-// import { MatPaginatorModule } from '@angular/material/paginator';
-// import { MatSortModule } from '@angular/material/sort';
 
 import { AppRoutingModule } from '@app/app-routing.module';
 import { JwtInterceptor, ErrorInterceptor, appInitializer } from '@app/_helpers';
 import { AccountService } from '@app/_services';
 import { ConfigService } from '@app/_services/config.service';
 import { AppComponent } from '@app/app.component';
-import { AlertComponent } from '@app/_components';
-import { HomeModule } from '@app/home/home.module';
+import { AlertComponent } from '@app/shared/components/alert/alert.component';
 import { FooterComponent } from './footer/footer.component';
-
-// Import AdminModule instead of individual components
 import { AdminModule } from './admin/admin.module';
 
 // Add factory function to initialize ConfigService
@@ -38,11 +31,9 @@ export function configInitializer(configService: ConfigService) {
         HttpClientModule,
         RouterModule,
         AppRoutingModule,
-        MatIconModule,    // Keep necessary global Material Modules
+        MatIconModule,
         MatButtonModule,
-        // Remove MatTable, MatPaginator, MatSort if moved to AdminModule
-        HomeModule,
-        AdminModule      // Import AdminModule
+        AdminModule
     ],
     declarations: [
         AppComponent,

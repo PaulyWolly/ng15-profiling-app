@@ -1,54 +1,57 @@
-﻿<div class="admin-overview-container">
-    <div class="admin-header">
-        <h1>Admin Dashboard</h1>
-        <p>This section can only be accessed by administrators.</p>
-    </div>
+﻿<div class="container-fluid px-4 pb-4">
+    <app-title [text]="'Admin Dashboard'" [level]="1" [marginBottom]="'small'"></app-title>
+    <p class="mb-4 mt-0">This section can only be accessed by administrators. Select an option from the navigation bar to get started.</p>
     
     <!-- Welcome Card -->
     <div class="card mb-4">
         <div class="card-header">
-            <h2>Welcome to the Admin Portal</h2>
+            <app-title [text]="'Welcome to the Admin Portal'" [level]="2" [marginBottom]="'none'"></app-title>
         </div>
         <div class="card-body">
             <p>From here you can manage users, monitor active sessions, and access other administrative tools.</p>
-            <p>Select an option from the navigation bar to get started.</p>
         </div>
     </div>
     
     <!-- Quick Links -->
     <div class="card mb-3">
         <div class="card-header py-2">
-            <h2 class="mb-0">Quick Links</h2>
+            <app-title [text]="'Quick Links'" [level]="2" [marginBottom]="'none'"></app-title>
         </div>
         <div class="card-body py-3">
             <div class="row g-3">
                 <div class="col-md-4">
-                    <div class="card h-100">
-                        <div class="card-body text-center py-3">
-                            <i class="fa fa-users fa-2x mb-2 text-primary"></i>
-                            <h3 class="h5 mb-2">User Management</h3>
-                            <p class="mb-2 small">View and manage user accounts</p>
-                            <a routerLink="/admin/accounts" class="btn btn-sm btn-primary">Manage Accounts</a>
+                    <div class="card h-100 quick-link-card">
+                        <div class="card-body">
+                            <i class="fa fa-users text-primary quick-link-icon"></i>
+                            <div class="quick-link-text">
+                                <h3 class="h5">User Management</h3>
+                                <p class="small">View and manage user accounts</p>
+                                <a routerLink="/admin/accounts" class="btn btn-sm btn-primary">Manage Accounts</a>
+                            </div>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-4">
-                    <div class="card h-100">
-                        <div class="card-body text-center py-3">
-                            <i class="fa fa-user-clock fa-2x mb-2 text-success"></i>
-                            <h3 class="h5 mb-2">Session Monitor</h3>
-                            <p class="mb-2 small">Track user sessions and activity</p>
-                            <a routerLink="/admin/monitor" class="btn btn-sm btn-success">Monitor Sessions</a>
+                    <div class="card h-100 quick-link-card">
+                        <div class="card-body">
+                            <i class="fa fa-user-clock text-success quick-link-icon"></i>
+                            <div class="quick-link-text">
+                                <h3 class="h5">Session Monitor</h3>
+                                <p class="small">Track user sessions and activity</p>
+                                <a routerLink="/admin/monitor" class="btn btn-sm btn-success">Monitor Sessions</a>
+                            </div>
                         </div>
                     </div>
                 </div>
                 <div class="col-md-4">
-                    <div class="card h-100">
-                        <div class="card-body text-center py-3">
-                            <i class="fa fa-sliders-h fa-2x mb-2 text-warning"></i>
-                            <h3 class="h5 mb-2">System Settings</h3>
-                            <p class="mb-2 small">Configure application settings</p>
-                            <a routerLink="/admin/settings" class="btn btn-sm btn-warning">Manage Settings</a>
+                    <div class="card h-100 quick-link-card">
+                        <div class="card-body">
+                            <i class="fa fa-sliders-h text-warning quick-link-icon"></i>
+                            <div class="quick-link-text">
+                                <h3 class="h5">System Settings</h3>
+                                <p class="small">Configure application settings</p>
+                                <a routerLink="/admin/settings" class="btn btn-sm btn-warning">Manage Settings</a>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -59,16 +62,16 @@
     <!-- Admin Tools -->
     <div class="card">
         <div class="card-header">
-            <h2>Admin Tools</h2>
+            <app-title [text]="'Admin Tools'" [level]="2" [marginBottom]="'none'"></app-title>
         </div>
         <div class="card-body">
             <p>Additional administrative tools and information will be found here.</p>
             <div class="list-group">
                 <a routerLink="/admin/accounts" class="list-group-item list-group-item-action">
-                    <i class="fa fa-users me-2"></i> Manage User Accounts
+                    <i class="fa fa-users me-2"></i> Manage User Accounts (View and manage user accounts)
                 </a>
                 <a routerLink="/admin/monitor" class="list-group-item list-group-item-action">
-                    <i class="fa fa-user-clock me-2"></i> Monitor User Sessions
+                    <i class="fa fa-user-clock me-2"></i> Monitor User Sessions (Track user sessions and activity)
                 </a>
             </div>
         </div>

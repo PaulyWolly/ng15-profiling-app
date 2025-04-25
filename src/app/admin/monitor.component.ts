@@ -1,36 +1,37 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { AccountService, AlertService } from '@app/_services';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
+import { AccountService, AlertService } from '@app/_services';
+import { TitleComponent } from '@app/shared/components/title/title.component';
+import { Account } from '@app/_models';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { environment } from '@environments/environment';
-import { first } from 'rxjs/operators';
 
-interface UserSession {
-    id: string;
-    email: string;
-    firstName: string;
-    lastName: string;
-    role: string;
-    isVerified: boolean;
-    lastActivity: Date;
-    status: 'Active' | 'Warning' | 'Revoked';
-    createdByIp: string;
-    expires: Date;
-    isActive: boolean;
-    revokedReason: string | null;
-}
-
-@Component({ 
-    templateUrl: 'monitor.component.html',
-    styleUrls: ['./monitor.component.scss']
+@Component({
+    selector: 'app-monitor',
+    standalone: true,
+    imports: [
+        CommonModule,
+        FormsModule,
+        TitleComponent
+    ],
+    templateUrl: './monitor.component.html',
+    styleUrls: ['./monitor.component.css']
 })
 export class MonitorComponent implements OnInit, OnDestroy {
-    activeSessions: UserSession[] = [];
+    activeSessions: any[] = [];
     loading = false;
-    selectedSessions: Set<string> = new Set();
-    selectAll: boolean = false;
-    private subscriptions: Subscription = new Subscription();
-    private refreshInterval: any;
+    error: string | null = null;
+    selectedSessions = new Set<string>();
+    currentAccountId: string | null = null;
+    private pollingSubscription?: Subscription;
+    
+    // Pagination state
+    currentPage = 1;
+    pageSize = 5; // Set default page size to 5
+    totalSessions = 0;
+    totalPages = 0;
     
     constructor(
         private accountService: AccountService,
@@ -38,234 +39,179 @@ export class MonitorComponent implements OnInit, OnDestroy {
         private alertService: AlertService
     ) {}
 
-    ngOnInit() {
-        // Initial load of sessions
-        this.refresh();
-        
-        // Set up periodic refresh every 5 seconds
-        this.refreshInterval = setInterval(() => {
-            this.refresh();
-        }, 5000); // More frequent updates
-        
-        // Ensure interval is cleared when component is destroyed
-        this.subscriptions.add({
-            unsubscribe: () => {
-                if (this.refreshInterval) {
-                    clearInterval(this.refreshInterval);
-                }
-            }
+    ngOnInit(): void {
+        this.accountService.account.subscribe(account => {
+            this.currentAccountId = account?.id || null;
         });
+        this.loadSessions(); // Initial load for page 1
     }
 
-    ngOnDestroy() {
-        this.subscriptions.unsubscribe();
-        if (this.refreshInterval) {
-            clearInterval(this.refreshInterval);
+    ngOnDestroy(): void {
+        if (this.pollingSubscription) {
+            this.pollingSubscription.unsubscribe();
         }
     }
 
-    /**
-     * Refresh the sessions list
-     */
+    loadSessions(): void {
+        this.loading = true;
+        this.error = null;
+        // Add page and pageSize query parameters
+        const params = { 
+            page: this.currentPage.toString(), 
+            pageSize: this.pageSize.toString() 
+        };
+
+        this.http.get<any>(`${environment.apiUrl}/accounts/active-sessions`, { params })
+            .subscribe({
+                next: (response) => {
+                    // Handle the structured response
+                    this.activeSessions = response.sessions || [];
+                    if (response.pagination) {
+                        this.totalSessions = response.pagination.totalSessions;
+                        this.totalPages = response.pagination.totalPages;
+                        this.currentPage = response.pagination.currentPage; // Ensure current page is synced
+                        this.pageSize = response.pagination.pageSize;
+                    } else {
+                        // Fallback if pagination object is missing (shouldn't happen)
+                        this.totalSessions = this.activeSessions.length;
+                        this.totalPages = 1;
+                        this.currentPage = 1;
+                    }
+                    this.loading = false;
+                    this.selectedSessions.clear(); // Clear selection on page change
+                },
+                error: (err: HttpErrorResponse) => {
+                    this.error = `Failed to load sessions: ${err.message}`;
+                    console.error(err);
+                    this.loading = false;
+                    this.alertService.error(this.error);
+                }
+            });
+    }
+
     refresh(): void {
-        if (this.loading) return; // Prevent multiple simultaneous refreshes
-        
-        this.loading = true;
-        console.log('[MonitorComponent] Refreshing sessions...');
-
-        this.http.get<UserSession[]>(`${environment.apiUrl}/accounts/active-sessions`)
-            .pipe(first())
-            .subscribe({
-                next: (sessions) => {
-                    console.log('[MonitorComponent] Received sessions:', sessions);
-                    
-                    // Only show truly active sessions
-                    this.activeSessions = sessions
-                        .filter(session => session.isActive)
-                        .map(session => ({
-                            ...session,
-                            lastActivity: new Date(session.lastActivity),
-                            expires: new Date(session.expires)
-                        }));
-
-                    // Clear any selected sessions that are no longer active
-                    this.selectedSessions = new Set(
-                        Array.from(this.selectedSessions)
-                            .filter(id => this.activeSessions.some(s => s.id === id))
-                    );
-
-                    this.loading = false;
-                },
-                error: (err: HttpErrorResponse) => {
-                    console.error('[MonitorComponent] Error fetching sessions:', err);
-                    this.alertService.error('Failed to load active sessions');
-                    this.loading = false;
-                    this.activeSessions = [];
-                }
-            });
+        this.currentPage = 1; // Reset to page 1 on refresh
+        this.loadSessions();
     }
 
-    /**
-     * Clean up expired tokens
-     */
-    cleanupTokens(): void {
-        this.loading = true;
-        this.alertService.clear();
-        console.log('[MonitorComponent] Requesting token cleanup...');
-
-        this.http.delete<{ message: string }>(`${environment.apiUrl}/accounts/refresh-tokens/cleanup`)
-            .pipe(first())
-            .subscribe({
-                next: (response) => {
-                    console.log('[MonitorComponent] Cleanup response:', response);
-                    this.alertService.success(response.message || 'Token cleanup successful');
-                    this.loading = false;
-                    this.refresh();
-                },
-                error: (err: HttpErrorResponse) => {
-                    console.error('[MonitorComponent] Error during token cleanup:', err);
-                    this.alertService.error('Failed to clean up tokens');
-                    this.loading = false;
-                }
-            });
-    }
-
-    /**
-     * Check if a session belongs to the current user
-     */
-    isCurrentUserSession(userId: string): boolean {
-        return userId === this.accountService.accountValue?.id;
-    }
-
-    /**
-     * Check if a session belongs to an admin user
-     */
-    isAdminSession(session: UserSession): boolean {
-        return session.role === 'Admin';
-    }
-
-    /**
-     * Force logout a user session
-     */
-    forceLogout(sessionId: string): void {
-        this.loading = true;
-        this.alertService.clear();
-        console.log('[MonitorComponent] Forcing logout for session:', sessionId);
-
-        this.http.post<{ message: string }>(`${environment.apiUrl}/accounts/force-logout/${sessionId}`, {})
-            .pipe(first())
-            .subscribe({
-                next: (response) => {
-                    console.log('[MonitorComponent] Force logout response:', response);
-                    this.alertService.success(response.message || 'User logged out successfully');
-                    this.loading = false;
-                    this.refresh();
-                },
-                error: (err: HttpErrorResponse) => {
-                    console.error('[MonitorComponent] Error during force logout:', err);
-                    this.alertService.error('Failed to force logout user');
-                    this.loading = false;
-                }
-            });
-    }
-
-    /**
-     * Toggle selection of all sessions
-     */
-    toggleSelectAll(): void {
-        this.selectAll = !this.selectAll;
-        this.selectedSessions.clear(); // Clear existing selections first
-        
-        if (this.selectAll) {
-            // Add all selectable sessions except current user
-            this.activeSessions
-                .filter(session => !this.isCurrentUserSession(session.id))
-                .forEach(session => this.selectedSessions.add(session.id));
+    // Pagination methods
+    previousPage(): void {
+        if (this.currentPage > 1) {
+            this.currentPage--;
+            this.loadSessions();
         }
     }
 
-    /**
-     * Handle individual session selection
-     */
+    nextPage(): void {
+        if (this.currentPage < this.totalPages) {
+            this.currentPage++;
+            this.loadSessions();
+        }
+    }
+
+    toggleSelectAll(event?: Event): void {
+        const checkbox = event?.target as HTMLInputElement;
+        if (checkbox?.checked) {
+            this.activeSessions.forEach(session => {
+                if (!this.isCurrentUserSession(session.id)) {
+                    this.selectedSessions.add(session.id);
+                }
+            });
+        } else {
+            this.selectedSessions.clear();
+        }
+    }
+
     onSessionSelect(event: Event, sessionId: string): void {
         const checkbox = event.target as HTMLInputElement;
         if (checkbox.checked) {
             this.selectedSessions.add(sessionId);
-            
-            // Check if all selectable sessions are now selected
-            const allSelectableSelected = this.activeSessions
-                .filter(session => !this.isCurrentUserSession(session.id))
-                .every(session => this.selectedSessions.has(session.id));
-            
-            this.selectAll = allSelectableSelected;
         } else {
             this.selectedSessions.delete(sessionId);
-            this.selectAll = false;
         }
     }
 
-    /**
-     * Check if a session is selected
-     */
-    isSelected(sessionId: string): boolean {
-        return this.selectedSessions.has(sessionId);
-    }
-
-    /**
-     * Delete selected sessions
-     */
     deleteSelected(): void {
-        if (this.selectedSessions.size === 0) return;
+        const idsToDelete = Array.from(this.selectedSessions);
+        if (idsToDelete.length === 0) return;
 
         this.loading = true;
-        this.alertService.clear();
-        const sessionIds = Array.from(this.selectedSessions);
-        console.log('[MonitorComponent] Attempting to delete sessions:', sessionIds);
-
-        this.http.post<{ message: string }>(`${environment.apiUrl}/accounts/force-logout-bulk`, {
-            sessionIds: sessionIds
-        })
-        .pipe(first())
-        .subscribe({
-            next: (response) => {
-                console.log('[MonitorComponent] Bulk delete response:', response);
-                this.alertService.success(response.message || 'Selected sessions deleted successfully');
-                this.selectedSessions.clear();
-                this.selectAll = false;
-                this.loading = false;
-                this.refresh();
-            },
-            error: (err: HttpErrorResponse) => {
-                console.error('[MonitorComponent] Error during bulk delete:', err);
-                this.alertService.error(`Failed to delete selected sessions: ${err.error?.message || err.message}`);
-                this.loading = false;
-            }
-        });
-    }
-
-    /**
-     * Clean up all sessions except current
-     */
-    cleanupAllSessions(): void {
-        this.loading = true;
-        this.alertService.clear();
-        console.log('[MonitorComponent] Cleaning up all sessions...');
-
-        this.http.post<{ message: string }>(`${environment.apiUrl}/accounts/cleanup-all-sessions`, {})
-            .pipe(first())
+        this.http.post(`${environment.apiUrl}/sessions/delete-batch`, { ids: idsToDelete })
             .subscribe({
-                next: (response) => {
-                    console.log('[MonitorComponent] Cleanup response:', response);
-                    this.alertService.success(response.message || 'All sessions cleaned up successfully');
+                next: () => {
+                    this.alertService.success('Selected sessions deleted successfully.');
                     this.selectedSessions.clear();
-                    this.selectAll = false;
+                    this.loadSessions();
                     this.loading = false;
-                    this.refresh();
                 },
                 error: (err: HttpErrorResponse) => {
-                    console.error('[MonitorComponent] Error during session cleanup:', err);
-                    this.alertService.error(`Failed to clean up sessions: ${err.error?.message || err.message}`);
+                    this.alertService.error(`Failed to delete sessions: ${err.message}`);
+                    console.error(err);
                     this.loading = false;
+                }
+            });
+    }
+
+    isCurrentUserSession(sessionId: string): boolean {
+        const currentSessionId = sessionStorage.getItem('sessionId');
+        return sessionId === currentSessionId || this.activeSessions.find(s => s.id === sessionId && s.accountId === this.currentAccountId) != null;
+    }
+
+    forceLogout(sessionId: string): void {
+        this.loading = true;
+        this.http.post(`${environment.apiUrl}/sessions/${sessionId}/force-logout`, {})
+            .subscribe({
+                next: () => {
+                    this.alertService.success('Session logged out successfully.');
+                    this.loadSessions();
+                    this.loading = false;
+                },
+                error: (err: HttpErrorResponse) => {
+                    this.alertService.error(`Failed to force logout: ${err.message}`);
+                    console.error(err);
+                    this.loading = false;
+                }
+            });
+    }
+    
+    cleanupTokens(): void {
+        this.loading = true;
+        this.error = null;
+        this.http.post(`${environment.apiUrl}/sessions/cleanup-tokens`, {})
+            .subscribe({
+                next: (response: any) => {
+                    this.alertService.success(`Token cleanup successful: ${response.message}`);
+                    this.loadSessions();
+                    this.loading = false;
+                },
+                error: (err: HttpErrorResponse) => {
+                    this.error = `Failed to cleanup tokens: ${err.message}`;
+                    console.error(err);
+                    this.loading = false;
+                    this.alertService.error(this.error);
+                }
+            });
+    }
+
+    cleanupAllSessions(): void {
+        if (!confirm('Are you sure you want to clean up ALL expired/invalid sessions? This cannot be undone.')) {
+            return;
+        }
+        this.loading = true;
+        this.error = null;
+        this.http.post(`${environment.apiUrl}/sessions/cleanup-all`, {})
+            .subscribe({
+                next: (response: any) => {
+                    this.alertService.success(`Cleanup successful: ${response.message}`);
+                    this.loadSessions();
+                    this.selectedSessions.clear();
+                    this.loading = false;
+                },
+                error: (err: HttpErrorResponse) => {
+                    this.error = `Failed to cleanup sessions: ${err.message}`;
+                    console.error(err);
+                    this.loading = false;
+                    this.alertService.error(this.error);
                 }
             });
     }

@@ -8,7 +8,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatTableModule } from '@angular/material/table';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatSortModule } from '@angular/material/sort';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner'; // Added for loading spinner
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 import { AdminRoutingModule } from './admin-routing.module';
 import { SubNavComponent } from './subnav.component';
@@ -35,10 +35,10 @@ import { SettingsComponent } from './settings.component';
     ],
     declarations: [
         SubNavComponent,
-        LayoutComponent,
-        OverviewComponent,
-        MonitorComponent,
-        SettingsComponent
+        LayoutComponent
+        // Removed OverviewComponent,
+        // Removed MonitorComponent,
+        // Removed SettingsComponent
         // Removed ListComponent, AddEditComponent 
     ]
 })

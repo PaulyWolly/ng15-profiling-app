@@ -1,0 +1,116 @@
+<!-- Loading State -->
+<div *ngIf="loading" class="loading-container">
+    <mat-spinner diameter="50"></mat-spinner>
+    <p>Loading profile...</p>
+</div>
+
+<!-- Profile Content -->
+<div #scrollContainer *ngIf="!loading && profile" class="new-standard-profile" [class.preview-mode]="isPreview">
+    <mat-card class="profile-card">
+        <!-- Edit Button -->
+        <button mat-raised-button 
+                color="primary" 
+                class="edit-button"
+                (click)="editProfile()">
+            <mat-icon>edit</mat-icon>
+            Edit Profile
+        </button>
+
+        <div class="profile-content">
+            <!-- Left Column -->
+            <div class="left-column">
+                <!-- Profile Image -->
+                <div class="profile-image-container">
+                    <img *ngIf="profile.profileImage" 
+                         [src]="profile.profileImage" 
+                         alt="Profile picture"
+                         class="profile-img">
+                    <div *ngIf="!profile.profileImage" class="default-avatar">
+                        <mat-icon>account_circle</mat-icon>
+                    </div>
+                </div>
+
+                <!-- Social Media -->
+                <div class="social-section" *ngIf="hasSocialLinks">
+                    <h3>Social Media</h3>
+                    <div class="social-grid">
+                        <a *ngIf="profile.github" 
+                           [href]="profile.github" 
+                           target="_blank" 
+                           class="social-link">
+                            <i class="fab fa-github"></i>
+                            GitHub
+                        </a>
+                        <a *ngIf="profile.linkedin" 
+                           [href]="profile.linkedin" 
+                           target="_blank" 
+                           class="social-link">
+                            <i class="fab fa-linkedin"></i>
+                            LinkedIn
+                        </a>
+                        <a *ngIf="profile.twitter" 
+                           [href]="profile.twitter" 
+                           target="_blank" 
+                           class="social-link">
+                            <i class="fab fa-twitter"></i>
+                            Twitter
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="right-column">
+                <!-- Profile Header -->
+                <div class="profile-info">
+                    <h1>{{profile.firstName}} {{profile.lastName}}</h1>
+                    <h2>{{profile.position || 'Owner/Developer/Designer'}}</h2>
+                    <p class="company" *ngIf="profile.company">{{profile.company}}</p>
+                </div>
+
+                <!-- About Section -->
+                <div class="about-section" *ngIf="profile.bio">
+                    <h3>About</h3>
+                    <p>{{profile.bio}}</p>
+                </div>
+
+                <!-- Contact and Location Card -->
+                <mat-card class="info-card mb-3">
+                    <mat-card-content>
+                        <div class="info-grid">
+                            <!-- Contact Information -->
+                            <div class="contact-section">
+                                <h3>Contact Information</h3>
+                                <div class="contact-list">
+                                    <div class="contact-item" *ngIf="profile.email">
+                                        <mat-icon>email</mat-icon>
+                                        <a [href]="'mailto:' + profile.email">{{profile.email}}</a>
+                                    </div>
+                                    <div class="contact-item" *ngIf="profile.website">
+                                        <mat-icon>language</mat-icon>
+                                        <a [href]="profile.website" target="_blank">{{profile.website}}</a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Location Information -->
+                            <div class="location-section" *ngIf="hasAddress">
+                                <h3>Location</h3>
+                                <div class="location-card" (click)="openMapDialog()">
+                                    <mat-icon class="map-icon">place</mat-icon>
+                                    <div class="address-details">
+                                        <p>{{profile.address}}</p>
+                                        <p>{{profile.city}}, {{profile.state}} {{profile.zipCode}}</p>
+                                    </div>
+                                    <button mat-icon-button color="primary" class="view-map-button">
+                                        <mat-icon>map</mat-icon>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </mat-card-content>
+                </mat-card>
+            </div>
+        </div>
+    </mat-card>
+</div> 

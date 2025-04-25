@@ -9,4 +9,17 @@
   (cancel)="cancelEdit()"
   (imageChange)="onImageChange($event)"
   (imageRemove)="onImageRemove()">
-</app-edit-content> 
+</app-edit-content>
+
+<div class="col-md-6">
+  <mat-form-field appearance="outline">
+    <mat-label>GitHub</mat-label>
+    <input matInput formControlName="github">
+  </mat-form-field>
+</div>
+<div class="col-md-6">
+  <mat-form-field appearance="outline">
+    <mat-label>LinkedIn</mat-label>
+    <input matInput formControlName="linkedin">
+  </mat-form-field>
+</div> 
