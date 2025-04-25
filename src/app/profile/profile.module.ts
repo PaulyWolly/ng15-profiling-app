@@ -27,6 +27,7 @@ import { DetailsComponent } from './containers/details/details.component';
 import { EditComponent } from './containers/edit/edit.component';
 import { UpdateComponent } from './containers/update/update.component';
 import { AccountSettingsComponent } from './containers/account-settings/account-settings.component';
+import { NewStandardViewComponent } from './components/new-standard-view/new-standard-view.component';
 
 // Presentational Components
 import { StandardProfileComponent } from './components/standard-profile/standard-profile.component';
@@ -66,7 +67,9 @@ export class PreventWheelPropagationDirective {
         MatBadgeModule,
         MatInputModule,
         MatFormFieldModule,
-        MatDialogModule
+        MatDialogModule,
+        // Standalone Components
+        NewStandardViewComponent
     ],
     declarations: [
         // Container Components

@@ -9,6 +9,7 @@ export interface ProfileTemplate {
     name: string;
     description: string;
     thumbnailUrl: string;
+    previewUrl: string;
 }
 
 export const PROFILE_TEMPLATES: ProfileTemplate[] = [
@@ -16,18 +17,21 @@ export const PROFILE_TEMPLATES: ProfileTemplate[] = [
         id: ProfileTemplateType.STANDARD,
         name: 'Standard Profile',
         description: 'Basic professional profile layout with user information, location, and social links',
-        thumbnailUrl: 'assets/images/profile-templates/profile_template1.png'
+        thumbnailUrl: 'assets/images/profile-templates/standard-thumbnail.png',
+        previewUrl: 'assets/images/profile-templates/standard-template.png'
     },
     {
         id: ProfileTemplateType.BUSINESS_CARD,
         name: 'Business Card',
         description: 'Professional contact card-style layout with ratings and work information',
-        thumbnailUrl: 'assets/images/profile-templates/profile_template2.png'
+        thumbnailUrl: 'assets/images/profile-templates/business-card-thumbnail.png',
+        previewUrl: 'assets/images/profile-templates/business-card-template.png'
     },
     {
         id: ProfileTemplateType.SOCIAL_MEDIA,
         name: 'Social Media',
         description: 'Twitter-inspired layout showing follower counts and connection information',
-        thumbnailUrl: 'assets/images/profile-templates/profile_template3.png'
+        thumbnailUrl: 'assets/images/profile-templates/social-media-thumbnail.png',
+        previewUrl: 'assets/images/profile-templates/social-media-template.png'
     }
 ]; 

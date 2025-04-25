@@ -1,15 +1,15 @@
 :host {
     display: block;
     background-color: #ecedee;
-    overflow: auto;
+    width: 100%;
 }
 
 .profile-container {
     display: flex;
     flex-direction: column;
     gap: 15px;
-    padding: 15px;
-    max-width: 800px;
+    padding: 10px;
+    width: 100%;
     margin: 0 auto;
 }
 
@@ -95,11 +95,11 @@
 }
 
 .current-template {
-    background-color: white;
-    padding: 15px;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    overflow: auto;
+    width: 100%;
+    padding: 0;
+    background-color: transparent;
+    border-radius: 0;
+    box-shadow: none;
 }
 
 .current-template h3 {

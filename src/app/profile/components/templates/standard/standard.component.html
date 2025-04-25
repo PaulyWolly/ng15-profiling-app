@@ -1,98 +1,104 @@
 <div class="standard-layout">
-  <div class="profile-header">
-    <div class="search-section">
-      <div class="logo">Kodecolor</div>
-      <div class="search-bar">
-        <input type="text" placeholder="Search">
-      </div>
-    </div>
-    <div class="nav-actions">
-      <button>Find people</button>
-      <button>Messages</button>
-      <button>My Contacts</button>
-    </div>
-  </div>
-
-  <div class="content-grid">
-    <!-- Profile Column -->
-    <div class="profile-column">
+  <mat-card class="profile-card">
+    <div class="profile-header">
       <div class="profile-image">
-        <img [src]="profile.imageUrl" [alt]="profile.name">
+        <img [src]="profile.imageUrl || 'assets/images/default-profile.png'" [alt]="profile.name">
       </div>
-      <div class="profile-actions">
-        <button mat-raised-button color="primary">Send message</button>
-        <button mat-button>Contacts</button>
-        <button mat-button color="warn">Report user</button>
+      <div class="profile-title">
+        <h1>{{profile.name}}</h1>
+        <p class="title">{{profile.title}}</p>
+        <p class="location">
+          <mat-icon>location_on</mat-icon>
+          {{profile.location}}
+        </p>
       </div>
     </div>
 
-    <!-- Info Column -->
-    <div class="info-column">
-      <h1>{{profile.name}}</h1>
-      <p class="title">{{profile.title}}</p>
-      <p class="location">
-        <mat-icon>location_on</mat-icon>
-        {{profile.location}}
-      </p>
-      <div class="rating">
-        {{profile.rating}}
-        <div class="stars">
-          <mat-icon *ngFor="let star of [1,2,3,4,5]">star</mat-icon>
-        </div>
-      </div>
-
-      <section class="contact-info">
-        <h2>CONTACT INFORMATION</h2>
-        <div class="info-grid">
-          <div class="info-item">
-            <label>Phone:</label>
-            <span>{{profile.phone}}</span>
-          </div>
-          <div class="info-item">
-            <label>Address:</label>
-            <span>{{profile.address}}</span>
-          </div>
-          <div class="info-item">
-            <label>E-mail:</label>
-            <span>{{profile.email}}</span>
-          </div>
-          <div class="info-item">
-            <label>Site:</label>
-            <span>{{profile.website}}</span>
-          </div>
-        </div>
-      </section>
-
-      <section class="skills">
-        <h2>SKILLS</h2>
-        <div class="skills-grid">
-          <span class="skill-tag" *ngFor="let skill of profile.skills">
-            {{skill}}
-          </span>
-        </div>
-      </section>
-    </div>
-
-    <!-- Timeline Column -->
-    <div class="timeline-column">
-      <h2>Timeline</h2>
-      <div class="timeline-feed">
-        <div class="timeline-post" *ngFor="let post of profile.timeline">
-          <div class="post-header">
-            <img [src]="post.authorImage" [alt]="post.author">
-            <div class="post-meta">
-              <h3>{{post.author}}</h3>
-              <span>{{post.date}}</span>
+    <mat-card-content>
+      <div class="profile-grid">
+        <!-- Left Column -->
+        <div class="profile-info">
+          <section class="rating-section" *ngIf="profile.rating">
+            <h2>Rating</h2>
+            <div class="rating">
+              <span class="rating-number">{{profile.rating}}</span>
+              <div class="stars">
+                <mat-icon *ngFor="let star of getStars(profile.rating)">star</mat-icon>
+              </div>
             </div>
-          </div>
-          <p class="post-content">{{post.content}}</p>
-          <div class="post-actions">
-            <button mat-button>Like</button>
-            <button mat-button>Comment</button>
-            <button mat-button>Share</button>
+          </section>
+
+          <section class="contact-section">
+            <h2>Contact Information</h2>
+            <div class="contact-grid">
+              <div class="contact-item" *ngIf="profile.phone">
+                <mat-icon>phone</mat-icon>
+                <span>{{profile.phone}}</span>
+              </div>
+              <div class="contact-item" *ngIf="profile.email">
+                <mat-icon>email</mat-icon>
+                <span>{{profile.email}}</span>
+              </div>
+              <div class="contact-item" *ngIf="profile.website">
+                <mat-icon>language</mat-icon>
+                <span>{{profile.website}}</span>
+              </div>
+              <div class="contact-item" *ngIf="profile.address">
+                <mat-icon>home</mat-icon>
+                <span>{{profile.address}}</span>
+              </div>
+            </div>
+          </section>
+
+          <section class="skills-section" *ngIf="profile.skills?.length">
+            <h2>Skills</h2>
+            <div class="skills-grid">
+              <span class="skill-tag" *ngFor="let skill of profile.skills">
+                {{skill}}
+              </span>
+            </div>
+          </section>
+        </div>
+
+        <!-- Right Column -->
+        <div class="timeline-section" *ngIf="profile.timeline?.length">
+          <h2>Recent Activity</h2>
+          <div class="timeline-feed">
+            <mat-card class="timeline-post" *ngFor="let post of profile.timeline">
+              <mat-card-header>
+                <img mat-card-avatar [src]="post.authorImage" [alt]="post.author">
+                <mat-card-title>{{post.author}}</mat-card-title>
+                <mat-card-subtitle>{{post.date}}</mat-card-subtitle>
+              </mat-card-header>
+              <mat-card-content>
+                <p>{{post.content}}</p>
+              </mat-card-content>
+              <mat-card-actions>
+                <button mat-button color="primary">
+                  <mat-icon>thumb_up</mat-icon> Like
+                </button>
+                <button mat-button>
+                  <mat-icon>comment</mat-icon> Comment
+                </button>
+                <button mat-button>
+                  <mat-icon>share</mat-icon> Share
+                </button>
+              </mat-card-actions>
+            </mat-card>
           </div>
         </div>
       </div>
-    </div>
-  </div>
+    </mat-card-content>
+
+    <mat-card-actions *ngIf="!isOwnProfile" class="profile-actions">
+      <button mat-raised-button color="primary">
+        <mat-icon>message</mat-icon>
+        Send Message
+      </button>
+      <button mat-stroked-button color="primary">
+        <mat-icon>person_add</mat-icon>
+        Add Contact
+      </button>
+    </mat-card-actions>
+  </mat-card>
 </div> 

@@ -46,6 +46,16 @@ export interface Account {
     followingCount?: number;
     // Follower images for social media template
     followerImages?: FollowerImage[];
+    // Social media links
+    linkedin?: string;
+    // Work experience
+    experience?: {
+        position: string;
+        company: string;
+        startDate: string;
+        endDate?: string;
+        description: string;
+    }[];
 }
 
 export interface AccountUpdate {

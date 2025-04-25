@@ -379,6 +379,7 @@ function updateSchema(req, res, next) {
         twitter: Joi.string().empty(''),
         instagram: Joi.string().empty(''),
         facebook: Joi.string().empty(''),
+        linkedin: Joi.string().uri().empty(''),
         
         // Social Media Stats
         followersCount: Joi.number().integer().min(0).empty(''),
@@ -505,11 +506,19 @@ function setTokenCookie(res, token) {
 
 // New handler function for the active sessions route
 async function getActiveSessions(req, res, next) {
+    // Extract pagination params from query string, provide defaults
+    const page = parseInt(req.query.page, 10) || 1;
+    const pageSize = parseInt(req.query.pageSize, 10) || 10;
+    
     try {
-        const sessions = await accountService.getActiveSessions();
-        res.json(sessions);
+        console.log(`[AccountsController] Request received for active sessions - Page: ${page}, Size: ${pageSize}`);
+        // Call the updated service function with pagination params
+        const result = await accountService.getActiveSessions({ page, pageSize });
+        console.log(`[AccountsController] Sending response with ${result.sessions.length} sessions and pagination info`);
+        res.json(result); // Send the structured response { sessions: [...], pagination: {...} }
     } catch (error) {
-        next(error);
+        console.error('[AccountsController] Error in getActiveSessions route handler:', error);
+        next(error); // Pass error to global error handler
     }
 }
 

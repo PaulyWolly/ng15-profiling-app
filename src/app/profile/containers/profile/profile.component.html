@@ -3,7 +3,7 @@
         <mat-spinner diameter="40"></mat-spinner>
     </div>
 
-    <div *ngIf="!loading" class="profile-content scrollable-container" preventWheelPropagation>
+    <div *ngIf="!loading" class="profile-content">
         <!-- Template selection button (only visible for own profile) -->
         <button *ngIf="isOwnProfile" 
                 mat-raised-button color="primary"
@@ -38,7 +38,7 @@
 
         <!-- Standard Profile Template -->
         <div *ngIf="currentTemplate === ProfileTemplateType.STANDARD" class="profile-standard">
-            <app-standard-profile [profile]="profileUser" [isOwnProfile]="isOwnProfile"></app-standard-profile>
+            <app-new-standard-view [profile]="profileUser" [isOwnProfile]="isOwnProfile"></app-new-standard-view>
         </div>
 
         <!-- Business Card Template -->

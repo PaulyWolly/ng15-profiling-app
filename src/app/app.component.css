@@ -15,11 +15,14 @@
     padding: 0.5rem 0.75rem;
 }
 
-/* Make main content area properly scroll */
+/* Make main content area fill space but NOT scroll */
 .main-content-wrapper {
+    flex: 1; /* Allow it to take up remaining vertical space */
     padding-top: 10px;
     padding-bottom: 70px; /* Space for footer */
-    min-height: calc(100vh - 120px); /* Account for navbar and footer */
+    min-height: calc(100vh - 120px); /* Still define min-height for structure */
+    overflow: hidden; /* CHANGED: Prevent this wrapper from scrolling */
+    position: relative; /* Added for potential absolute positioning of children if needed */
 }
 
 /* User status styling */

@@ -400,60 +400,80 @@ async function logAllImagePaths() {
 }
 
 // New function to get active sessions
-async function getActiveSessions() {
-    const now = new Date();
-    
-    // First cleanup any expired sessions
-    await db.RefreshToken.deleteMany({
-        expires: { $lt: now }
-    });
+async function getActiveSessions({ page = 1, pageSize = 10 }) {
+    console.log(`[AccountService] Fetching active sessions - Page: ${page}, Size: ${pageSize}`);
 
-    // Get all non-expired sessions
-    const refreshTokens = await db.RefreshToken.find({
-        expires: { $gt: now }
-    }).populate('account', 'id email firstName lastName role isVerified');
-    
-    return refreshTokens.map(token => {
-        const hoursTillExpiry = (token.expires.getTime() - now.getTime()) / (1000 * 60 * 60);
-        
-        // Check if the session is truly active by verifying:
-        // 1. Not revoked
-        // 2. Not expired
-        // 3. Has valid account with email
-        const isActive = !token.revoked && 
-                        token.expires > now && 
-                        token.account && 
-                        token.account.email;
+    const filter = {
+        revoked: null,
+        expires: { $gt: new Date() }
+    };
 
-        // If account is missing or session is not active, return null
-        if (!token.account || !isActive) {
-            return null;
-        }
+    // Ensure page and pageSize are valid numbers
+    const currentPage = parseInt(page, 10) || 1;
+    const limit = parseInt(pageSize, 10) || 10;
+    const skip = (currentPage - 1) * limit;
 
-        let status = 'Active';
-        if (token.revoked) {
-            status = 'Revoked';
-        } else if (hoursTillExpiry < 1) {
-            status = 'Warning';
-        }
+    try {
+        // Get total count of active sessions
+        const totalSessions = await db.RefreshToken.countDocuments(filter);
+        console.log(`[AccountService] Total active sessions found: ${totalSessions}`);
+
+        // Find tokens for the current page
+        const activeTokens = await db.RefreshToken.find(filter)
+            .populate('account')
+            .sort({ created: -1 }) // Optional: sort by creation date descending
+            .skip(skip)
+            .limit(limit);
+
+        // Map to a more useful structure
+        const sessions = activeTokens.map(token => {
+            const account = token.account;
+            if (!account) {
+                console.warn(`[AccountService] Refresh token ${token.id} has no associated account.`);
+                return null; // Skip if account doesn't exist
+            }
+            // Determine status based on expiry
+            let status = 'Active';
+            const oneDay = 24 * 60 * 60 * 1000;
+            if (token.expires.getTime() - Date.now() < oneDay) {
+                status = 'Warning'; // Expiring within 24 hours
+            }
+
+            return {
+                id: token.id,
+                accountId: account.id,
+                email: account.email,
+                firstName: account.firstName,
+                lastName: account.lastName,
+                role: account.role,
+                isVerified: !!account.verified,
+                created: token.created,
+                expires: token.expires,
+                lastActivity: token.updated, // Use 'updated' as proxy for last activity
+                createdByIp: token.createdByIp,
+                status: status,
+                revoked: token.revoked,
+                revokedReason: token.revokedReason
+            };
+        }).filter(session => session !== null); // Filter out nulls if account was missing
+
+        const totalPages = Math.ceil(totalSessions / limit);
+
+        console.log(`[AccountService] Returning ${sessions.length} sessions for page ${currentPage}/${totalPages}`);
 
         return {
-            id: token._id,
-            email: token.account.email,
-            firstName: token.account.firstName,
-            lastName: token.account.lastName,
-            role: token.account.role,
-            isVerified: token.account.isVerified,
-            lastActivity: token.created.toISOString(),
-            status: status,
-            createdByIp: token.createdByIp,
-            expires: token.expires.toISOString(),
-            isActive: isActive,
-            revokedReason: token.revokedReason || null
+            sessions: sessions,
+            pagination: {
+                currentPage: currentPage,
+                pageSize: limit,
+                totalSessions: totalSessions,
+                totalPages: totalPages
+            }
         };
-    })
-    .filter(session => session !== null) // Remove any null sessions
-    .filter(session => session.isActive); // Only return active sessions
+    } catch (error) {
+        console.error('[AccountService] Error fetching paginated active sessions:', error);
+        throw error; // Re-throw the error to be handled by the controller
+    }
 }
 
 // New function to clean up old refresh tokens
@@ -528,14 +548,14 @@ function randomTokenString() {
 function basicDetails(account) {
     const { id, firstName, lastName, email, role, created, updated, isVerified, profileImage,
           profileTemplateType, position, company, address, city, state, zipCode, phone, mobile, bio,
-          website, github, twitter, instagram, facebook,
+          website, github, twitter, instagram, facebook, linkedin,
           followersCount, followingCount, skills, followerImages } = account;
     
     return { 
         id, firstName, lastName, email, role, created, updated, isVerified,
         profileImage: profileImage,
         profileTemplateType, position, company, address, city, state, zipCode, phone, mobile, bio,
-        website, github, twitter, instagram, facebook,
+        website, github, twitter, instagram, facebook, linkedin,
         followersCount, followingCount, skills, followerImages 
     };
 } 

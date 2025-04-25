@@ -18,6 +18,7 @@ import { MatSortModule } from '@angular/material/sort';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { TitleComponent } from '@app/shared/components/title/title.component';
 
 @NgModule({
     imports: [
@@ -35,7 +36,8 @@ import { MatSelectModule } from '@angular/material/select';
         MatSortModule,
         MatFormFieldModule,
         MatInputModule,
-        MatSelectModule
+        MatSelectModule,
+        TitleComponent
     ],
     declarations: [
         ListComponent,

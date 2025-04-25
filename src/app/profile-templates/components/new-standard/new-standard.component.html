@@ -1,0 +1,46 @@
+<div class="new-standard-container">
+    <!-- Header with Title and Buttons -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <app-title [text]="'New Standard Template'" [level]="1" [marginBottom]="'none'"></app-title>
+        <div> <!-- Button group container -->
+            <button mat-raised-button color="primary" (click)="useTemplate()" class="me-2">
+                <mat-icon>check_circle</mat-icon>
+                Use This Template
+            </button>
+            <button mat-button color="accent" (click)="previewTemplate()">
+                <mat-icon>preview</mat-icon>
+                Live Preview
+            </button>
+        </div>
+    </div>
+
+    <!-- Template Preview Card -->
+    <div class="template-preview">
+        <mat-card class="preview-card">
+            <mat-card-header>
+                <div mat-card-avatar class="profile-avatar">
+                    <mat-icon>account_circle</mat-icon>
+                </div>
+                <mat-card-title>John Doe</mat-card-title>
+                <mat-card-subtitle>Software Developer</mat-card-subtitle>
+            </mat-card-header>
+            <img mat-card-image src="assets/images/profile-templates/standard-template.png" alt="Standard Template Preview">
+            <mat-card-content>
+                <p>
+                    This is our new standard template, featuring a clean and professional layout
+                    perfect for showcasing your professional profile.
+                </p>
+                <div class="features-list">
+                    <h3>Features:</h3>
+                    <ul>
+                        <li>Professional header with profile picture</li>
+                        <li>Detailed contact information</li>
+                        <li>Skills and expertise section</li>
+                        <li>Work history timeline</li>
+                        <li>Social media integration</li>
+                    </ul>
+                </div>
+            </mat-card-content>
+        </mat-card>
+    </div>
+</div> 

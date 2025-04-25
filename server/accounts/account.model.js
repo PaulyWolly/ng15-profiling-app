@@ -39,13 +39,14 @@ const schema = new Schema({
     twitter: String,
     instagram: String,
     facebook: String,
+    linkedin: { type: String },
     
     // Social Media Stats
     followersCount: { type: Number, default: 0 },
     followingCount: { type: Number, default: 0 },
     
     // Professional Skills
-    skills: [String],
+    skills: [{ type: String }],
     
     // Follower Images for Social Media template
     followerImages: [{
