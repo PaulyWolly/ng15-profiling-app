@@ -1,0 +1,42 @@
+<div class="standard-layout">
+  <div class="profile-header">
+    <div class="profile-image">
+      <img [src]="profile.imageUrl" [alt]="profile.name">
+    </div>
+    <div class="profile-info">
+      <h1>{{profile.name}}</h1>
+      <h2>{{profile.title}}</h2>
+      <div class="location">
+        <mat-icon>location_on</mat-icon>
+        <span>{{profile.location}}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="profile-content">
+    <div class="contact-info">
+      <h3>Contact Information</h3>
+      <div class="contact-item">
+        <mat-icon>phone</mat-icon>
+        <span>{{profile.phone}}</span>
+      </div>
+      <div class="contact-item">
+        <mat-icon>email</mat-icon>
+        <span>{{profile.email}}</span>
+      </div>
+      <div class="contact-item">
+        <mat-icon>language</mat-icon>
+        <span>{{profile.website}}</span>
+      </div>
+    </div>
+
+    <div class="skills-section">
+      <h3>Skills</h3>
+      <div class="skills-list">
+        <span class="skill-tag" *ngFor="let skill of profile.skills">
+          {{skill}}
+        </span>
+      </div>
+    </div>
+  </div>
+</div> 

@@ -5,71 +5,114 @@
         </div>
         <div class="card-body">
             <!-- Session Management Section -->
-            <div class="mb-4">
-                <h3>Session Management</h3>
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="card bg-light">
-                            <div class="card-body">
-                                <h4>Session Cleanup Status</h4>
-                                <div class="mb-3">
-                                    <strong>Active Sessions:</strong>
-                                    <span class="badge bg-primary ms-2">{{settings.activeSessionCount}}</span>
-                                </div>
-                                <div class="mb-3">
-                                    <strong>Last Cleanup:</strong>
-                                    <span class="text-muted ms-2">
-                                        <ng-container *ngIf="settings.lastSessionCleanup; else neverRun">
-                                            {{settings.lastSessionCleanup | date:'medium'}}
-                                        </ng-container>
-                                        <ng-template #neverRun>Never</ng-template>
-                                    </span>
-                                </div>
-                                <div class="mb-3">
-                                    <strong>Next Scheduled:</strong>
-                                    <span class="text-muted ms-2">
-                                        <ng-container *ngIf="settings.nextScheduledCleanup; else notScheduled">
-                                            {{settings.nextScheduledCleanup | date:'medium'}}
-                                        </ng-container>
-                                        <ng-template #notScheduled>Not scheduled</ng-template>
-                                    </span>
-                                </div>
-                                <button class="btn btn-primary" 
-                                        (click)="runCleanup()"
-                                        [disabled]="loading">
-                                    <span *ngIf="loading" class="spinner-border spinner-border-sm me-1"></span>
-                                    Run Cleanup Now
-                                </button>
-                            </div>
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h4 class="mb-0">Session Management</h4>
+                </div>
+                <div class="card-body">
+                    <div *ngIf="loading" class="d-flex justify-content-center">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
                         </div>
                     </div>
-                    <div class="col-md-6">
-                        <div class="card">
-                            <div class="card-body">
-                                <h4>Cleanup Schedule</h4>
-                                <div class="mb-3">
-                                    <label class="form-label">Cron Schedule</label>
-                                    <div class="input-group">
-                                        <input type="text" 
-                                               class="form-control" 
-                                               [(ngModel)]="settings.cleanupSchedule"
-                                               [disabled]="loading"
-                                               placeholder="0 0 * * *">
-                                        <button class="btn btn-primary" 
-                                                (click)="updateSchedule()"
-                                                [disabled]="loading">
-                                            <span *ngIf="loading" class="spinner-border spinner-border-sm me-1"></span>
-                                            Update
+
+                    <div *ngIf="loadError" class="alert alert-danger" role="alert">
+                        {{ loadError }}
+                    </div>
+
+                    <div *ngIf="!loading && !loadError" class="d-flex flex-row align-items-center justify-content-between">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-users me-2"></i>
+                            <span>Active Sessions: {{ settings.activeSessionCount || 0 }}</span>
+                        </div>
+                        
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-clock me-2"></i>
+                            <span>Last Cleanup: {{ settings.lastSessionCleanup ? (settings.lastSessionCleanup | date:'medium') : 'Never' }}</span>
+                        </div>
+
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-calendar me-2"></i>
+                            <span>Next Scheduled: {{ settings.nextScheduledCleanup ? (settings.nextScheduledCleanup | date:'medium') : 'Not scheduled' }}</span>
+                        </div>
+
+                        <button (click)="runCleanup()" class="btn btn-primary" [disabled]="loading">
+                            <i class="fas fa-broom me-2"></i>
+                            Run Cleanup Now
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cleanup History Section -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h4 class="mb-0">Cleanup History</h4>
+                </div>
+                <div class="card-body px-5">
+                    <div *ngIf="historyLoading && !cleanupHistory.length" class="text-center p-3">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+
+                    <div *ngIf="!historyLoading && !cleanupHistory.length" class="alert alert-info">
+                        No cleanup history found. Run a cleanup to create history records.
+                    </div>
+
+                    <div *ngIf="cleanupHistory.length > 0" class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Executed By</th>
+                                    <th>Results</th>
+                                    <th>Duration</th>
+                                    <th>Type</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let record of cleanupHistory">
+                                    <td>{{record.timestamp | date:'medium'}}</td>
+                                    <td>{{record.executedByEmail}}</td>
+                                    <td>
+                                        <div>Sessions cleaned: {{record.sessionsCleaned}}</div>
+                                        <div>Tokens revoked: {{record.tokensRevoked}}</div>
+                                    </td>
+                                    <td>{{record.executionTime}}ms</td>
+                                    <td>
+                                        <span class="badge" [class.bg-info]="record.isAutomatic" [class.bg-primary]="!record.isAutomatic">
+                                            {{record.isAutomatic ? 'Automatic' : 'Manual'}}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-danger"
+                                                (click)="deleteRecord(record.id)"
+                                                [disabled]="historyLoading">
+                                            <i class="fas fa-trash"></i>
                                         </button>
-                                    </div>
-                                    <small class="text-muted d-block mt-2">
-                                        <i class="fas fa-info-circle me-1"></i>
-                                        Current schedule: Runs at midnight daily (0 0 * * *)
-                                    </small>
-                                    <small class="text-muted d-block mt-1">
-                                        Format: minute hour day month weekday
-                                    </small>
-                                </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <!-- Pagination -->
+                        <div class="d-flex justify-content-between align-items-center mt-3">
+                            <div>
+                                Showing {{cleanupHistory.length}} of {{totalRecords}} records
+                            </div>
+                            <div>
+                                <button class="btn btn-sm btn-primary me-2"
+                                        [disabled]="currentPage === 0"
+                                        (click)="previousPage()">
+                                    Previous
+                                </button>
+                                <button class="btn btn-sm btn-primary"
+                                        [disabled]="!hasMoreRecords"
+                                        (click)="nextPage()">
+                                    Next
+                                </button>
                             </div>
                         </div>
                     </div>

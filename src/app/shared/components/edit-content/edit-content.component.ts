@@ -679,7 +679,7 @@ export class EditContentComponent implements OnInit, OnChanges, EditContentState
             if (Array.isArray(value) || typeof value === 'object') {
                 acc[key as keyof AccountUpdate] = value;
             } else {
-                acc[key as keyof AccountUpdate] = value;
+            acc[key as keyof AccountUpdate] = value;
             }
         }
         return acc;

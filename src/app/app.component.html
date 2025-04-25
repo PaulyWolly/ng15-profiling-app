@@ -21,9 +21,9 @@
                 <a class="nav-link clickable" (click)="navigateTo('/admin')" [class.active]="isActiveRoute('/admin')">Admin</a>
             </li>
             <!-- Admin users should have direct access to accounts management -->
-            <li class="nav-item" *ngIf="account?.role === Role.Admin">
+            <!-- <li class="nav-item" *ngIf="account?.role === Role.Admin">
                 <a class="nav-link clickable" (click)="navigateTo('/admin/accounts')" [class.active]="isActiveRoute('/admin/accounts')">Accounts</a>
-            </li>
+            </li> -->
         </div>
         <div class="navbar-nav ms-auto">
             <li class="nav-item" *ngIf="account">

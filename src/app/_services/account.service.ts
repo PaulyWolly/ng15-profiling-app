@@ -25,6 +25,29 @@ export interface CleanupResult {
     message: string;
 }
 
+export interface CleanupHistoryRecord {
+    id: string;
+    timestamp: Date;
+    executedBy: string;
+    executedByEmail: string;
+    sessionsCleaned: number;
+    tokensRevoked: number;
+    executionTime: number;
+    result: string;
+    isAutomatic: boolean;
+    ipAddress: string;
+}
+
+export interface CleanupHistoryResponse {
+    history: CleanupHistoryRecord[];
+    pagination: {
+        total: number;
+        limit: number;
+        skip: number;
+        hasMore: boolean;
+    };
+}
+
 @Injectable({ providedIn: 'root' })
 export class AccountService {
     private accountSubject: BehaviorSubject<Account | null>;
@@ -634,5 +657,16 @@ export class AccountService {
                     return response;
                 })
             );
+    }
+
+    getCleanupHistory(limit: number = 20, skip: number = 0) {
+        return this.getHttp().get<CleanupHistoryResponse>(
+            `${environment.apiUrl}/admin/cleanup-history`,
+            { params: { limit: limit.toString(), skip: skip.toString() } }
+        );
+    }
+
+    deleteCleanupRecord(id: string) {
+        return this.getHttp().delete<{ message: string }>(`${environment.apiUrl}/admin/cleanup-history/${id}`);
     }
 }
