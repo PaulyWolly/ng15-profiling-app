@@ -10,12 +10,12 @@
 </div>
 
 <!-- Main Content -->
-<div *ngIf="!loading && !error" class="new-standard-container">
-    <div class="centered-content" style="max-width: 1600px; width: 90%; margin: 0 auto;">
+<div *ngIf="!loading && !error" class="new-social-media-container">
+    <div class="centered-content" style="max-width: 1200px; width: 80%; margin: 0 auto;">
         <!-- Header with Title and Buttons -->
         <div class="d-flex justify-content-between align-items-center mb-4">
-            <app-title [text]="'New Standard Template'" [level]="1" [marginBottom]="'none'"></app-title>
-            <div> <!-- Button group container -->
+            <app-title [text]="'New Social Media Template'" [level]="1" [marginBottom]="'none'"></app-title>
+            <div>
                 <button mat-raised-button color="primary" (click)="useTemplate()" class="me-2">
                     <mat-icon>check_circle</mat-icon>
                     Use This Template
@@ -29,30 +29,30 @@
 
         <!-- Template Preview Card -->
         <div class="template-preview">
-            <mat-card class="preview-card" style="width: 100%; max-width: 1200px; margin: 0 auto;">
+            <mat-card class="preview-card">
                 <mat-card-header>
                     <div mat-card-avatar class="profile-avatar">
-                        <mat-icon>account_circle</mat-icon>
+                        <img *ngIf="profile?.profileImage" [src]="profile?.profileImage" [alt]="(profile?.firstName || '') + ' ' + (profile?.lastName || '')" style="width: 56px; height: 56px; border-radius: 50%; object-fit: cover;" />
+                        <mat-icon *ngIf="!profile?.profileImage">account_circle</mat-icon>
                     </div>
                     <mat-card-title>{{ profile?.firstName }} {{ profile?.lastName }}</mat-card-title>
                     <mat-card-subtitle>{{ profile?.position || 'Your Position' }}</mat-card-subtitle>
                 </mat-card-header>
                 <mat-card-content>
                     <div class="preview-flex-row" style="display: flex; align-items: flex-start; gap: 32px;">
-                        <img mat-card-image src="assets/images/profile-templates/standard-template.png" alt="Standard Template Preview" style="max-width: 600px; max-height: 600px; margin: 0; display: block; object-fit: cover;" />
+                        <img mat-card-image src="assets/images/profile-templates/social-media-template.png" alt="Social Media Template Preview" style="max-width: 600px; max-height: 475px; margin: 0; display: block; object-fit: cover;" />
                         <div class="preview-description" style="flex: 1; min-width: 220px;">
                             <p>
-                                This is our new standard template, featuring a clean and professional layout
-                                perfect for showcasing your professional profile.
+                                This is our new social media template, inspired by modern social platforms and designed to showcase your connections and activity.
                             </p>
                             <div class="features-list">
                                 <h3>Features:</h3>
                                 <ul>
-                                    <li>Professional header with profile picture</li>
-                                    <li>Detailed contact information</li>
-                                    <li>Skills and expertise section</li>
-                                    <li>Work history timeline</li>
-                                    <li>Social media integration</li>
+                                    <li>Social media style header and profile image</li>
+                                    <li>Followers and following counts</li>
+                                    <li>Activity feed and posts</li>
+                                    <li>Integrated social links</li>
+                                    <li>Modern, responsive layout</li>
                                 </ul>
                             </div>
                         </div>

@@ -7,6 +7,7 @@ import { DetailsComponent } from './containers/details/details.component';
 import { EditComponent } from './containers/edit/edit.component';
 import { UpdateComponent } from './containers/update/update.component';
 import { AccountSettingsComponent } from './containers/account-settings/account-settings.component';
+import { NewStandardViewComponent } from './components/new-standard-view/new-standard-view.component';
 
 const routes: Routes = [
     {
@@ -17,6 +18,7 @@ const routes: Routes = [
             { path: 'edit', component: EditComponent },
             { path: 'update', component: UpdateComponent },
             { path: 'account-settings', component: AccountSettingsComponent },
+            { path: 'new-standard', component: NewStandardViewComponent },
             { path: ':id', component: ProfileComponent }
         ]
     }

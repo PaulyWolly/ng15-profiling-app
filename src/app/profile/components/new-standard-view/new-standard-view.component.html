@@ -4,6 +4,16 @@
     <p>Loading profile...</p>
 </div>
 
+<!-- Error State -->
+<div *ngIf="!loading && !profile" class="loading-container">
+    <mat-icon color="warn" style="font-size: 48px; width: 48px; height: 48px;">error_outline</mat-icon>
+    <p>Unable to load profile. Please try again later.</p>
+    <button mat-raised-button color="primary" (click)="retryLoading()">
+        <mat-icon>refresh</mat-icon>
+        Retry
+    </button>
+</div>
+
 <!-- Profile Content -->
 <div #scrollContainer *ngIf="!loading && profile" class="new-standard-profile" [class.preview-mode]="isPreview">
     <mat-card class="profile-card">
@@ -11,6 +21,7 @@
         <button mat-raised-button 
                 color="primary" 
                 class="edit-button"
+                *ngIf="isOwnProfile"
                 (click)="editProfile()">
             <mat-icon>edit</mat-icon>
             Edit Profile
@@ -21,11 +32,11 @@
             <div class="left-column">
                 <!-- Profile Image -->
                 <div class="profile-image-container">
-                    <img *ngIf="profile.profileImage" 
+                    <img *ngIf="profile?.profileImage" 
                          [src]="profile.profileImage" 
                          alt="Profile picture"
                          class="profile-img">
-                    <div *ngIf="!profile.profileImage" class="default-avatar">
+                    <div *ngIf="!profile?.profileImage" class="default-avatar">
                         <mat-icon>account_circle</mat-icon>
                     </div>
                 </div>
@@ -34,21 +45,21 @@
                 <div class="social-section" *ngIf="hasSocialLinks">
                     <h3>Social Media</h3>
                     <div class="social-grid">
-                        <a *ngIf="profile.github" 
+                        <a *ngIf="profile?.github" 
                            [href]="profile.github" 
                            target="_blank" 
                            class="social-link">
                             <i class="fab fa-github"></i>
                             GitHub
                         </a>
-                        <a *ngIf="profile.linkedin" 
+                        <a *ngIf="profile?.linkedin" 
                            [href]="profile.linkedin" 
                            target="_blank" 
                            class="social-link">
                             <i class="fab fa-linkedin"></i>
                             LinkedIn
                         </a>
-                        <a *ngIf="profile.twitter" 
+                        <a *ngIf="profile?.twitter" 
                            [href]="profile.twitter" 
                            target="_blank" 
                            class="social-link">
@@ -65,11 +76,11 @@
                 <div class="profile-info">
                     <h1>{{profile.firstName}} {{profile.lastName}}</h1>
                     <h2>{{profile.position || 'Owner/Developer/Designer'}}</h2>
-                    <p class="company" *ngIf="profile.company">{{profile.company}}</p>
+                    <p class="company" *ngIf="profile?.company">{{profile.company}}</p>
                 </div>
 
                 <!-- About Section -->
-                <div class="about-section" *ngIf="profile.bio">
+                <div class="about-section" *ngIf="profile?.bio">
                     <h3>About</h3>
                     <p>{{profile.bio}}</p>
                 </div>
@@ -82,11 +93,11 @@
                             <div class="contact-section">
                                 <h3>Contact Information</h3>
                                 <div class="contact-list">
-                                    <div class="contact-item" *ngIf="profile.email">
+                                    <div class="contact-item" *ngIf="profile?.email">
                                         <mat-icon>email</mat-icon>
                                         <a [href]="'mailto:' + profile.email">{{profile.email}}</a>
                                     </div>
-                                    <div class="contact-item" *ngIf="profile.website">
+                                    <div class="contact-item" *ngIf="profile?.website">
                                         <mat-icon>language</mat-icon>
                                         <a [href]="profile.website" target="_blank">{{profile.website}}</a>
                                     </div>

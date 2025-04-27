@@ -21,6 +21,8 @@ export interface Account {
     created?: Date;
     updated?: Date;
     profileImage?: string;
+    coverImage?: string;
+    username?: string;
     isDeleting?: boolean;
     imagePath?: string;
     profileTemplateType?: ProfileTemplateType;
