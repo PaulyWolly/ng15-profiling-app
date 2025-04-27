@@ -1,18 +1,36 @@
 import { Component, Input, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatCardModule } from '@angular/material/card';
+import { MatDialogModule } from '@angular/material/dialog';
 import { Account } from '@app/_models';
 import { AccountService, AlertService } from '@app/_services';
 import { first } from 'rxjs/operators';
 import { MatDialog } from '@angular/material/dialog';
-import { MapDialogComponent } from '../map-dialog/map-dialog.component';
+import { MapDialogComponent } from '../../../profile/components/map-dialog/map-dialog.component';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
-  selector: 'app-social-media',
-  templateUrl: './social-media.component.html',
-  styleUrls: ['./social-media.component.css']
+  selector: 'app-new-social-media',
+  standalone: true,
+  imports: [
+    CommonModule,
+    MatButtonModule,
+    MatIconModule,
+    MatCardModule,
+    MatDialogModule,
+    MatProgressSpinnerModule
+  ],
+  templateUrl: './new-social-media.component.html',
+  styleUrls: ['./new-social-media.component.scss']
 })
-export class SocialMediaComponent implements OnInit {
+export class NewSocialMediaComponent implements OnInit {
   @Input() profile!: Account;
   @Input() isOwnProfile: boolean = false;
+
+  followerImages: string[] = [];
   
   imageLoading: boolean = true;
   selectedFile: File | null = null;
@@ -21,24 +39,31 @@ export class SocialMediaComponent implements OnInit {
   constructor(
     private accountService: AccountService,
     private alertService: AlertService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private http: HttpClient
   ) {}
   
   ngOnInit() {
+
+    this.http.get<string[]>('http://localhost:5001/uploads/followers-images')
+    .subscribe(images => {
+      this.followerImages = images;
+    });
+
     // Start with loading state if profile image exists
     this.imageLoading = !!this.profile?.profileImage;
   }
   
   onImageLoaded() {
     this.imageLoading = false;
-    console.log('[SocialMedia] Profile image loaded successfully');
+    console.log('[NewSocialMedia] Profile image loaded successfully');
   }
   
   onImageError() {
     this.imageLoading = false;
     // Clear the profile image URL in case of error
     if (this.profile) {
-      console.error('[SocialMedia] Error loading profile image');
+      console.error('[NewSocialMedia] Error loading profile image');
       this.profile.profileImage = undefined;
     }
   }
@@ -80,7 +105,7 @@ export class SocialMediaComponent implements OnInit {
         },
         error: (error) => {
           this.alertService.error('Image upload failed');
-          console.error('[SocialMedia] Upload failed:', error);
+          console.error('[NewSocialMedia] Upload failed:', error);
         }
       });
   }

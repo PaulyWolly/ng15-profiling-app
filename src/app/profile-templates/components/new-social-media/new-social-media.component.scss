@@ -1,20 +1,23 @@
 .social-card {
-  max-width: 500px;
+  max-width: 900px;
   margin: 0 auto;
+  padding: 48px 64px;
+  box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
 }
 
 .social-card .mat-card-content {
   text-align: center;
   padding: 10px;
+  font-size: 1.2rem;
 }
 
 .profile-img {
-  border: 3px solid #fff;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-  margin-top: -30px;
-  max-width: 100px;
-  max-height: 100px;
+  width: 100%;
+  height: 100%;
   object-fit: contain;
+  margin-top: 0;
+  display: block;
+  border-radius: 12px; // Match container
 }
 
 .default-avatar {
@@ -98,10 +101,10 @@ h2, h3 {
 
 /* Image loading styles */
 .profile-image-container {
-  position: relative;
-  width: 100px;
-  height: 100px;
-  margin: -30px auto 10px;
+  width: 135px;
+  height: 175px;
+  padding-top: 5px;
+  margin: -79px auto 10px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -110,6 +113,8 @@ h2, h3 {
   border: 3px solid #fff;
   box-shadow: 0 2px 5px rgba(0,0,0,0.1);
   overflow: hidden;
+  position: relative;
+  z-index: 2;
 }
 
 .profile-image-container.loading {

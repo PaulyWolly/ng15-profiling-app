@@ -82,7 +82,7 @@ export class AccountService {
             hasFormData: !!formData
         });
 
-        return this.http.post<{profileImage: string}>(`${environment.apiUrl}/upload/profile/${userId}`, formData)
+        return this.http.post<{profileImage: string}>(`${environment.apiUrl}/accounts/upload-profile-image`, formData)
             .pipe(
                 map(response => {
                     console.log('[AccountService] Upload response:', response);

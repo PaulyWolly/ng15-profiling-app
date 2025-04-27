@@ -22,15 +22,11 @@ const storage = multer.diskStorage({
         cb(null, uploadDir);
     },
     filename: function (req, file, cb) {
-        // Get user email from the authenticated request
-        const userEmail = req.user.email;
-        const isFollowerImage = req.path.includes('follower');
-        
-        // Use email-based filename
-        const prefix = isFollowerImage ? 'followerImage' : 'profileImage';
-        const filename = `${prefix}-${userEmail}${path.extname(file.originalname)}`;
-        
-        console.log(`[UploadController] Generated filename: ${filename}`);
+        const followerEmail = req.body.followerEmail; // <-- Make sure this is sent from the frontend!
+        if (!followerEmail) {
+            return cb(new Error('Follower email is required'), null);
+        }
+        const filename = `followerImage-${followerEmail}${path.extname(file.originalname)}`;
         cb(null, filename);
     }
 });

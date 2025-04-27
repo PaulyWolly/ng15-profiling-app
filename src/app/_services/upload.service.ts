@@ -16,9 +16,10 @@ export class UploadService {
         return this.http.post<Account>(`${environment.apiUrl}/accounts/upload-profile-image`, formData);
     }
     
-    uploadFollowerImage(file: File, followerName: string, followerTitle?: string) {
+    uploadFollowerImage(file: File, followerEmail: string, followerName: string, followerTitle?: string) {
         const formData = new FormData();
         formData.append('followerImage', file);
+        formData.append('followerEmail', followerEmail);
         formData.append('followerName', followerName);
         
         if (followerTitle) {

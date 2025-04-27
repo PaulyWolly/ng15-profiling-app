@@ -10,7 +10,7 @@ import { Account } from '@app/_models';
 import { AccountService } from '@app/_services';
 import { MatDialog } from '@angular/material/dialog';
 import { MapDialogComponent } from '../../components/map-dialog/map-dialog.component';
-import { Subscription } from 'rxjs';
+import { Subscription, delay, retryWhen, take } from 'rxjs';
 
 @Component({
     selector: 'app-new-standard-view',
@@ -35,6 +35,8 @@ export class NewStandardViewComponent implements OnInit, OnDestroy, AfterViewIni
     
     loading: boolean = true;
     private accountSubscription?: Subscription;
+    private maxRetries = 3;
+    private retryCount = 0;
 
     constructor(
         private route: ActivatedRoute,
@@ -44,7 +46,6 @@ export class NewStandardViewComponent implements OnInit, OnDestroy, AfterViewIni
         private cdRef: ChangeDetectorRef
     ) {
         this.route.queryParams.subscribe(params => {
-            // Only override isPreview if explicitly set in query params
             if (params['preview'] === 'true') {
                 this.isPreview = true;
             }
@@ -53,27 +54,65 @@ export class NewStandardViewComponent implements OnInit, OnDestroy, AfterViewIni
 
     ngOnInit() {
         console.log('NewStandardViewComponent ngOnInit');
-        
-        // Only load account data if profile is not provided via Input
+        this.loadProfileData();
+    }
+
+    private loadProfileData() {
         if (!this.profile) {
             this.loading = true;
-            this.accountSubscription = this.accountService.account.subscribe({
-                next: (account) => {
-                    console.log('Account data received:', account);
-                    this.profile = account ? account : undefined;
-                    this.loading = false;
-                    this.cdRef.detectChanges();
-                },
-                error: (error) => {
-                    console.error('Error getting account:', error);
-                    this.profile = undefined;
-                    this.loading = false;
-                    this.cdRef.detectChanges();
-                }
-            });
+            this.accountSubscription = this.accountService.account
+                .pipe(
+                    retryWhen(errors => 
+                        errors.pipe(
+                            delay(1000), // Wait 1 second between retries
+                            take(this.maxRetries) // Maximum number of retries
+                        )
+                    )
+                )
+                .subscribe({
+                    next: (account) => {
+                        console.log('Account data received:', account);
+                        if (account) {
+                            this.profile = account;
+                            this.loading = false;
+                            this.retryCount = 0; // Reset retry count on success
+                        } else if (this.retryCount < this.maxRetries) {
+                            // If no account and haven't exceeded retries, try to get account by ID
+                            this.retryCount++;
+                            const currentUser = this.accountService.accountValue;
+                            if (currentUser?.id) {
+                                this.accountService.getById(currentUser.id).subscribe({
+                                    next: (fullAccount) => {
+                                        this.profile = fullAccount;
+                                        this.loading = false;
+                                    },
+                                    error: (error) => {
+                                        console.error('Error getting account by ID:', error);
+                                        this.loading = false;
+                                    }
+                                });
+                            } else {
+                                this.loading = false;
+                            }
+                        } else {
+                            this.loading = false;
+                        }
+                        this.cdRef.detectChanges();
+                    },
+                    error: (error) => {
+                        console.error('Error getting account:', error);
+                        this.loading = false;
+                        this.cdRef.detectChanges();
+                    }
+                });
         } else {
             this.loading = false;
         }
+    }
+
+    retryLoading(): void {
+        this.retryCount = 0; // Reset retry count
+        this.loadProfileData();
     }
 
     ngAfterViewInit(): void {

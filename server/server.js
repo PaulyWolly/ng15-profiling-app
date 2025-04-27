@@ -40,6 +40,16 @@ console.log('Ensuring upload directories exist:', {
     followersDir
 });
 
+// Add this route to list all follower images
+app.get('/uploads/followers-images', (req, res) => {
+    const dir = path.join(__dirname, 'uploads', 'followers');
+    fs.readdir(dir, (err, files) => {
+      if (err) return res.status(500).json({ error: 'Unable to scan directory' });
+      const images = files.filter(f => /\.(jpg|jpeg|png|gif)$/i.test(f));
+      res.json(images);
+    });
+});
+
 [uploadsDir, profilesDir, followersDir].forEach(dir => {
     if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir, { recursive: true });
@@ -56,6 +66,9 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads'), {
         }
     }
 }));
+
+// Serve static files from the Angular assets directory
+app.use('/assets', express.static(path.join(__dirname, '../src/assets')));
 
 // Mount the upload routes
 app.use('/upload', require('./uploads/upload.routes'));

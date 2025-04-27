@@ -334,3 +334,12 @@ form > :last-child {
 .card:last-child {
   margin-bottom: 0;
 }
+
+.scrolling-div {
+  max-height: 80vh;
+  overflow-y: auto;
+  padding-right: 16px;
+  min-width: 0;
+  height: 100%;
+  box-sizing: border-box;
+}
