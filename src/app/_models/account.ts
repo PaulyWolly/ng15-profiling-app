@@ -4,6 +4,7 @@ import { ProfileTemplateType } from './profile-template';
 export interface FollowerImage {
     id?: string;
     name: string;
+    email?: string;
     title?: string; 
     imageUrl?: string;
     path?: string;

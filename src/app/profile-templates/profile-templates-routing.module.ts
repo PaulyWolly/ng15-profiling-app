@@ -2,7 +2,8 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { ProfileTemplatesComponent } from './profile-templates.component';
 import { NewStandardComponent } from './components/new-standard/new-standard.component';
-import { NewSocialMediaComponent as SocialMediaPreviewComponent } from './components/new-social-media/new-social-media.component';
+import { NewSocialMediaViewComponent } from './views/new-social-media-view/new-social-media-view.component';
+import { NewSocialMediaComponent } from './components/new-social-media/new-social-media.component';
 
 const routes: Routes = [
     {
@@ -15,7 +16,11 @@ const routes: Routes = [
     },
     {
         path: 'social-media',
-        component: SocialMediaPreviewComponent
+        component: NewSocialMediaViewComponent
+    },
+    {
+        path: 'new-social-media',
+        component: NewSocialMediaComponent
     }
 ];
 

@@ -16,6 +16,7 @@ import { Router, ActivatedRoute } from '@angular/router';
 // Extending FollowerImage for local use
 export interface Follower extends FollowerImage {
   imageFile?: File;
+  email?: string;
 }
 
 export enum EditMode {
@@ -561,9 +562,10 @@ export class EditContentComponent implements OnInit, OnChanges, EditContentState
       console.log('Uploading follower image for:', this.currentFollower.name);
       
       this.uploadService.uploadFollowerImage(
-        this.currentFollower.imageFile, 
-        this.currentFollower.name,
-        this.currentFollower.title
+        this.currentFollower.imageFile!,
+        this.currentFollower.email || this.currentFollower.name || '',
+        this.currentFollower.name ?? '',
+        this.currentFollower.title ?? ''
       )
       .pipe(first())
       .subscribe({

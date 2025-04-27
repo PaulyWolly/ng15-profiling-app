@@ -104,3 +104,43 @@
   margin-right: -0.5rem;
   margin-left: -0.5rem;
 } 
+
+/* Edit Profile Layout and scroll */
+.profile-container,
+.edit-profile-layout {
+  display: flex;
+  align-items: flex-start;
+  /* Ensure the container doesn't expand to fit content */
+  min-height: 0;
+  height: 80vh; /* or 100vh minus header/footer if needed */
+}
+
+.profile-image-section {
+  flex: 0 0 320px; /* or whatever width you want for the left side */
+}
+
+.edit-profile-layout {
+  display: flex;
+  height: 80vh;
+  min-height: 0;
+}
+
+.edit-profile-form-scroll {
+  max-height: 80vh;
+  overflow-y: auto;
+  flex: 1;
+  min-width: 0;
+}
+
+.profile-image-section {
+  flex: 0 0 320px;
+}
+
+.scrolling-div {
+  flex: 1;
+  min-width: 0;
+  max-height: 80vh;
+  overflow-y: auto;
+  background: #fff;
+  padding: 16px;
+}

@@ -1,105 +1,130 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { Router, ActivatedRoute } from '@angular/router';
-import { ProfileTemplateService, AccountService } from '@app/_services';
-import { ProfileTemplateType } from '@app/_models/profile-template';
+import { MatDialogModule } from '@angular/material/dialog';
 import { Account } from '@app/_models';
+import { AccountService, AlertService } from '@app/_services';
 import { first } from 'rxjs/operators';
-import { TitleComponent } from '@app/shared/components/title/title.component';
+import { MatDialog } from '@angular/material/dialog';
+import { MapDialogComponent } from '../../../profile/components/map-dialog/map-dialog.component';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
-    selector: 'app-new-social-media',
-    templateUrl: './new-social-media.component.html',
-    styleUrls: ['./new-social-media.component.scss'],
-    standalone: true,
-    imports: [
-        CommonModule,
-        MatButtonModule,
-        MatIconModule,
-        MatCardModule,
-        MatProgressSpinnerModule,
-        TitleComponent
-    ]
+  selector: 'app-new-social-media',
+  standalone: true,
+  imports: [
+    CommonModule,
+    MatButtonModule,
+    MatIconModule,
+    MatCardModule,
+    MatDialogModule,
+    MatProgressSpinnerModule
+  ],
+  templateUrl: './new-social-media.component.html',
+  styleUrls: ['./new-social-media.component.scss']
 })
 export class NewSocialMediaComponent implements OnInit {
-    @Input() profile?: Account;
-    @Input() isOwnProfile: boolean = false;
-    loading = true;
-    error = '';
-    isPreview = false;
+  @Input() profile!: Account;
+  @Input() isOwnProfile: boolean = false;
 
-    constructor(
-        private router: Router,
-        private route: ActivatedRoute,
-        private profileTemplateService: ProfileTemplateService,
-        private accountService: AccountService
-    ) {
-        this.route.queryParams.subscribe(params => {
-            this.isPreview = params['preview'] === 'true';
-        });
+  followerImages: string[] = [];
+  
+  imageLoading: boolean = true;
+  selectedFile: File | null = null;
+  previewUrl: string | null = null;
+  
+  constructor(
+    private accountService: AccountService,
+    private alertService: AlertService,
+    private dialog: MatDialog,
+    private http: HttpClient
+  ) {}
+  
+  ngOnInit() {
+
+    this.http.get<string[]>('http://localhost:5001/uploads/followers-images')
+    .subscribe(images => {
+      this.followerImages = images;
+    });
+
+    // Start with loading state if profile image exists
+    this.imageLoading = !!this.profile?.profileImage;
+  }
+  
+  onImageLoaded() {
+    this.imageLoading = false;
+    console.log('[NewSocialMedia] Profile image loaded successfully');
+  }
+  
+  onImageError() {
+    this.imageLoading = false;
+    // Clear the profile image URL in case of error
+    if (this.profile) {
+      console.error('[NewSocialMedia] Error loading profile image');
+      this.profile.profileImage = undefined;
+    }
+  }
+
+  onFileSelected(event: any) {
+    this.selectedFile = event.target.files[0];
+    if (this.selectedFile) {
+      // Create preview URL
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.previewUrl = e.target.result;
+      };
+      reader.readAsDataURL(this.selectedFile);
+    }
+  }
+
+  uploadImage() {
+    if (!this.selectedFile || !this.profile?.id) {
+      this.alertService.error('No image selected or profile not found');
+      return;
     }
 
-    ngOnInit() {
-        this.loadProfile();
-    }
+    const formData = new FormData();
+    formData.append('profileImage', this.selectedFile);
+    formData.append('userEmail', this.profile.email || '');
 
-    private loadProfile() {
-        this.loading = true;
-        this.accountService.account.subscribe({
-            next: (account) => {
-                if (account) {
-                    this.profile = account;
-                    this.error = '';
-                } else {
-                    this.error = 'Profile not found';
-                }
-                this.loading = false;
-            },
-            error: (err) => {
-                console.error('Error loading profile:', err);
-                this.error = 'Error loading profile';
-                this.loading = false;
-            }
-        });
-    }
-
-    useTemplate(): void {
-        this.loading = true;
-        const currentUser = this.accountService.accountValue;
-        if (currentUser?.id) {
-            this.accountService.update(currentUser.id, { 
-                profileTemplateType: ProfileTemplateType.SOCIAL_MEDIA 
-            })
-            .pipe(first())
-            .subscribe({
-                next: () => {
-                    this.profileTemplateService.setTemplate(ProfileTemplateType.SOCIAL_MEDIA, true);
-                    this.router.navigate(['/profile'], { 
-                        queryParams: { template: 'social-media' }
-                    }).then(() => window.location.reload());
-                },
-                error: (error) => {
-                    console.error('Error updating template:', error);
-                    this.error = 'Failed to update template';
-                    this.loading = false;
-                }
-            });
-        } else {
-            this.profileTemplateService.setTemplate(ProfileTemplateType.SOCIAL_MEDIA);
-            this.router.navigate(['/profile'], { 
-                queryParams: { template: 'social-media' }
-            }).then(() => window.location.reload());
+    this.accountService.uploadImage(this.profile.id, formData)
+      .pipe(first())
+      .subscribe({
+        next: (response) => {
+          this.alertService.success('Image uploaded successfully');
+          this.selectedFile = null;
+          this.previewUrl = null;
+          
+          // Update the local profile image if needed
+          if (response.profileImage && this.profile) {
+            this.profile.profileImage = response.profileImage;
+          }
+        },
+        error: (error) => {
+          this.alertService.error('Image upload failed');
+          console.error('[NewSocialMedia] Upload failed:', error);
         }
-    }
-
-    previewTemplate(): void {
-        this.profileTemplateService.setTemplate(ProfileTemplateType.SOCIAL_MEDIA);
-        this.router.navigate(['/profile'], { 
-            queryParams: { template: 'social-media', preview: 'true' }
-        });
-    }
+      });
+  }
+  
+  // Open the map dialog with the profile address
+  openMapDialog(): void {
+    this.dialog.open(MapDialogComponent, {
+      width: '600px',
+      data: {
+        address: this.profile?.address || '',
+        city: this.profile?.city || '',
+        state: this.profile?.state || '',
+        zipCode: this.profile?.zipCode || ''
+      }
+    });
+  }
+  
+  // Check if the profile has any follower images
+  hasFollowers(): boolean {
+    return !!this.profile?.followerImages && this.profile.followerImages.length > 0;
+  }
 } 

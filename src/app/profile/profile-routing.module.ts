@@ -5,7 +5,7 @@ import { LayoutComponent } from './containers/layout/layout.component';
 import { ProfileComponent } from './containers/profile/profile.component';
 import { DetailsComponent } from './containers/details/details.component';
 import { EditComponent } from './containers/edit/edit.component';
-import { UpdateComponent } from './containers/update/update.component';
+import { EditProfileComponent } from './containers/edit-profile/edit-profile.component';
 import { AccountSettingsComponent } from './containers/account-settings/account-settings.component';
 import { NewStandardViewComponent } from './components/new-standard-view/new-standard-view.component';
 
@@ -16,7 +16,7 @@ const routes: Routes = [
         children: [
             { path: '', component: DetailsComponent, pathMatch: 'full' },
             { path: 'edit', component: EditComponent },
-            { path: 'update', component: UpdateComponent },
+            { path: 'update', component: EditProfileComponent },
             { path: 'account-settings', component: AccountSettingsComponent },
             { path: 'new-standard', component: NewStandardViewComponent },
             { path: ':id', component: ProfileComponent }

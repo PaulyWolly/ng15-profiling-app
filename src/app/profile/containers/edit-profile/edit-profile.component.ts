@@ -7,12 +7,12 @@ import { AccountService, AlertService } from '@app/_services';
 import { MustMatch } from '@app/_helpers';
 import { Account } from '@app/_models';
 
-@Component({
-  selector: 'app-update',
-  templateUrl: './update.component.html',
-  styleUrls: ['./update.component.css']
+@Component({  
+  selector: 'app-edit-profile',
+  templateUrl: './edit-profile.component.html',
+  styleUrls: ['./edit-profile.component.css']
 })
-export class UpdateComponent implements OnInit {
+export class EditProfileComponent implements OnInit {
   form!: FormGroup;
   submitting = false;
   submitted = false;

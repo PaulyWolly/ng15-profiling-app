@@ -1,5 +1,7 @@
 const multer = require('multer');
 const path = require('path');
+const express = require('express');
+const router = express.Router();
 const fs = require('fs');
 const accountService = require('./account.service');
 const crypto = require('crypto');
@@ -8,6 +10,16 @@ const crypto = require('crypto');
 const uploadsDir = path.join(__dirname, '..', 'uploads');
 const profilesDir = path.join(__dirname, '..', 'uploads', 'profiles');
 const followersDir = path.join(__dirname, '..', 'uploads', 'followers');
+
+router.get('/followers-images', (req, res) => {
+    const dir = path.join(__dirname, '..', 'uploads', 'followers');
+    fs.readdir(dir, (err, files) => {
+        if (err) return res.status(500).json({ error: 'Unable to scan directory' });
+        // Only return image files
+        const images = files.filter(f => /\.(jpg|jpeg|png|gif)$/i.test(f));
+        res.json(images);
+    });
+});
 
 console.log('[UploadController] Initialization - Directories configured:', {
     uploadsDir,
@@ -49,15 +61,9 @@ const storage = multer.diskStorage({
         cb(null, uploadPath);
     },
     filename: function (req, file, cb) {
-        // Generate a temporary filename
-        const timestamp = Date.now();
-        const tempFilename = `temp_${timestamp}${path.extname(file.originalname)}`;
-        console.log('[UploadController:storage] Generated temp filename:', {
-            originalName: file.originalname,
-            tempFilename,
-            timestamp
-        });
-        cb(null, tempFilename);
+        const identifier = req.body.followerEmail || req.body.followerName;
+        const filename = `followerImage-${identifier}${path.extname(file.originalname)}`;
+        cb(null, filename);
     }
 });
 
