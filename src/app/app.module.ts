@@ -14,9 +14,9 @@ import { JwtInterceptor, ErrorInterceptor, appInitializer } from '@app/_helpers'
 import { AccountService } from '@app/_services';
 import { ConfigService } from '@app/_services/config.service';
 import { AppComponent } from '@app/app.component';
-import { AlertComponent } from '@app/shared/components/alert/alert.component';
 import { FooterComponent } from './footer/footer.component';
 import { AdminModule } from './admin/admin.module';
+import { SharedModule } from './shared/shared.module';
 
 // Add factory function to initialize ConfigService
 export function configInitializer(configService: ConfigService) {
@@ -33,11 +33,11 @@ export function configInitializer(configService: ConfigService) {
         AppRoutingModule,
         MatIconModule,
         MatButtonModule,
-        AdminModule
+        AdminModule,
+        SharedModule
     ],
     declarations: [
         AppComponent,
-        AlertComponent,
         FooterComponent
     ],
     providers: [

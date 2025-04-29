@@ -1,96 +1,36 @@
-<h2 class="template-title">New Social-Media Template</h2>
-<div class="template-container">
-  <div class="template-flex-row">
-    <!-- LEFT: Social Media Preview -->
-    <div class="social-media-profile">
-      <div class="profile-header">
-          <div class="profile-image-container" [class.loading]="imageLoading">
-              <img *ngIf="profile?.profileImage" 
-                  [src]="profile.profileImage" 
-                  alt="Profile picture"
-                  class="img-fluid rounded-circle profile-img mb-3 profile-img-max"
-                  (load)="onImageLoaded()"
-                  (error)="onImageError()">
-              <div *ngIf="!profile?.profileImage && !imageLoading" class="default-avatar mb-3">
-                  <mat-icon class="large-icon">account_circle</mat-icon>
-              </div>
-              <div *ngIf="imageLoading" class="loading-spinner">
-                  <mat-spinner diameter="40"></mat-spinner>
-              </div>
-          </div>
-          <!-- Image upload controls - only shown when viewing own profile -->
-          <div *ngIf="isOwnProfile" class="image-upload-controls mb-3">
-              <input type="file" 
-                     accept="image/*" 
-                     (change)="onFileSelected($event)" 
-                     class="hidden-file-input"
-                     #fileInput>
-              <button type="button" mat-stroked-button color="primary" (click)="fileInput.click()" class="upload-btn">
-                  <mat-icon>cloud_upload</mat-icon>
-                  Change Photo
-              </button>
-              <button *ngIf="selectedFile" type="button" mat-stroked-button color="primary" (click)="uploadImage()" class="save-btn">
-                  <mat-icon>save</mat-icon>
-                  Save
-              </button>
-              <div *ngIf="selectedFile" class="preview-container mt-2">
-                  <img [src]="previewUrl" alt="Preview" class="preview-image">
-              </div>
-          </div>
-          <div class="profile-info">
-              <h1>{{profile.firstName}} {{profile.lastName}}</h1>
-              <p class="title">{{profile.position || 'Professional Title'}}</p>
-              <p class="location" *ngIf="profile.city || profile.state">
-                  <mat-icon>location_on</mat-icon>
-                  {{profile.city}}{{profile.city && profile.state ? ', ' : ''}}{{profile.state}}
-              </p>
-          </div>
-      </div>
-      <div *ngIf="isOwnProfile" class="edit-profile-btn-container">
-          <button mat-stroked-button color="primary" [routerLink]="['/profile/edit']">
-              <mat-icon>edit</mat-icon> Edit Profile
-          </button>
-      </div>
+<div class="new-social-media-container" style="max-width: 1400px; width: 70%; margin: 0 auto;">
+    <!-- Title and buttons section -->
+    <div class="d-flex justify-content-between align-items-center" style="margin-bottom: 25px;">
+        <app-title [text]="'Social Media Template'" [level]="1" [marginBottom]="'none'"></app-title>
+        <div style="display: flex; gap: 16px;">
+            <button mat-raised-button style="background: #4759B2; color: white; padding: 0 24px; border-radius: 6px; height: 44px;" (click)="useTemplate()">
+                <mat-icon style="margin-right: 8px;">check_circle</mat-icon>
+                Use This Template
+            </button>
+            <button mat-button style="color: #FF4081; padding: 0 24px; height: 44px;" (click)="previewTemplate()">
+                <mat-icon style="margin-right: 8px;">preview</mat-icon>
+                Live Preview
+            </button>
+        </div>
     </div>
-    <!-- RIGHT: Description and Buttons -->
-    <div class="template-description-col">
-      <app-preview-template [title]="'New Social-Media Template'">
-        <!-- BUTTONS AREA -->
-        <ng-container buttons>
-          <button mat-raised-button color="primary" class="me-2">
-            <mat-icon>check_circle</mat-icon>
-            Use This Template
-          </button>
-          <button mat-button color="accent">
-            <mat-icon>preview</mat-icon>
-            Live Preview
-          </button>
-        </ng-container>
 
-        <!-- CONTENT AREA (Preview image or card) -->
-        <ng-container content>
-          <img src="assets/images/profile-templates/social-media-template.png"
-               alt="Social Media Template Preview"
-               class="template-preview-img">
-        </ng-container>
-
-        <!-- DESCRIPTION AREA -->
-        <ng-container description>
-          <p>
-            This is our new social media template, featuring a modern, social-inspired layout for your professional profile.
-          </p>
-          <div>
-            <h3>Features:</h3>
-            <ul>
-              <li>Large profile image and header</li>
-              <li>Followers and following counts</li>
-              <li>Social links and contact info</li>
-              <li>Followers you know preview</li>
-              <li>Modern, card-based design</li>
-            </ul>
-          </div>
-        </ng-container>
-      </app-preview-template>
+    <!-- Content section with white background -->
+    <div style="background: #fff; border-radius: 18px; box-shadow: 0 2px 16px rgba(0,0,0,0.08); padding: 32px; width: 100%; display: flex; align-items: flex-start; gap: 32px;">
+        <img src="assets/images/profile-templates/social-media-template.png" alt="Social Media Template Preview" style="max-width: 800px; width: 100%; height: auto; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+        <div class="preview-description" style="flex: 1; min-width: 220px;margin-top:20px;">
+            <p>
+                This is our new social media template, featuring a modern, social-inspired layout for your professional profile.
+            </p>
+            <div class="features-list">
+                <h3>Features:</h3>
+                <ul>
+                    <li>Large profile image and header</li>
+                    <li>Followers and following counts</li>
+                    <li>Social links and contact info</li>
+                    <li>Followers you know preview</li>
+                    <li>Modern, card-based design</li>
+                </ul>
+            </div>
+        </div>
     </div>
-  </div>
 </div> 
