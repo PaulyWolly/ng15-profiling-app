@@ -134,8 +134,8 @@ async function uploadProfileImage(req, res, next) {
             return res.status(400).json({ message: 'User email is required' });
         }
 
-        // Create the final filename with email
-        const finalFilename = `profileImage-${req.body.userEmail}${path.extname(req.file.originalname)}`;
+        // Always use .png extension regardless of input file type
+        const finalFilename = `profileImage-${req.body.userEmail}.png`;
         const finalPath = path.join(profilesDir, finalFilename);
         
         console.log('[UploadController:uploadProfileImage] File paths:', {
@@ -190,7 +190,11 @@ async function uploadProfileImage(req, res, next) {
         });
 
         // Update database with the consistent path format
-        const account = await accountService.uploadImage(req.body.userId || req.user.id, urlPath);
+        if (!req.body.userId) {
+            console.error('[UploadController:uploadProfileImage] Missing userId in request body');
+            return res.status(400).json({ message: 'User ID is required for image upload' });
+        }
+        const account = await accountService.uploadImage(req.body.userId, urlPath);
         console.log('[UploadController:uploadProfileImage] Database updated:', {
             account,
             urlPath
@@ -250,9 +254,8 @@ async function uploadFollowerImage(req, res, next) {
         // Create a sanitized version of the follower name for the filename
         const sanitizedName = req.body.followerName.replace(/[^a-z0-9]/gi, '_').toLowerCase();
         
-        // Create the final filename with follower name and timestamp
-        const timestamp = Date.now();
-        const finalFilename = `follower-${sanitizedName}-${timestamp}${path.extname(req.file.originalname)}`;
+        // Create the final filename with follower name
+        const finalFilename = `followerImage-${sanitizedName}${path.extname(req.file.originalname)}`;
         const finalPath = path.join(followersDir, finalFilename);
 
         // Rename temp file to final filename
@@ -266,7 +269,7 @@ async function uploadFollowerImage(req, res, next) {
         
         // Create follower object
         const follower = {
-            id: crypto.randomUUID ? crypto.randomUUID() : timestamp, // Fallback for older Node versions
+            id: crypto.randomUUID ? crypto.randomUUID() : Date.now(), // Fallback for older Node versions
             name: req.body.followerName,
             title: req.body.followerTitle || '',
             imageUrl: `${apiUrl}/${urlPath}`,

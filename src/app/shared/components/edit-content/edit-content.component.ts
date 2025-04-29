@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter, OnChanges, SimpleChanges, ChangeDetectorRef } from '@angular/core';
 import { FormGroup, FormBuilder, Validators, FormControl } from '@angular/forms';
 import { MustMatch } from '../../../_helpers/must-match.validator';
 import { PROFILE_TEMPLATES, ProfileTemplate, ProfileTemplateType } from '@app/_models/profile-template';
@@ -82,6 +82,10 @@ export class EditContentComponent implements OnInit, OnChanges, EditContentState
   
   id?: string;
   title: string = '';
+  
+  environment = environment;
+  
+  profileImageFile: File | null = null;
   
   constructor(
     private formBuilder: FormBuilder,
@@ -170,6 +174,10 @@ export class EditContentComponent implements OnInit, OnChanges, EditContentState
   
   private updateDataFromInput(): void {
     if (this.initialData) {
+      // Ensure this.id is set from initialData when editing
+      if (this.initialData.id) {
+        this.id = this.initialData.id;
+      }
       console.log('EditContentComponent - Initial data received, updating form:', this.initialData); // Modified log
       
       // Patch the form with all available data
@@ -338,43 +346,98 @@ export class EditContentComponent implements OnInit, OnChanges, EditContentState
   
   // Event handlers
   onSubmit() {
-    console.log('EditContentComponent onSubmit triggered.');
-    console.log('Form status:', this.form.status);
-    console.log('Form value:', this.form.value);
-    console.log('Form errors:', this.form.errors);
-    // Log errors for each control
-    Object.keys(this.form.controls).forEach(key => {
-      const controlErrors = this.form.controls[key].errors;
-      if (controlErrors != null) {
-        console.log('Control error - ' + key + ':', controlErrors);
-      }
-    });
-
     this.submitted = true;
-
-    // stop here if form is invalid
     if (this.form.invalid) {
-      console.log('Form is invalid. Submission stopped.');
+      console.log('[onSubmit] Form is invalid, returning');
       return;
     }
+    console.log('[onSubmit] Starting submit process:', {
+      id: this.id,
+      isAddMode: this.isAddMode,
+      initialDataId: this.initialData?.id,
+      profileImageFile: this.profileImageFile ? {
+        name: this.profileImageFile.name,
+        size: this.profileImageFile.size,
+        type: this.profileImageFile.type
+      } : null,
+      formProfileImage: this.form.get('profileImage')?.value
+    });
 
-    // If validation passes, prepare data and emit save event
-    this.submitting = true; // Assuming parent handles the actual submission state via input
-    const saveData = { ...this.form.value };
+    const handleError = (error: any) => {
+      let message = 'An error occurred while saving.';
+      if (error && error.error) {
+        if (typeof error.error === 'string') {
+          message = error.error;
+        } else if (error.error.message) {
+          message = error.error.message;
+        }
+      } else if (typeof error === 'string') {
+        message = error;
+      }
+      console.error('[onSubmit] Error occurred:', error);
+      this.alertService.error(message);
+    };
 
-    // Include follower data if applicable
-    if (this.isSocialMediaTemplate() && this.followers.length > 0) {
-      saveData.followerImages = this.followers.map(f => ({
-        id: f.id, // Ensure ID is included
-        name: f.name,
-        title: f.title,
-        imageUrl: f.imageUrl,
-        path: f.path
-      }));
+    const handleSuccess = (account: any) => {
+      console.log('[onSubmit] Account saved successfully:', account);
+      this.alertService.success('Account saved successfully');
+      // Navigate back to the appropriate page
+      if (this.editMode === EditMode.ACCOUNT) {
+        this.router.navigate(['/admin/accounts']);
+      } else if (this.editMode === EditMode.PROFILE) {
+        this.router.navigate(['/profile']);
+      }
+    };
+
+    if (this.profileImageFile) {
+      console.log('[onSubmit] Uploading profile image:', {
+        fileName: this.profileImageFile.name,
+        size: this.profileImageFile.size,
+        type: this.profileImageFile.type
+      });
+      const formData = new FormData();
+      formData.append('profileImage', this.profileImageFile);
+      formData.append('userEmail', this.form.get('email')?.value || '');
+      if (this.id) {
+        formData.append('userId', this.id);
+      }
+      console.log('[onSubmit] Created FormData with:', {
+        hasProfileImage: formData.has('profileImage'),
+        userEmail: this.form.get('email')?.value,
+        userId: this.id
+      });
+      this.uploadService.uploadProfileImage(this.profileImageFile, formData)
+        .pipe(first())
+        .subscribe({
+          next: (response) => {
+            console.log('[onSubmit] Profile image upload response:', response);
+            if (response && response.profileImage) {
+              console.log('[onSubmit] Updating form with new profile image:', response.profileImage);
+              this.form.patchValue({ profileImage: response.profileImage });
+            }
+            this.profileImageFile = null;
+            console.log('[onSubmit] Calling saveAccount after successful image upload');
+            this.saveAccount().subscribe({
+              next: handleSuccess,
+              error: handleError
+            });
+          },
+          error: (error) => {
+            console.error('[onSubmit] Profile image upload failed:', error);
+            this.alertService.error('Image upload failed');
+            this.saveAccount().subscribe({
+              next: handleSuccess,
+              error: handleError
+            });
+          }
+        });
+    } else {
+      console.log('[onSubmit] No profile image to upload, saving account directly');
+      this.saveAccount().subscribe({
+        next: handleSuccess,
+        error: handleError
+      });
     }
-    
-    console.log('Emitting save event with data:', saveData);
-    this.save.emit(saveData);
   }
   
   onCancel() {
@@ -384,7 +447,7 @@ export class EditContentComponent implements OnInit, OnChanges, EditContentState
   onImageChange(event: any) {
     if (event.target.files && event.target.files[0]) {
       const file = event.target.files[0];
-      
+      this.profileImageFile = file;
       // Check if this is the same image
       if (this.initialData?.profileImage) {
         this.imageConflict = true;
@@ -392,7 +455,6 @@ export class EditContentComponent implements OnInit, OnChanges, EditContentState
         this.selectedFile = file;
         return;
       }
-      
       const reader = new FileReader();
       reader.onload = (e: any) => {
         this.imageUrl = e.target.result as string;
@@ -406,21 +468,47 @@ export class EditContentComponent implements OnInit, OnChanges, EditContentState
   }
   
   confirmOverwrite() {
-    if (this.selectedFile) {
-      const reader = new FileReader();
-      reader.onload = (e: any) => {
-        this.imageUrl = e.target.result as string;
-        this.imageChange.emit({
-          file: this.selectedFile,
-          dataUrl: e.target.result,
-          confirmed: true
-        });
-      };
-      reader.readAsDataURL(this.selectedFile);
-      this.imageConflict = false;
-      this.imageConflictMessage = '';
-      this.selectedFile = null;
+    console.log('[confirmOverwrite] Starting overwrite process:', {
+      selectedFile: this.selectedFile ? {
+        name: this.selectedFile.name,
+        size: this.selectedFile.size,
+        type: this.selectedFile.type
+      } : null,
+      currentProfileImageFile: this.profileImageFile ? {
+        name: this.profileImageFile.name,
+        size: this.profileImageFile.size,
+        type: this.profileImageFile.type
+      } : null
+    });
+
+    if (!this.selectedFile) {
+      console.error('[confirmOverwrite] No file selected for overwrite');
+      this.alertService.error('No file selected for overwrite');
+      return;
     }
+
+    this.profileImageFile = this.selectedFile;
+    const reader = new FileReader();
+    reader.onload = (e: any) => {
+      this.imageUrl = e.target.result as string;
+      this.imageChange.emit({
+        file: this.selectedFile,
+        dataUrl: e.target.result,
+        confirmed: true
+      });
+      console.log('[confirmOverwrite] File loaded and preview updated:', {
+        imageUrl: this.imageUrl,
+        profileImageFile: this.profileImageFile ? {
+          name: this.profileImageFile.name,
+          size: this.profileImageFile.size,
+          type: this.profileImageFile.type
+        } : null
+      });
+    };
+    reader.readAsDataURL(this.selectedFile);
+    this.imageConflict = false;
+    this.imageConflictMessage = '';
+    this.selectedFile = null;
   }
 
   cancelOverwrite() {
@@ -540,6 +628,10 @@ export class EditContentComponent implements OnInit, OnChanges, EditContentState
   editFollower(index: number): void {
     if (index >= 0 && index < this.followers.length) {
       this.currentFollower = { ...this.followers[index] };
+      // Ensure imageUrl is set for the dialog preview
+      if (!this.currentFollower.imageUrl && this.currentFollower.path) {
+        this.currentFollower.imageUrl = this.environment.apiUrl + '/' + this.currentFollower.path;
+      }
       this.editingFollowerIndex = index;
       this.showFollowerDialog = true;
     }
@@ -556,11 +648,9 @@ export class EditContentComponent implements OnInit, OnChanges, EditContentState
       alert('Follower name is required');
       return;
     }
-    
     // If we have an image file, upload it first
     if (this.currentFollower.imageFile) {
       console.log('Uploading follower image for:', this.currentFollower.name);
-      
       this.uploadService.uploadFollowerImage(
         this.currentFollower.imageFile!,
         this.currentFollower.email || this.currentFollower.name || '',
@@ -575,41 +665,26 @@ export class EditContentComponent implements OnInit, OnChanges, EditContentState
           this.currentFollower.id = follower.id;
           this.currentFollower.imageUrl = follower.imageUrl;
           this.currentFollower.path = follower.path;
-          
           this.saveFollowerToList();
         },
         error: (error) => {
           console.error('Failed to upload follower image', error);
-          
-          // Create a unique ID for the follower if we don't have one
           if (!this.currentFollower.id) {
             this.currentFollower.id = Date.now().toString();
           }
-          
-          // If we have a data URL from the file preview, use that as a temporary image
-          // This allows us to display the image even if the server upload failed
           const reader = new FileReader();
           reader.onload = (e: any) => {
             this.currentFollower.imageUrl = e.target.result;
-            
-            // Save the follower with the local image
             this.saveFollowerToList();
-            
-            // Show a more helpful error message
-            console.warn('Using local image preview as fallback since upload failed.');
             alert('Could not upload the follower image to the server, but the follower has been saved with a local image. The image may not persist after page refresh. Error: ' + (error.message || 'Unknown error'));
           };
-          
           reader.readAsDataURL(this.currentFollower.imageFile as File);
         }
       });
     } else {
-      // Create a unique ID if we don't have one
       if (!this.currentFollower.id) {
         this.currentFollower.id = Date.now().toString();
       }
-      
-      // Save without image upload
       this.saveFollowerToList();
     }
   }
@@ -670,26 +745,25 @@ export class EditContentComponent implements OnInit, OnChanges, EditContentState
 
   private saveAccount() {
     const formData = this.form.getRawValue() as AccountUpdate;
-    
-    // If user is not admin, preserve the original role
     if (!this.isCurrentUserAdmin) {
       delete formData.role;
     }
-
-    // Clean up the form data by removing empty strings, but preserve arrays and objects
     const cleanedData = Object.entries(formData).reduce((acc, [key, value]) => {
         if (value !== '' && value !== null && value !== undefined) {
-            // Special handling for arrays and objects
             if (Array.isArray(value) || typeof value === 'object') {
                 acc[key as keyof AccountUpdate] = value;
             } else {
-            acc[key as keyof AccountUpdate] = value;
+                acc[key as keyof AccountUpdate] = value;
             }
         }
         return acc;
     }, {} as AccountUpdate);
 
-    // Ensure followerImages is included if it exists
+    // Ensure profileImage is included if it exists in the form
+    if (this.form.get('profileImage')?.value) {
+        cleanedData.profileImage = this.form.get('profileImage')?.value;
+    }
+
     if (this.followers.length > 0) {
         cleanedData.followerImages = this.followers.map(follower => ({
             id: follower.id,
@@ -699,9 +773,7 @@ export class EditContentComponent implements OnInit, OnChanges, EditContentState
             path: follower.path || ''
         }));
     }
-
-    console.log('Saving account with data:', cleanedData);
-
+    console.log('[saveAccount] this.id:', this.id, '| Will call:', this.id ? 'update (PUT)' : 'create (POST)', '| Data:', cleanedData);
     return this.id
         ? this.accountService.update(this.id, cleanedData)
         : this.accountService.create(cleanedData);
