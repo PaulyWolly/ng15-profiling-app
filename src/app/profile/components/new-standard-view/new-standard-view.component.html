@@ -17,15 +17,7 @@
 <!-- Profile Content -->
 <div #scrollContainer *ngIf="!loading && profile" class="new-standard-profile" [class.preview-mode]="isPreview">
     <mat-card class="profile-card">
-        <!-- Edit Button -->
-        <button mat-raised-button 
-                color="primary" 
-                class="edit-button"
-                *ngIf="isOwnProfile"
-                (click)="editProfile()">
-            <mat-icon>edit</mat-icon>
-            Edit Profile
-        </button>
+
 
         <div class="profile-content">
             <!-- Left Column -->

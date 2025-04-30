@@ -35,28 +35,14 @@ export class ProfileTemplatesComponent implements OnInit {
         // Set the template in the service
         this.profileTemplateService.setTemplate(templateId);
 
-        // Route to the appropriate view based on template type
-        switch (templateId) {
-            case ProfileTemplateType.SOCIAL_MEDIA:
-                this.router.navigate(['/profile-templates/social-media']);
-                break;
-            case ProfileTemplateType.STANDARD:
-                this.router.navigate(['/profile-templates/standard']);
-                break;
-            default:
-                this.router.navigate(['/profile']);
-                break;
-        }
+        // Always navigate to profile with template parameter
+        this.router.navigate(['/profile'], {
+            queryParams: { template: templateId.toLowerCase() }
+        });
     }
 
     getTemplateRoute(templateId: ProfileTemplateType): string {
-        switch (templateId) {
-            case ProfileTemplateType.SOCIAL_MEDIA:
-                return '/profile-templates/social-media';
-            case ProfileTemplateType.STANDARD:
-                return '/profile-templates/standard';
-            default:
-                return '/profile';
-        }
+        // Return profile route with template parameter
+        return `/profile?template=${templateId.toLowerCase()}`;
     }
 } 

@@ -223,11 +223,17 @@ export class AddEditComponent implements OnInit, OnDestroy {
             }
             
             // Create form data and upload
+            const profileName =
+              (this.account?.firstName && this.account.firstName.trim()) ||
+              (this.account?.email && this.account.email.trim()) ||
+              'profile';
+            console.log('Uploading profile image with profileName:', profileName);
             const formData = new FormData();
             formData.append('profileImage', event.file);
             formData.append('userId', this.id!);
             formData.append('userEmail', this.account?.email || '');
             formData.append('confirmed', event.confirmed ? 'true' : 'false');
+            formData.append('profileName', profileName);
 
         this.uploading = true;
             this.accountService.uploadImage(this.id!, formData)

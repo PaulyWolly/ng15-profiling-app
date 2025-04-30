@@ -70,7 +70,7 @@ export class EditContentComponent implements OnInit, OnChanges, EditContentState
   // Follower management
   followers: Follower[] = [];
   showFollowerDialog: boolean = false;
-  currentFollower: Follower = { name: '' };
+  currentFollower: Follower = { name: '', title: '', imageUrl: '', path: '', email: '' };
   editingFollowerIndex: number = -1;
   
   // Image upload properties
@@ -106,6 +106,13 @@ export class EditContentComponent implements OnInit, OnChanges, EditContentState
 
     this.initializeForm();
     // this.title = this.isAddMode ? 'Add User' : 'Edit User'; // REMOVE - Title is handled by getPageTitle()
+
+    if (this.accountId) {
+      this.accountService.getById(this.accountId).subscribe(profile => {
+        // this.profile = profile; // (remove or fix this line if 'profile' is not a property)
+        this.followers = profile.followerImages || [];
+      });
+    }
 
     // REMOVE Redundant getById call - Data should come from initialData Input
     /*
@@ -645,15 +652,15 @@ export class EditContentComponent implements OnInit, OnChanges, EditContentState
   
   saveFollower(): void {
     if (!this.currentFollower.name) {
-      alert('Follower name is required');
-      return;
+        alert('Follower name is required');
+        return;
     }
     // If we have an image file, upload it first
     if (this.currentFollower.imageFile) {
       console.log('Uploading follower image for:', this.currentFollower.name);
       this.uploadService.uploadFollowerImage(
         this.currentFollower.imageFile!,
-        this.currentFollower.email || this.currentFollower.name || '',
+        // this.currentFollower.email || this.currentFollower.name || '',
         this.currentFollower.name ?? '',
         this.currentFollower.title ?? ''
       )

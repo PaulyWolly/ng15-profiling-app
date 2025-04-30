@@ -1,16 +1,13 @@
 const express = require('express');
 const router = express.Router();
-const uploadController = require('./upload.controller');
+const { uploadMiddleware, uploadFollowerImage } = require('./upload.controller');
 const authorize = require('../_middleware/authenticate');
 
-// Profile image routes
-router.get('/profile/:userId', authorize(), uploadController.getProfileImage);
-router.post('/profile', authorize(), uploadController.uploadMiddleware, uploadController.uploadProfileImage);
-router.delete('/profile', authorize(), uploadController.deleteProfileImage);
+// Follower image upload route
+router.post('/follower-image', 
+    authorize(),
+    uploadMiddleware,
+    uploadFollowerImage
+);
 
-// Follower image routes
-router.get('/follower/:userId', authorize(), uploadController.getFollowerImage);
-router.post('/follower', authorize(), uploadController.uploadMiddleware, uploadController.uploadFollowerImage);
-router.delete('/follower', authorize(), uploadController.deleteFollowerImage);
-
-module.exports = router; 
+module.exports = router;

@@ -149,10 +149,6 @@ export class NewStandardViewComponent implements OnInit, OnDestroy, AfterViewIni
         );
     }
 
-    editProfile(): void {
-        this.router.navigate(['/profile/edit']);
-    }
-
     openMapDialog(): void {
         if (!this.profile) return;
 

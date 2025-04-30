@@ -228,15 +228,33 @@
 }
 
 .follower-dialog .card {
-  min-width: 500px;
+  min-width: 800px;
   max-width: 90%;
   max-height: 90vh;
   overflow-y: auto;
 }
 
-.follower-preview-image {
-  width: 80px;
-  height: 80px;
+.follower-dialog .card-body {
+  padding: 1.6rem;
+}
+
+.follower-dialog .form-group {
+  margin-bottom: 1.2rem;
+}
+
+.follower-dialog .form-label {
+  font-size: 0.9rem;
+  margin-bottom: 0.4rem;
+}
+
+.follower-dialog .form-control {
+  font-size: 0.9rem;
+  padding: 0.6rem;
+}
+
+.follower-dialog .follower-preview-image {
+  width: 128px;
+  height: 128px;
   border-radius: 50%;
   background-color: #f0f0f0;
   display: flex;
@@ -247,15 +265,28 @@
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-.follower-preview-image img {
+.follower-dialog .follower-preview-image img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-.follower-preview-image .material-icons {
-  font-size: 40px;
+.follower-dialog .follower-preview-image .material-icons {
+  font-size: 64px;
   color: #ccc;
+}
+
+.follower-dialog .btn {
+  font-size: 0.9rem;
+  padding: 0.6rem 1.2rem;
+}
+
+.follower-dialog .card-header h5 {
+  font-size: 1.2rem;
+}
+
+.follower-dialog .card-footer {
+  padding: 1.2rem;
 }
 
 /* Move command bar to the right */
