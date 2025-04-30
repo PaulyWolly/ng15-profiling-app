@@ -4,9 +4,11 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { Router } from '@angular/router';
 import { Account } from '@app/_models';
 import { environment } from '@environments/environment';
+import { CustomTooltipDirective } from '@app/shared/custom-tooltip/custom-tooltip.directive';
 
 @Component({
   selector: 'app-new-social-media',
@@ -16,7 +18,9 @@ import { environment } from '@environments/environment';
     MatButtonModule,
     MatIconModule,
     MatCardModule,
-    MatProgressSpinnerModule
+    MatProgressSpinnerModule,
+    MatTooltipModule,
+    CustomTooltipDirective
   ],
   template: `
     <div class="social-card">
@@ -49,16 +53,56 @@ import { environment } from '@environments/environment';
 
         <!-- Social Links -->
         <div class="social-icons">
-          <a *ngIf="profile?.facebook" [href]="profile.facebook" target="_blank" class="social-icon">
-            <i class="fab fa-facebook-f"></i>
+        <a
+            *ngIf="profile?.facebook"
+            [href]="profile.facebook"
+            appCustomTooltip="Visit my Facebook/Meta Profile"
+            tooltipBgColor="#222"
+            tooltipTextColor="#fff"
+            tooltipFont="Arial"
+            tooltipBorder="1px solid #00f"
+            target="_blank"
+            class="social-icon"
+          >
+          <i class="fab fa-facebook-f"></i>
           </a>
-          <a *ngIf="profile?.linkedin" [href]="profile.linkedin" target="_blank" class="social-icon">
+          <a
+            *ngIf="profile?.linkedin"
+            [href]="profile.linkedin"
+            appCustomTooltip="Visit my LinkedIn Profile"
+            tooltipBgColor="#222"
+            tooltipTextColor="#fff"
+            tooltipFont="Arial"
+            tooltipBorder="1px solid #00f"
+            target="_blank"
+            class="social-icon"
+          >
             <i class="fab fa-linkedin-in"></i>
           </a>
-          <a *ngIf="profile?.website" [href]="profile.website" target="_blank" class="social-icon">
-            <i class="fas fa-globe"></i>
+          <a
+            *ngIf="profile?.website"
+            [href]="profile.website"
+            appCustomTooltip="Visit my website"
+            tooltipBgColor="#222"
+            tooltipTextColor="#fff"
+            tooltipFont="Arial"
+            tooltipBorder="1px solid #00f"
+            target="_blank"
+            class="social-icon"
+          >
+            <i class="fa-solid fa-globe"></i>
           </a>
-          <a *ngIf="profile?.github" [href]="profile.github" target="_blank" class="social-icon">
+          <a
+            *ngIf="profile?.github"
+            [href]="profile.github"
+            appCustomTooltip="Visit my github repository"
+            tooltipBgColor="#222"
+            tooltipTextColor="#fff"
+            tooltipFont="Arial"
+            tooltipBorder="1px solid #00f"
+            target="_blank"
+            class="social-icon"
+          >
             <i class="fab fa-github"></i>
           </a>
         </div>
@@ -81,7 +125,16 @@ import { environment } from '@environments/environment';
         <div class="followers-preview" *ngIf="profile?.followerImages?.length">
           <div class="follower-avatars">
             <div class="follower-avatar" *ngFor="let follower of profile?.followerImages">
-              <img [src]="getFollowerImageUrl(follower)" [alt]="follower.name" class="follower-image" [title]="follower.title || ''">
+            <img
+              [src]="getFollowerImageUrl(follower)"
+              [alt]="follower.name"
+              class="follower-image"
+              appCustomTooltip="{{follower.title}} - {{follower.name}}"
+              tooltipBgColor="#e8e3cc"
+              tooltipTextColor="#222"
+              tooltipFont="Verdana"
+              tooltipBorder="1px solid #888"
+            />
             </div>
           </div>
           <div class="followers-you-know-label">{{profile.followerImages?.length}} followers you know</div>
@@ -93,6 +146,16 @@ import { environment } from '@environments/environment';
         </div>
       </div>
     </div>
+
+    <style>
+      ::ng-deep .mat-mdc-tooltip {
+        transform: translate(50px, 0) !important;
+      }
+
+      ::ng-deep .social-icon + .mat-mdc-tooltip {
+        margin-top: 8px !important;
+      }
+    </style>
   `,
   styleUrls: ['./new-social-media.component.scss']
 })
@@ -142,4 +205,4 @@ export class NewSocialMediaComponent implements OnInit {
       window.open(`https://www.google.com/maps/search/?api=1&query=${query}`, '_blank');
     }
   }
-} 
+}

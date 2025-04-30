@@ -388,7 +388,7 @@ form > :last-child {
 }
 
 .scrolling-div {
-  max-height: 80vh;
+  max-height: 65vh;
   overflow-y: auto;
   padding-right: 16px;
   min-width: 0;

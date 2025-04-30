@@ -263,10 +263,13 @@
                             <div class="follower-item-content">
                               <div class="follower-main">
                                 <div class="follower-avatar">
-                                  <img *ngIf="follower.path" 
-                                       [src]="environment.apiUrl + '/' + follower.path"
-                                       alt="{{follower.name}}'s avatar">
-                                  <div *ngIf="!follower.path" class="no-avatar">?</div>
+                                  <img *ngIf="follower.imageUrl || follower.path" 
+                                       [src]="follower.imageUrl || (environment.apiUrl + '/' + follower.path)"
+                                       [alt]="follower.name + '\'s avatar'"
+                                       onerror="this.src='assets/images/default-avatar.png'">
+                                  <div *ngIf="!follower.imageUrl && !follower.path" class="no-avatar">
+                                    <i class="material-icons">account_circle</i>
+                                  </div>
                                 </div>
                                 <div class="follower-info">
                                   <span class="follower-name">{{ follower.name }}</span>
