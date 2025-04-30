@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 console.log('[!!!] Loading accounts.controller.js...');
 const authenticate = require('../_middleware/authenticate');
-const { upload, uploadProfileImage, uploadFollowerImage } = require('./upload.controller');
+const { upload, uploadProfileImage, uploadFollowerImage } = require('../uploads/upload.controller');
 const accountService = require('./account.service');
 const Joi = require('joi');
 const validateRequest = require('../_middleware/validate-request');
@@ -61,16 +61,8 @@ router.post('/upload-profile-image',
 // Add follower image upload route
 router.post('/upload-follower-image', 
     authenticate(),
-    (req, res, next) => {
-        upload.single('followerImage')(req, res, (err) => {
-            if (err) {
-                console.error('Upload middleware error:', err);
-                return res.status(400).json({ message: err.message });
-            }
-            next();
-        });
-    },
-    (req, res, next) => {
+    upload.single('file'),  // Use multer middleware directly
+    async (req, res, next) => {
         console.log('Processing follower upload request:', {
             file: req.file ? {
                 filename: req.file.filename,
@@ -82,7 +74,7 @@ router.post('/upload-follower-image',
         });
         
         try {
-            uploadFollowerImage(req, res, next);
+            await uploadFollowerImage(req, res, next);
         } catch (error) {
             console.error('Error in upload follower image route:', error);
             res.status(500).json({ message: 'Server error during upload' });

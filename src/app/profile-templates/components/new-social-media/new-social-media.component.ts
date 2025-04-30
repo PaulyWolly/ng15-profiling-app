@@ -29,8 +29,6 @@ import { HttpClient } from '@angular/common/http';
 export class NewSocialMediaComponent implements OnInit {
   @Input() profile!: Account;
   @Input() isOwnProfile: boolean = false;
-
-  followerImages: string[] = [];
   
   imageLoading: boolean = true;
   selectedFile: File | null = null;
@@ -44,14 +42,16 @@ export class NewSocialMediaComponent implements OnInit {
   ) {}
   
   ngOnInit() {
+    // If you want to fetch followers from the backend, do it here and set this.followers
+    // Example:
+    // this.http.get<{ imageUrl: string; titlePosition?: string; comment?: string }[]>(...)
+    //   .subscribe(followers => this.followers = followers);
 
-    this.http.get<string[]>('http://localhost:5001/uploads/followers-images')
-    .subscribe(images => {
-      this.followerImages = images;
-    });
-
-    // Start with loading state if profile image exists
     this.imageLoading = !!this.profile?.profileImage;
+  }
+
+  get followers() {
+    return this.profile?.followerImages || [];
   }
   
   onImageLoaded() {

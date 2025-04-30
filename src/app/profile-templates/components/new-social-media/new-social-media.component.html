@@ -1,8 +1,12 @@
 <div class="social-card">
     <div class="profile-card-top">
-      
-    <div class="profile-image-container" [class.loading]="imageLoading">
-        <img *ngIf="profile?.profileImage" class="profile-img" [src]="profile.profileImage" alt="Profile" (load)="onImageLoaded()" (error)="onImageError()" />
+      <div class="profile-image-container" [class.loading]="imageLoading">
+        <img *ngIf="profile?.profileImage"
+             class="profile-img"
+             [src]="profile.profileImage"
+             alt="Profile"
+             (load)="onImageLoaded()"
+             (error)="onImageError()" />
         <div *ngIf="!profile?.profileImage && !imageLoading" class="default-avatar">
           <mat-icon class="large-icon">person</mat-icon>
         </div>
@@ -12,14 +16,62 @@
       </div>
       <h2>{{ profile.firstName || 'Paul Welby' }}</h2>
       <div class="text-muted">{{ profile.position || 'Owner/Developer/Designer' }}</div>
-      <div class="location">
+      <div class="location" (click)="openMapDialog()" style="cursor:pointer;" title="View on Map">
         <mat-icon class="location-icon">location_on</mat-icon>
         {{ profile.address || '313 North Mission Road, Fallbrook, CA 92028' }}
       </div>
       <div class="social-icons">
-        <a class="social-icon" href="#"><mat-icon>link</mat-icon></a>
-        <a class="social-icon" href="#"><mat-icon>link</mat-icon></a>
-      </div>
+        <a
+            *ngIf="profile.twitter"
+            class="social-icon"
+            [href]="profile.twitter"
+            target="_blank"
+            rel="noopener"
+            title="Twitter"
+        >
+          <i class="fab fa-twitter"></i>
+        </a>
+        <a
+            *ngIf="profile.facebook"
+            class="social-icon"
+            [href]="profile.facebook"
+            target="_blank"
+            rel="noopener"
+            title="Facebook"
+        >
+          <i class="fab fa-facebook"></i>
+        </a>
+        <a
+            *ngIf="profile.linkedin"
+            class="social-icon"
+            [href]="profile.linkedin"
+            target="_blank"
+            rel="noopener"
+            title="LinkedIn"
+        >
+          <i class="fab fa-linkedin"></i>
+        </a>
+        <a
+            *ngIf="profile.website"
+            class="social-icon"
+            [href]="profile.website"
+            target="_blank"
+            rel="noopener"
+            title="Website"
+        >
+          <i class="fas fa-globe"></i>
+        </a>
+        <a
+            *ngIf="profile.github"
+            class="social-icon"
+            [href]="profile.github"
+            target="_blank"
+            rel="noopener"
+            title="GitHub"
+        >
+            <i class="fab fa-github"></i>
+        </a>
+        </div>
     </div>
 
     <div class="profile-card-bottom">
@@ -35,13 +87,28 @@
       </div>
       <div class="followers-preview">
         <div class="follower-avatars">
-            <div class="follower-avatar" *ngFor="let img of followerImages">
-            <img class="follower-image" [src]="'http://localhost:5001/uploads/followers/' + img" [alt]="img" />
+          <ng-container *ngIf="followers.length > 0; else noFollowers">
+            <div class="follower-avatar" *ngFor="let follower of followers"
+                [title]="
+                follower.title && follower.name
+                    ? follower.title + ' - ' + follower.name
+                    : follower.title
+                    ? follower.title
+                    : follower.name
+                ">
+                <img
+                    class="follower-image"
+                    [src]="follower.imageUrl"
+                    [alt]="follower.title || follower.name || 'Follower'"
+                />
             </div>
-            <span *ngIf="followerImages.length === 0" class="follower-avatar-placeholder">No followers yet</span>
+          </ng-container>
+          <ng-template #noFollowers>
+            <span class="follower-avatar-placeholder no-followers-message">No followers yet</span>
+          </ng-template>
         </div>
         <div class="followers-you-know-label">
-            {{ followerImages.length }} followers you know
+          {{ followers.length }} followers you know
         </div>
       </div>
       <div class="action-buttons">

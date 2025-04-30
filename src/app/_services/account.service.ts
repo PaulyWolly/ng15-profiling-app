@@ -435,34 +435,23 @@ export class AccountService {
     }
 
     // Profile image handling
-    uploadImage(id: string, formData: FormData) {
-        return this.getHttp().post<any>(`${environment.apiUrl}/accounts/upload-profile-image`, formData, {
-            params: { userId: id }
-        })
-            .pipe(
-                map(response => {
-                    // Format the profile image URL
-                    if (response.profileImage) {
-                        response.profileImage = this.formatImageUrl(response.profileImage);
-                    }
-                    
-                    // Update the current account if this is the logged-in user's image
-                    const currentAccount = this.accountValue;
-                    if (currentAccount && currentAccount.id === id) {
-                        currentAccount.profileImage = response.profileImage;
-                        this.accountSubject.next(currentAccount);
-                    }
-                    
-                    return {
-                        ...response,
-                        message: response.message || 'Profile image uploaded successfully'
-                    };
-                }),
-                catchError(error => {
-                    console.error('[AccountService] Upload Error:', error);
-                    return throwError(() => new Error(error.error?.message || 'Failed to upload image'));
-                })
-            );
+    uploadProfileImage(file: File, existingFormData?: FormData) {
+        const formData = existingFormData || new FormData();
+        if (!existingFormData) {
+            formData.append('file', file);
+        }
+        return this.getHttp().post<any>(`${environment.apiUrl}/accounts/upload-profile-image`, formData);
+    }
+
+    uploadFollowerImage(file: File, followerEmail: string, followerName: string, followerTitle?: string) {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('followerEmail', followerEmail);
+        formData.append('followerName', followerName);
+        if (followerTitle) {
+            formData.append('followerTitle', followerTitle);
+        }
+        return this.getHttp().post<any>(`${environment.apiUrl}/accounts/upload-follower-image`, formData);
     }
 
     // Timer methods
@@ -668,5 +657,35 @@ export class AccountService {
 
     deleteCleanupRecord(id: string) {
         return this.getHttp().delete<{ message: string }>(`${environment.apiUrl}/admin/cleanup-history/${id}`);
+    }
+
+    uploadImage(id: string, formData: FormData) {
+        return this.getHttp().post<any>(`${environment.apiUrl}/accounts/upload-profile-image`, formData, {
+            params: { userId: id }
+        })
+            .pipe(
+                map(response => {
+                    // Format the profile image URL
+                    if (response.profileImage) {
+                        response.profileImage = this.formatImageUrl(response.profileImage);
+                    }
+                    
+                    // Update the current account if this is the logged-in user's image
+                    const currentAccount = this.accountValue;
+                    if (currentAccount && currentAccount.id === id) {
+                        currentAccount.profileImage = response.profileImage;
+                        this.accountSubject.next(currentAccount);
+                    }
+                    
+                    return {
+                        ...response,
+                        message: response.message || 'Profile image uploaded successfully'
+                    };
+                }),
+                catchError(error => {
+                    console.error('[AccountService] Upload Error:', error);
+                    return throwError(() => new Error(error.error?.message || 'Failed to upload image'));
+                })
+            );
     }
 }

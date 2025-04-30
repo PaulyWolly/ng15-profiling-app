@@ -86,10 +86,16 @@ export class AccountSettingsComponent implements OnInit {
             file: event.file.name
         });
 
+        const profileName =
+          (currentUser?.firstName && currentUser.firstName.trim()) ||
+          (currentUser?.email && currentUser.email.trim()) ||
+          'profile';
+        console.log('Uploading profile image with profileName:', profileName);
         const formData = new FormData();
         formData.append('profileImage', event.file);
         formData.append('userId', currentUser.id);
         formData.append('userEmail', currentUser.email || '');
+        formData.append('profileName', profileName);
         
         this.accountService.uploadImage(currentUser.id, formData)
             .pipe(first())
