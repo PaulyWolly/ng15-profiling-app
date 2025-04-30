@@ -31,14 +31,21 @@ export class ProfileTemplatesComponent implements OnInit {
 
     selectTemplate(templateId: ProfileTemplateType) {
         this.currentTemplate = templateId;
-        
-        // Set the template in the service
         this.profileTemplateService.setTemplate(templateId);
 
-        // Always navigate to profile with template parameter
-        this.router.navigate(['/profile'], {
-            queryParams: { template: templateId.toLowerCase() }
-        });
+        // Navigate to the preview page for the selected template
+        switch (templateId) {
+            case ProfileTemplateType.SOCIAL_MEDIA:
+                this.router.navigate(['/profile-templates/social-media']);
+                break;
+            case ProfileTemplateType.STANDARD:
+                this.router.navigate(['/profile-templates/standard']);
+                break;
+            // Add other cases as needed
+            default:
+                this.router.navigate(['/profile']);
+                break;
+        }
     }
 
     getTemplateRoute(templateId: ProfileTemplateType): string {

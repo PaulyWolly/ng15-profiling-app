@@ -32,12 +32,12 @@
 
 .scrolling-div::-webkit-scrollbar-track {
   background: #f1f1f1;
-  border-radius: 8px;
+  border-radius: var(--app-border-radius);
 }
 
 .scrolling-div::-webkit-scrollbar-thumb {
   background: #888;
-  border-radius: 8px;
+  border-radius: var(--app-border-radius);
   border: 2px solid #f1f1f1;  /* Creates padding effect */
 }
 

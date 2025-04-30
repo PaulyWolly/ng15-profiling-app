@@ -9,18 +9,21 @@
 }
 
 .alert {
-    margin-bottom: 0.8rem;
+    padding: 16px;
+    margin-bottom: 16px;
+    border: 1px solid #e0e0e0;
+    border-radius: var(--app-border-radius);
+    background-color: #fffbe6;
+    color: #856404;
+    font-size: 16px;
     pointer-events: auto; /* Make the actual alerts clickable */
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     opacity: 0.95;
     transition: all 0.3s ease;
-    border-radius: 8px;
-    padding: 14px 40px 14px 45px; /* Increased padding for better readability */
     position: relative;
     border-left: 5px solid transparent; /* Slightly thicker accent border */
     animation: slideInRight 0.5s forwards;
     font-family: 'Nunito', 'Quicksand', sans-serif;
-    font-size: 15px;
     line-height: 1.5;
 }
 

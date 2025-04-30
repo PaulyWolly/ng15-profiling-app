@@ -21,6 +21,10 @@ app-root {
     position: relative;
 }
 
+:root {
+    --app-border-radius: 8px;
+  }
+
 /* .main-container {
     flex: 1;
     padding-bottom: 35px;
@@ -62,7 +66,7 @@ app-root {
 /* Profile image container adjustment for edit pages */
 app-edit .oval-container,
 app-add-edit .oval-container {
-    border-radius: 5px !important; /* Use square corners for edit page */
+    border-radius: var(--app-border-radius) !important; /* Use square corners for edit page */
     width: 180px !important; /* Make it slightly larger */
     height: auto !important; /* Allow height to adjust to content */
     aspect-ratio: 1 / 1; /* Square aspect ratio */
@@ -277,7 +281,7 @@ body {
 }
 
 .card {
-    border-radius: 0.5rem;
+    border-radius: var(--app-border-radius);
     overflow: hidden;
     box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,0.075);
     margin-bottom: 1.5rem;
@@ -309,7 +313,7 @@ a:hover {
 }
 
 .btn {
-    border-radius: 0.25rem;
+    border-radius: var(--app-border-radius);
     padding: 0.5rem 1rem;
 }
 
@@ -327,7 +331,7 @@ a:hover {
 .card {
     margin-bottom: 1rem;
     border: 1px solid rgba(0,0,0,.125);
-    border-radius: 0.25rem;
+    border-radius: var(--app-border-radius);
     background-color: #fff;
     box-shadow: 0 0.125rem 0.25rem rgba(0,0,0,.075);
 }

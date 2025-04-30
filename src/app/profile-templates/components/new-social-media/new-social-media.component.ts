@@ -33,7 +33,7 @@ import { CurvedBorderComponent } from "../../../shared/curved-border/curved-bord
         [height]="300"
         [borderColor]="'#eebbbb'"
         [borderWidth]="4"
-        [borderRadius]="24"
+        [borderRadius]="8"
       ></app-curved-border>
       <div class="profile-card-top">
 
@@ -167,7 +167,7 @@ import { CurvedBorderComponent } from "../../../shared/curved-border/curved-bord
         z-index: 1;
         padding-top: 40px; /* Adjust as needed to prevent overlap with border */
         background: #fff;
-        border-radius: 24px;
+        border-radius: var(--app-border-radius);
       }
       .profile-card-top {
         position: relative;

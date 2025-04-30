@@ -16,7 +16,7 @@
     justify-content: center;
     padding: 2rem;
     background: #f8f9fa;
-    border-radius: 12px;
+    border-radius: var(--app-border-radius);
 }
 
 .curved-border {

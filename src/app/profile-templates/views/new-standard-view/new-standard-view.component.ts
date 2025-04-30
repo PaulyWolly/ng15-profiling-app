@@ -116,7 +116,7 @@ import { Account } from '@app/_models';
 
         .profile-card {
             background: white;
-            border-radius: 8px;
+            border-radius: var(--app-border-radius);
             overflow: hidden;
         }
 
@@ -216,7 +216,7 @@ import { Account } from '@app/_models';
             text-decoration: none;
             color: #333;
             padding: 8px;
-            border-radius: 4px;
+            border-radius: var(--app-border-radius);
             transition: background-color 0.2s;
 
             &:hover {
@@ -237,7 +237,7 @@ import { Account } from '@app/_models';
         .skill-tag {
             background: #f5f5f5;
             padding: 4px 12px;
-            border-radius: 16px;
+            border-radius: var(--app-border-radius);
             font-size: 0.9rem;
             color: #666;
         }
