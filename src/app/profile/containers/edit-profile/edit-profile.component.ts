@@ -82,8 +82,14 @@ export class EditProfileComponent implements OnInit {
     if (!this.selectedFile || !this.account?.id) return;
 
     const formData = new FormData();
+    const profileName =
+      (this.account?.firstName && this.account.firstName.trim()) ||
+      (this.account?.email && this.account.email.trim()) ||
+      'profile';
+    console.log('Uploading profile image with profileName:', profileName);
     formData.append('profileImage', this.selectedFile);
     formData.append('userEmail', this.account.email || '');
+    formData.append('profileName', profileName);
 
     this.accountService.uploadImage(this.account.id, formData)
       .subscribe({

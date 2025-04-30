@@ -48,9 +48,9 @@ export class LayoutComponent implements OnInit {
   }
   
   // Check if the given template type is active
-  isTemplateActive(templateType: string): boolean {
+  isTemplateActive(template: string): boolean {
     const currentTemplate = this.profileTemplateService.currentTemplateValue;
-    return currentTemplate === ProfileTemplateType[templateType as keyof typeof ProfileTemplateType];
+    return currentTemplate === ProfileTemplateType[template as keyof typeof ProfileTemplateType];
   }
   
   // Select template function that passes to the service
@@ -85,5 +85,12 @@ export class LayoutComponent implements OnInit {
     });
     
     this.profileTemplateService.setTemplate(templateType);
+    this.router.navigate(['/profile'], {
+      queryParams: { template: template.toLowerCase() }
+    });
+  }
+
+  isAccountSettingsRoute(): boolean {
+    return this.router.url.includes('/profile/account-settings');
   }
 } 

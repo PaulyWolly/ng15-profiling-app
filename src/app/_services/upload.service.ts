@@ -16,16 +16,23 @@ export class UploadService {
         return this.http.post<Account>(`${environment.apiUrl}/accounts/upload-profile-image`, formData);
     }
     
-    uploadFollowerImage(file: File, followerEmail: string, followerName: string, followerTitle?: string) {
+    uploadFollowerImage(file: File, followerName: string, followerTitle?: string) {
         const formData = new FormData();
-        formData.append('followerImage', file);
-        formData.append('followerEmail', followerEmail);
+        formData.append('file', file);
         formData.append('followerName', followerName);
         
         if (followerTitle) {
             formData.append('followerTitle', followerTitle);
         }
 
-        return this.http.post<FollowerImage>(`${environment.apiUrl}/accounts/upload-follower-image`, formData);
+        return this.http.post<FollowerImage>(
+            `${environment.apiUrl}/upload/follower-image`,
+            formData,
+            {
+                headers: {
+                    Accept: 'application/json'
+                }
+            }
+        );
     }
 } 

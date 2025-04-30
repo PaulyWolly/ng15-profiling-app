@@ -70,7 +70,7 @@ export class EditContentComponent implements OnInit, OnChanges, EditContentState
   // Follower management
   followers: Follower[] = [];
   showFollowerDialog: boolean = false;
-  currentFollower: Follower = { name: '' };
+  currentFollower: Follower = { name: '', title: '', imageUrl: '', path: '', email: '' };
   editingFollowerIndex: number = -1;
   
   // Image upload properties
@@ -102,6 +102,13 @@ export class EditContentComponent implements OnInit, OnChanges, EditContentState
 
     this.initializeForm();
     // this.title = this.isAddMode ? 'Add User' : 'Edit User'; // REMOVE - Title is handled by getPageTitle()
+
+    if (this.accountId) {
+      this.accountService.getById(this.accountId).subscribe(profile => {
+        // this.profile = profile; // (remove or fix this line if 'profile' is not a property)
+        this.followers = profile.followerImages || [];
+      });
+    }
 
     // REMOVE Redundant getById call - Data should come from initialData Input
     /*
@@ -362,19 +369,27 @@ export class EditContentComponent implements OnInit, OnChanges, EditContentState
     this.submitting = true; // Assuming parent handles the actual submission state via input
     const saveData = { ...this.form.value };
 
-    // Include follower data if applicable
-    if (this.isSocialMediaTemplate() && this.followers.length > 0) {
+    // Always include followers, even if empty (to allow deletions)
+    if (this.isSocialMediaTemplate()) {
       saveData.followerImages = this.followers.map(f => ({
-        id: f.id, // Ensure ID is included
+        id: f.id,
         name: f.name,
         title: f.title,
         imageUrl: f.imageUrl,
         path: f.path
       }));
     }
-    
-    console.log('Emitting save event with data:', saveData);
+  
     this.save.emit(saveData);
+
+    // After save, reload the latest data:
+    if (this.accountId) {
+      this.accountService.getById(this.accountId).subscribe(profile => {
+        this.patchFormValues(profile);
+        this.followers = profile.followerImages || [];
+      });
+    }
+
   }
   
   onCancel() {
@@ -553,64 +568,63 @@ export class EditContentComponent implements OnInit, OnChanges, EditContentState
   
   saveFollower(): void {
     if (!this.currentFollower.name) {
-      alert('Follower name is required');
-      return;
+        alert('Follower name is required');
+        return;
     }
     
     // If we have an image file, upload it first
     if (this.currentFollower.imageFile) {
-      console.log('Uploading follower image for:', this.currentFollower.name);
-      
-      this.uploadService.uploadFollowerImage(
-        this.currentFollower.imageFile!,
-        this.currentFollower.email || this.currentFollower.name || '',
-        this.currentFollower.name ?? '',
-        this.currentFollower.title ?? ''
-      )
-      .pipe(first())
-      .subscribe({
-        next: (follower) => {
-          console.log('Follower image uploaded successfully:', follower);
-          // Update with the server-provided data
-          this.currentFollower.id = follower.id;
-          this.currentFollower.imageUrl = follower.imageUrl;
-          this.currentFollower.path = follower.path;
-          
-          this.saveFollowerToList();
-        },
-        error: (error) => {
-          console.error('Failed to upload follower image', error);
-          
-          // Create a unique ID for the follower if we don't have one
-          if (!this.currentFollower.id) {
-            this.currentFollower.id = Date.now().toString();
-          }
-          
-          // If we have a data URL from the file preview, use that as a temporary image
-          // This allows us to display the image even if the server upload failed
-          const reader = new FileReader();
-          reader.onload = (e: any) => {
-            this.currentFollower.imageUrl = e.target.result;
-            
-            // Save the follower with the local image
-            this.saveFollowerToList();
-            
-            // Show a more helpful error message
-            console.warn('Using local image preview as fallback since upload failed.');
-            alert('Could not upload the follower image to the server, but the follower has been saved with a local image. The image may not persist after page refresh. Error: ' + (error.message || 'Unknown error'));
-          };
-          
-          reader.readAsDataURL(this.currentFollower.imageFile as File);
-        }
-      });
+        console.log('Uploading follower image for:', this.currentFollower.name);
+        
+        this.uploadService.uploadFollowerImage(
+            this.currentFollower.imageFile!,
+            this.currentFollower.name!,  // followerName (required)
+            this.currentFollower.title || '' // followerTitle (optional)
+        )
+        .pipe(first())
+        .subscribe({
+            next: (follower) => {
+                console.log('Follower image uploaded successfully:', follower);
+                // Update with the server-provided data
+                this.currentFollower.id = follower.id;
+                this.currentFollower.imageUrl = follower.imageUrl;
+                this.currentFollower.path = follower.path;
+                
+                this.saveFollowerToList();
+            },
+            error: (error) => {
+                console.error('Failed to upload follower image', error);
+                
+                // Create a unique ID for the follower if we don't have one
+                if (!this.currentFollower.id) {
+                    this.currentFollower.id = Date.now().toString();
+                }
+                
+                // If we have a data URL from the file preview, use that as a temporary image
+                // This allows us to display the image even if the server upload failed
+                const reader = new FileReader();
+                reader.onload = (e: any) => {
+                    this.currentFollower.imageUrl = e.target.result;
+                    
+                    // Save the follower with the local image
+                    this.saveFollowerToList();
+                    
+                    // Show a more helpful error message
+                    console.warn('Using local image preview as fallback since upload failed.');
+                    alert('Could not upload the follower image to the server, but the follower has been saved with a local image. The image may not persist after page refresh. Error: ' + (error.message || 'Unknown error'));
+                };
+                
+                reader.readAsDataURL(this.currentFollower.imageFile as File);
+            }
+        });
     } else {
-      // Create a unique ID if we don't have one
-      if (!this.currentFollower.id) {
-        this.currentFollower.id = Date.now().toString();
-      }
-      
-      // Save without image upload
-      this.saveFollowerToList();
+        // Create a unique ID if we don't have one
+        if (!this.currentFollower.id) {
+            this.currentFollower.id = Date.now().toString();
+        }
+        
+        // Save without image upload
+        this.saveFollowerToList();
     }
   }
   
