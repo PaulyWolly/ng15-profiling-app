@@ -19,6 +19,17 @@
     border-radius: 12px;
 }
 
+.curved-border {
+    position: absolute;
+    border-top-style: solid;
+    border-left-style: solid;
+    border-right-style: solid;
+    border-bottom: none;
+    background: transparent;
+    z-index: 2;
+    pointer-events: none;
+}
+
 .preview-card {
     max-width: 800px;
     width: 100%;

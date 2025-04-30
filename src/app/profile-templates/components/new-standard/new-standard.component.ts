@@ -10,6 +10,7 @@ import { ProfileTemplateType } from '@app/_models/profile-template';
 import { TitleComponent } from '@app/shared/components/title/title.component';
 import { Account } from '@app/_models';
 import { first } from 'rxjs/operators';
+import { CurvedBorderComponent } from '@app/shared/curved-border/curved-border.component';
 
 @Component({
     selector: 'app-new-standard',
@@ -22,7 +23,8 @@ import { first } from 'rxjs/operators';
         MatIconModule,
         MatCardModule,
         MatProgressSpinnerModule,
-        TitleComponent
+        TitleComponent,
+        CurvedBorderComponent
     ]
 })
 export class NewStandardComponent implements OnInit {
