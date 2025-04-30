@@ -1,28 +1,31 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { AlertComponent } from './components/alert/alert.component';
+import { TitleComponent } from './components/title/title.component';
 import { EditContentComponent } from './components/edit-content/edit-content.component';
-import { SafeUrlPipe } from './pipes/safe-url.pipe';
-import { PreviewTemplateComponent } from './components/preview-template/preview-template.component';
 
 @NgModule({
   declarations: [
-    EditContentComponent,
-    SafeUrlPipe,
-    PreviewTemplateComponent
+    AlertComponent,
+    EditContentComponent
   ],
   imports: [
     CommonModule,
+    RouterModule,
+    FormsModule,
     ReactiveFormsModule,
-    FormsModule
+    TitleComponent
   ],
   exports: [
-    EditContentComponent,
-    SafeUrlPipe,
     CommonModule,
-    ReactiveFormsModule,
+    RouterModule,
     FormsModule,
-    PreviewTemplateComponent
+    ReactiveFormsModule,
+    AlertComponent,
+    TitleComponent,
+    EditContentComponent
   ]
 })
 export class SharedModule { }

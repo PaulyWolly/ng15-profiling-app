@@ -1,118 +1,33 @@
-<div class="social-card">
-    <div class="profile-card-top">
-      <div class="profile-image-container" [class.loading]="imageLoading">
-        <img *ngIf="profile?.profileImage"
-             class="profile-img"
-             [src]="profile.profileImage"
-             alt="Profile"
-             (load)="onImageLoaded()"
-             (error)="onImageError()" />
-        <div *ngIf="!profile?.profileImage && !imageLoading" class="default-avatar">
-          <mat-icon class="large-icon">person</mat-icon>
-        </div>
-        <div *ngIf="imageLoading" class="loading-spinner">
-          <mat-spinner diameter="40"></mat-spinner>
-        </div>
-      </div>
-      <h2>{{ profile.firstName || 'Paul Welby' }}</h2>
-      <div class="text-muted">{{ profile.position || 'Owner/Developer/Designer' }}</div>
-      <div class="location" (click)="openMapDialog()" style="cursor:pointer;" title="View on Map">
-        <mat-icon class="location-icon">location_on</mat-icon>
-        {{ profile.address || '313 North Mission Road, Fallbrook, CA 92028' }}
-      </div>
-      <div class="social-icons">
-        <a
-            *ngIf="profile.twitter"
-            class="social-icon"
-            [href]="profile.twitter"
-            target="_blank"
-            rel="noopener"
-            title="Twitter"
-        >
-          <i class="fab fa-twitter"></i>
-        </a>
-        <a
-            *ngIf="profile.facebook"
-            class="social-icon"
-            [href]="profile.facebook"
-            target="_blank"
-            rel="noopener"
-            title="Facebook"
-        >
-          <i class="fab fa-facebook"></i>
-        </a>
-        <a
-            *ngIf="profile.linkedin"
-            class="social-icon"
-            [href]="profile.linkedin"
-            target="_blank"
-            rel="noopener"
-            title="LinkedIn"
-        >
-          <i class="fab fa-linkedin"></i>
-        </a>
-        <a
-            *ngIf="profile.website"
-            class="social-icon"
-            [href]="profile.website"
-            target="_blank"
-            rel="noopener"
-            title="Website"
-        >
-          <i class="fas fa-globe"></i>
-        </a>
-        <a
-            *ngIf="profile.github"
-            class="social-icon"
-            [href]="profile.github"
-            target="_blank"
-            rel="noopener"
-            title="GitHub"
-        >
-            <i class="fab fa-github"></i>
-        </a>
+<div class="new-social-media-container" style="max-width: 1400px; width: 70%; margin: 0 auto;">
+    <div class="d-flex justify-content-between align-items-center" style="margin-bottom: 25px;">
+        <app-title [text]="'Social Media Template'" [level]="2" [marginBottom]="'none'"></app-title>
+        <div style="display: flex; gap: 16px;">
+            <button mat-raised-button style="background: #4759B2; color: white; padding: 0 24px; border-radius: 6px; height: 44px;" (click)="useTemplate()">
+                <mat-icon style="margin-right: 8px;">check_circle</mat-icon>
+                Use This Template
+            </button>
+            <button mat-button style="color: #FF4081; padding: 0 24px; height: 44px;" (click)="previewTemplate()">
+                <mat-icon style="margin-right: 8px;">preview</mat-icon>
+                Live Preview
+            </button>
         </div>
     </div>
-
-    <div class="profile-card-bottom">
-      <div class="stats-row">
-        <div class="stat-block">
-          <div class="stat-number">2,500</div>
-          <div class="stat-label">Followers</div>
-        </div>
-        <div class="stat-block">
-          <div class="stat-number">1,200</div>
-          <div class="stat-label">Following</div>
-        </div>
-      </div>
-      <div class="followers-preview">
-        <div class="follower-avatars">
-          <ng-container *ngIf="followers.length > 0; else noFollowers">
-            <div class="follower-avatar" *ngFor="let follower of followers"
-                [title]="
-                follower.title && follower.name
-                    ? follower.title + ' - ' + follower.name
-                    : follower.title
-                    ? follower.title
-                    : follower.name
-                ">
-                <img
-                    class="follower-image"
-                    [src]="follower.imageUrl"
-                    [alt]="follower.title || follower.name || 'Follower'"
-                />
+    <div style="background: #fff; border-radius: 18px; box-shadow: 0 2px 16px rgba(0,0,0,0.08); padding: 32px; width: 100%; display: flex; align-items: flex-start; gap: 32px;">
+        <img src="assets/images/profile-templates/social-media-template.png" alt="Social Media Template Preview" style="max-width: 800px; width: 100%; height: auto; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+        <div class="preview-description" style="flex: 1; min-width: 220px;margin-top:20px;">
+            <p>
+                This is our new social media template, featuring a modern, social-inspired layout for your professional profile.
+            </p>
+            <div class="features-list">
+                <h3>Features:</h3>
+                <ul>
+                    <li>Large profile image and header</li>
+                    <li>Followers and following counts</li>
+                    <li>Social links and contact info</li>
+                    <li>Followers you know preview</li>
+                    <li>Modern, card-based design</li>
+                </ul>
             </div>
-          </ng-container>
-          <ng-template #noFollowers>
-            <span class="follower-avatar-placeholder no-followers-message">No followers yet</span>
-          </ng-template>
         </div>
-        <div class="followers-you-know-label">
-          {{ followers.length }} followers you know
-        </div>
-      </div>
-      <div class="action-buttons">
-        <button mat-raised-button color="primary">Follow Me</button>
-      </div>
     </div>
-  </div>
+</div>

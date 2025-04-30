@@ -78,15 +78,35 @@
 }
 
 .follower-avatar {
-  width: 32px;
-  height: 32px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   overflow: hidden;
-  background-color: #e9ecef;
+  background-color: #f5f5f5;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  border: 2px solid #fff;
+  margin-left: -12px;
+  transition: transform 0.2s;
+  position: relative;
+  z-index: 1;
+
+  &:first-child {
+    margin-left: 0;
+  }
+
+  &:hover {
+    transform: translateY(-2px);
+    z-index: 2;
+  }
+
+  .follower-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
 }
 
 .follower-avatars {
@@ -192,21 +212,35 @@ h2, h3 {
   object-fit: cover;
 }
 
-.location-icon {
-  font-size: 18px;
-  height: 18px;
-  width: 18px;
-  vertical-align: middle;
-  margin-right: 4px;
-  color: #f44336;
+.location {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   cursor: pointer;
-  transition: transform 0.2s ease;
+  transition: color 0.2s;
+  padding: 4px 12px;
+  margin: 8px 0;
+  color: #666;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  text-align: center;
+  
+  &:hover {
+    color: #1976d2;
+    .location-icon {
+      color: #1976d2;
+    }
+  }
 }
 
-.location-icon:hover {
-  transform: scale(1.2);
-  color: #d32f2f;
-} 
+.location-icon {
+  color: #f44336;
+  transition: color 0.2s;
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
 
 .no-followers-message {
   color: #999;
@@ -219,9 +253,9 @@ h2, h3 {
 }
 
 .followers-you-know-label {
-  color: #888;
-  font-size: 0.95rem;
-  margin-bottom: 12px;
+  color: #666;
+  font-size: 0.9rem;
+  margin-top: 8px;
   text-align: center;
 }
 
@@ -249,10 +283,6 @@ h2, h3 {
 }
 
 /* Location hover styles */
-.location {
-  cursor: pointer;
-  transition: color 0.2s;
-}
 .location:hover {
   color: #1976d2;
   text-decoration: underline;
@@ -303,7 +333,7 @@ h2, h3 {
 }
 
 .followers-preview {
-  margin-bottom: 24px;
+  margin: 16px 0;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -312,49 +342,8 @@ h2, h3 {
 .follower-avatars {
   display: flex;
   align-items: center;
-  margin-left: 0;
-  margin-bottom: 5px;
-}
-
-.follower-avatar {
-  width: 52px;
-  height: 52px;
-  border-radius: 50%;
-  overflow: hidden;
-  background-color: #e9ecef;
-  display: inline-flex;
-  align-items: center;
   justify-content: center;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-  border: 2px solid #fff;
-  margin-left: -15px;
-  margin-bottom: -10px;
-  position: relative;
-  z-index: 1;
-}
-.follower-avatar:first-child {
-  margin-left: 0;
-}
-
-.follower-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.followers-you-know-label {
-  font-size: 0.95rem;
-  color: #8a99a8;
-  margin-top: 8px;
-  margin-left: 8px;
-  letter-spacing: 1px;
-  text-align: left;
-}
-
-.action-buttons {
-  display: flex;
-  align-items: center;
-  margin-top: 16px;
+  padding: 8px;
 }
 
 button[mat-raised-button] {

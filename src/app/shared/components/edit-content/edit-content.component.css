@@ -151,6 +151,27 @@
 .follower-item-content {
   display: flex;
   align-items: center;
+  padding: 10px;
+  width: 100%;
+}
+
+.follower-main {
+  display: flex;
+  align-items: center;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.follower-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.follower-actions {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
 }
 
 .follower-avatar {

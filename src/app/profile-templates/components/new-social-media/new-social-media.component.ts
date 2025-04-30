@@ -3,14 +3,10 @@ import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCardModule } from '@angular/material/card';
-import { MatDialogModule } from '@angular/material/dialog';
-import { Account } from '@app/_models';
-import { AccountService, AlertService } from '@app/_services';
-import { first } from 'rxjs/operators';
-import { MatDialog } from '@angular/material/dialog';
-import { MapDialogComponent } from '../../../profile/components/map-dialog/map-dialog.component';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { HttpClient } from '@angular/common/http';
+import { Router } from '@angular/router';
+import { Account } from '@app/_models';
+import { environment } from '@environments/environment';
 
 @Component({
   selector: 'app-new-social-media',
@@ -20,111 +16,130 @@ import { HttpClient } from '@angular/common/http';
     MatButtonModule,
     MatIconModule,
     MatCardModule,
-    MatDialogModule,
     MatProgressSpinnerModule
   ],
-  templateUrl: './new-social-media.component.html',
+  template: `
+    <div class="social-card">
+      <div class="profile-card-top">
+        <!-- Profile Image -->
+        <div class="profile-image-container" [class.loading]="loading">
+          <img *ngIf="profile?.profileImage" 
+              [src]="profile.profileImage" 
+              alt="Profile picture"
+              class="profile-img"
+              (load)="onImageLoaded()"
+              (error)="onImageError()">
+          <div *ngIf="!profile?.profileImage && !loading" class="default-avatar">
+            <mat-icon class="large-icon">account_circle</mat-icon>
+          </div>
+          <div *ngIf="loading" class="loading-spinner">
+            <mat-spinner diameter="40"></mat-spinner>
+          </div>
+        </div>
+
+        <!-- Profile Info -->
+        <h2>{{profile.firstName}} {{profile.lastName}}</h2>
+        <p class="text-muted">{{profile.position || 'Professional Title'}}</p>
+        
+        <!-- Location with Google Maps Link -->
+        <p class="location" *ngIf="profile?.address" (click)="openGoogleMaps()">
+          <mat-icon class="location-icon">location_on</mat-icon>
+          {{profile.address}}{{profile.city ? ', ' + profile.city : ''}}{{profile.state ? ', ' + profile.state : ''}}{{profile.zipCode ? ' ' + profile.zipCode : ''}}
+        </p>
+
+        <!-- Social Links -->
+        <div class="social-icons">
+          <a *ngIf="profile?.facebook" [href]="profile.facebook" target="_blank" class="social-icon">
+            <i class="fab fa-facebook-f"></i>
+          </a>
+          <a *ngIf="profile?.linkedin" [href]="profile.linkedin" target="_blank" class="social-icon">
+            <i class="fab fa-linkedin-in"></i>
+          </a>
+          <a *ngIf="profile?.website" [href]="profile.website" target="_blank" class="social-icon">
+            <i class="fas fa-globe"></i>
+          </a>
+          <a *ngIf="profile?.github" [href]="profile.github" target="_blank" class="social-icon">
+            <i class="fab fa-github"></i>
+          </a>
+        </div>
+      </div>
+
+      <div class="profile-card-bottom">
+        <!-- Stats -->
+        <div class="stats-row">
+          <div class="stat-block">
+            <div class="stat-number">{{profile.followersCount || 0}}</div>
+            <div class="stat-label">Followers</div>
+          </div>
+          <div class="stat-block">
+            <div class="stat-number">{{profile.followingCount || 0}}</div>
+            <div class="stat-label">Following</div>
+          </div>
+        </div>
+
+        <!-- Followers Preview -->
+        <div class="followers-preview" *ngIf="profile?.followerImages?.length">
+          <div class="follower-avatars">
+            <div class="follower-avatar" *ngFor="let follower of profile?.followerImages">
+              <img [src]="getFollowerImageUrl(follower)" [alt]="follower.name" class="follower-image" [title]="follower.title || ''">
+            </div>
+          </div>
+          <div class="followers-you-know-label">{{profile.followerImages?.length}} followers you know</div>
+        </div>
+
+        <!-- Action Button -->
+        <div class="action-buttons">
+          <button mat-raised-button>Follow Me</button>
+        </div>
+      </div>
+    </div>
+  `,
   styleUrls: ['./new-social-media.component.scss']
 })
 export class NewSocialMediaComponent implements OnInit {
   @Input() profile!: Account;
   @Input() isOwnProfile: boolean = false;
-  
-  imageLoading: boolean = true;
-  selectedFile: File | null = null;
-  previewUrl: string | null = null;
-  
-  constructor(
-    private accountService: AccountService,
-    private alertService: AlertService,
-    private dialog: MatDialog,
-    private http: HttpClient
-  ) {}
-  
-  ngOnInit() {
-    // If you want to fetch followers from the backend, do it here and set this.followers
-    // Example:
-    // this.http.get<{ imageUrl: string; titlePosition?: string; comment?: string }[]>(...)
-    //   .subscribe(followers => this.followers = followers);
 
-    this.imageLoading = !!this.profile?.profileImage;
-  }
+  loading = false;
 
-  get followers() {
-    return this.profile?.followerImages || [];
-  }
+  constructor(private router: Router) {}
+  
+  ngOnInit() {}
   
   onImageLoaded() {
-    this.imageLoading = false;
-    console.log('[NewSocialMedia] Profile image loaded successfully');
+    this.loading = false;
   }
   
   onImageError() {
-    this.imageLoading = false;
-    // Clear the profile image URL in case of error
+    this.loading = false;
+  }
+
+  getFollowerImageUrl(follower: any): string {
+    const baseUrl = environment.apiUrl || 'http://localhost:5001';
+    const formattedName = follower.name.toLowerCase().replace(/\s+/g, '_');
+    // If the path is already provided and contains the extension, use it
+    if (follower.path?.includes('.png')) {
+      return `${baseUrl}/uploads/followers/followerImage-${formattedName}.png`;
+    }
+    // Default to png for the known followers
+    if (['daffy_duck', 'tom_jones', 'jesus_christ'].includes(formattedName)) {
+      return `${baseUrl}/uploads/followers/followerImage-${formattedName}.png`;
+    }
+    // For any new followers, use jpg as default
+    return `${baseUrl}/uploads/followers/followerImage-${formattedName}.jpg`;
+  }
+
+  openGoogleMaps() {
     if (this.profile) {
-      console.error('[NewSocialMedia] Error loading profile image');
-      this.profile.profileImage = undefined;
+      const address = [
+        this.profile.address,
+        this.profile.city,
+        this.profile.state,
+        this.profile.zipCode
+      ].filter(Boolean).join(', ');
+      
+      const query = encodeURIComponent(address);
+      window.open(`https://www.google.com/maps/search/?api=1&query=${query}`, '_blank');
     }
-  }
-
-  onFileSelected(event: any) {
-    this.selectedFile = event.target.files[0];
-    if (this.selectedFile) {
-      // Create preview URL
-      const reader = new FileReader();
-      reader.onload = (e: any) => {
-        this.previewUrl = e.target.result;
-      };
-      reader.readAsDataURL(this.selectedFile);
-    }
-  }
-
-  uploadImage() {
-    if (!this.selectedFile || !this.profile?.id) {
-      this.alertService.error('No image selected or profile not found');
-      return;
-    }
-
-    const formData = new FormData();
-    formData.append('profileImage', this.selectedFile);
-    formData.append('userEmail', this.profile.email || '');
-
-    this.accountService.uploadImage(this.profile.id, formData)
-      .pipe(first())
-      .subscribe({
-        next: (response) => {
-          this.alertService.success('Image uploaded successfully');
-          this.selectedFile = null;
-          this.previewUrl = null;
-          
-          // Update the local profile image if needed
-          if (response.profileImage && this.profile) {
-            this.profile.profileImage = response.profileImage;
-          }
-        },
-        error: (error) => {
-          this.alertService.error('Image upload failed');
-          console.error('[NewSocialMedia] Upload failed:', error);
-        }
-      });
-  }
-  
-  // Open the map dialog with the profile address
-  openMapDialog(): void {
-    this.dialog.open(MapDialogComponent, {
-      width: '600px',
-      data: {
-        address: this.profile?.address || '',
-        city: this.profile?.city || '',
-        state: this.profile?.state || '',
-        zipCode: this.profile?.zipCode || ''
-      }
-    });
-  }
-  
-  // Check if the profile has any follower images
-  hasFollowers(): boolean {
-    return !!this.profile?.followerImages && this.profile.followerImages.length > 0;
   }
 } 

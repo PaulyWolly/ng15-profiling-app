@@ -1,5 +1,18 @@
 <!-- Remove the h1 title -->
 
+<!-- Mode Heading and Summary -->
+<div class="alert alert-info mb-3" *ngIf="!loading">
+  <h3 class="mb-1">
+    {{ isAddMode ? 'Create Account' : (editMode === 'profile' ? 'Edit Profile' : 'Edit Account') }}
+  </h3>
+  <div *ngIf="isAddMode">
+    Please fill in all required fields to create a new account. Password is required.
+  </div>
+  <div *ngIf="!isAddMode">
+    You are editing an existing {{ editMode === 'profile' ? 'profile' : 'account' }}. Only fill in the password fields if you want to change your password.
+  </div>
+</div>
+
 <!-- Simplified command bar -->
 <div class="command-bar">
   <button (click)="onSubmit()" [disabled]="submitting" class="btn btn-primary">
@@ -125,7 +138,8 @@
                 <div class="row g-3 mt-3">
                   <div class="col-12">
                     <h5 class="mb-0">{{ isAddMode ? 'Set Password' : 'Change Password' }}</h5>
-                    <p class="text-muted small" *ngIf="!isAddMode">Leave blank to keep the same password</p>
+                    <p class="text-muted small" *ngIf="isAddMode">Password is required to create a new account.</p>
+                    <p class="text-muted small" *ngIf="!isAddMode">Leave blank to keep your current password.</p>
                   </div>
                   <div class="col-md-6">
                     <label class="form-label">Password</label>
@@ -247,22 +261,26 @@
                         <div *ngIf="hasFollowers()" class="follower-list">
                           <div *ngFor="let follower of followers; let i = index" class="follower-item">
                             <div class="follower-item-content">
-                              <div class="follower-avatar">
-                                <img *ngIf="follower.imageUrl" [src]="follower.imageUrl" alt="{{follower.name}}">
-                                <i *ngIf="!follower.imageUrl" class="material-icons">account_circle</i>
+                              <div class="follower-main">
+                                <div class="follower-avatar">
+                                  <img *ngIf="follower.path" 
+                                       [src]="environment.apiUrl + '/' + follower.path"
+                                       alt="{{follower.name}}'s avatar">
+                                  <div *ngIf="!follower.path" class="no-avatar">?</div>
+                                </div>
+                                <div class="follower-info">
+                                  <span class="follower-name">{{ follower.name }}</span>
+                                  <span class="follower-title">{{ follower.title }}</span>
+                                </div>
                               </div>
-                              <div class="follower-details">
-                                <h6>{{follower.name}}</h6>
-                                <p class="mb-0 text-muted small">{{follower.title}}</p>
+                              <div class="follower-actions">
+                                <button type="button" class="btn btn-sm btn-outline-primary" (click)="editFollower(i)">
+                                  <i class="material-icons small-icon">edit</i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-danger" (click)="removeFollower(i)">
+                                  <i class="material-icons small-icon">delete</i>
+                                </button>
                               </div>
-                            </div>
-                            <div class="follower-actions">
-                              <button type="button" class="btn btn-sm btn-outline-primary me-1" (click)="editFollower(i)">
-                                <i class="material-icons small-icon">edit</i>
-                              </button>
-                              <button type="button" class="btn btn-sm btn-outline-danger" (click)="removeFollower(i)">
-                                <i class="material-icons small-icon">delete</i>
-                              </button>
                             </div>
                           </div>
                         </div>
