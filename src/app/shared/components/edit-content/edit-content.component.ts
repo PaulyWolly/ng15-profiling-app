@@ -698,12 +698,20 @@ export class EditContentComponent implements OnInit, OnChanges, EditContentState
   
   // Helper method to save follower to the list
   private saveFollowerToList(): void {
+    const followerData = {
+      id: this.currentFollower.id || Date.now().toString(),
+      name: this.currentFollower.name,
+      title: this.currentFollower.title || '',
+      imageUrl: this.currentFollower.imageUrl || '',
+      path: this.currentFollower.path || ''
+    };
+
     if (this.editingFollowerIndex >= 0) {
       // Update existing follower
-      this.followers[this.editingFollowerIndex] = { ...this.currentFollower };
+      this.followers[this.editingFollowerIndex] = followerData;
     } else {
       // Add new follower
-      this.followers.push({ ...this.currentFollower });
+      this.followers.push(followerData);
     }
     
     this.closeFollowerDialog();
