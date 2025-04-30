@@ -26,7 +26,15 @@ import { CurvedBorderComponent } from "../../../shared/curved-border/curved-bord
 ],
   template: `
     <div class="social-card">
-      <div class="profile-border"></div>
+      <app-curved-border
+        [top]="20"
+        [left]="24"
+        [right]="24"
+        [height]="300"
+        [borderColor]="'#eebbbb'"
+        [borderWidth]="4"
+        [borderRadius]="24"
+      ></app-curved-border>
       <div class="profile-card-top">
 
       
@@ -160,22 +168,6 @@ import { CurvedBorderComponent } from "../../../shared/curved-border/curved-bord
         padding-top: 40px; /* Adjust as needed to prevent overlap with border */
         background: #fff;
         border-radius: 24px;
-      }
-      .profile-border {
-        position: absolute;
-        top: 20px;
-        left: 24px;
-        right: 24px;
-        width: auto;
-        height: 300px;
-        border-top: 4px solid #eebbbb;
-        border-left: 4px solid #eebbbb;
-        border-right: 4px solid #eebbbb;
-        border-bottom: none;
-        border-radius: 24px 24px 0 0;
-        background: transparent;
-        z-index: 2;
-        pointer-events: none;
       }
       .profile-card-top {
         position: relative;
