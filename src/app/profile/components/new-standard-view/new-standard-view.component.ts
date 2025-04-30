@@ -11,6 +11,7 @@ import { AccountService } from '@app/_services';
 import { MatDialog } from '@angular/material/dialog';
 import { MapDialogComponent } from '../../components/map-dialog/map-dialog.component';
 import { Subscription, delay, retryWhen, take } from 'rxjs';
+import { CurvedBorderComponent } from '@app/shared/curved-border/curved-border.component';
 
 @Component({
     selector: 'app-new-standard-view',
@@ -23,7 +24,8 @@ import { Subscription, delay, retryWhen, take } from 'rxjs';
         MatIconModule,
         MatButtonModule,
         MatProgressSpinnerModule,
-        MatDividerModule
+        MatDividerModule,
+        CurvedBorderComponent
     ]
 })
 export class NewStandardViewComponent implements OnInit, OnDestroy, AfterViewInit {

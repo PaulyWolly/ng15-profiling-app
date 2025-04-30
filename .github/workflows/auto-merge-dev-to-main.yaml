@@ -1,0 +1,26 @@
+name: Auto Merge dev to main
+
+on:
+  schedule:
+    - cron: '0 0 * * 1'  # Every Monday at 00:00 UTC (midnight)
+  workflow_dispatch:      # Allow manual trigger from GitHub UI
+
+jobs:
+  merge:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main branch
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Set up Git user
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Merge dev into main
+        run: |
+          git fetch origin dev:dev
+          git merge dev --no-ff -m "Automated merge of dev into main"
+          git push origin main

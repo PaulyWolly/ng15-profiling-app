@@ -9,6 +9,7 @@ import { Router } from '@angular/router';
 import { Account } from '@app/_models';
 import { environment } from '@environments/environment';
 import { CustomTooltipDirective } from '@app/shared/custom-tooltip/custom-tooltip.directive';
+import { CurvedBorderComponent } from "../../../shared/curved-border/curved-border.component";
 
 @Component({
   selector: 'app-new-social-media',
@@ -20,11 +21,24 @@ import { CustomTooltipDirective } from '@app/shared/custom-tooltip/custom-toolti
     MatCardModule,
     MatProgressSpinnerModule,
     MatTooltipModule,
-    CustomTooltipDirective
-  ],
+    CustomTooltipDirective,
+    CurvedBorderComponent
+],
   template: `
     <div class="social-card">
+      <app-curved-border
+        [top]="20"
+        [left]="24"
+        [right]="24"
+        [height]="300"
+        [borderColor]="'#eebbbb'"
+        [borderWidth]="4"
+        [borderRadius]="8"
+      ></app-curved-border>
       <div class="profile-card-top">
+
+      
+
         <!-- Profile Image -->
         <div class="profile-image-container" [class.loading]="loading">
           <img *ngIf="profile?.profileImage" 
@@ -148,10 +162,19 @@ import { CustomTooltipDirective } from '@app/shared/custom-tooltip/custom-toolti
     </div>
 
     <style>
+      .social-card {
+        position: relative;
+        z-index: 1;
+        padding-top: 40px; /* Adjust as needed to prevent overlap with border */
+        background: #fff;
+        border-radius: var(--app-border-radius);
+      }
+      .profile-card-top {
+        position: relative;
+      }
       ::ng-deep .mat-mdc-tooltip {
         transform: translate(50px, 0) !important;
       }
-
       ::ng-deep .social-icon + .mat-mdc-tooltip {
         margin-top: 8px !important;
       }
