@@ -1,14 +1,51 @@
 <div class="social-media-container">
-    <app-title [title]="'Social Media Profile Template'" [subtitle]="'A modern, social media focused profile design'"></app-title>
-    
-    <div class="template-actions">
-        <button mat-raised-button color="primary" (click)="useTemplate()">
-            <mat-icon>check</mat-icon>
-            Use This Template
-        </button>
-        <button mat-stroked-button (click)="previewTemplate()">
-            <mat-icon>visibility</mat-icon>
-            Preview
-        </button>
+    <!-- Upper Section -->
+    <div class="upper-section">
+        <div class="curved-border"></div>
+        <div class="profile-image-container">
+            <img [src]="profile?.imageUrl" [alt]="profile?.name + ' profile picture'" 
+                 *ngIf="profile?.imageUrl; else defaultAvatar" class="profile-image">
+            <ng-template #defaultAvatar>
+                <div class="default-avatar">
+                    <mat-icon class="large-icon">account_circle</mat-icon>
+                </div>
+            </ng-template>
+        </div>
+    </div>
+
+    <!-- Lower Section -->
+    <div class="lower-section">
+        <h2 class="profile-name">{{ profile?.name || 'Your Name' }}</h2>
+        <p class="text-muted">{{ profile?.title || 'Your Professional Title' }}</p>
+        
+        <div class="location" *ngIf="profile?.location">
+            <mat-icon class="location-icon">location_on</mat-icon>
+            <span>{{ profile.location }}</span>
+        </div>
+
+        <div class="stats-row">
+            <div class="stat-block">
+                <div class="stat-number">{{ profile?.followers || '0' }}</div>
+                <div class="stat-label">Followers</div>
+            </div>
+            <div class="stat-block">
+                <div class="stat-number">{{ profile?.following || '0' }}</div>
+                <div class="stat-label">Following</div>
+            </div>
+            <div class="stat-block">
+                <div class="stat-number">{{ profile?.connections || '0' }}</div>
+                <div class="stat-label">Connections</div>
+            </div>
+        </div>
+
+        <div class="social-icons">
+            <a *ngFor="let social of profile?.socialLinks" 
+               [href]="social.url" 
+               target="_blank" 
+               class="social-icon"
+               [matTooltip]="social.platform">
+                <mat-icon>{{ social.icon }}</mat-icon>
+            </a>
+        </div>
     </div>
 </div> 

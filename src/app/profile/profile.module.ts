@@ -3,8 +3,8 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { ReactiveFormsModule } from '@angular/forms';
 import { DragDropModule } from '@angular/cdk/drag-drop';
-import { Directive, HostListener, ElementRef } from '@angular/core';
 import { SharedModule } from '../shared/shared.module';
+import { ProfileTemplatesModule } from '@app/profile-templates/profile-templates.module';
 
 // Material Modules
 import { MatButtonModule } from '@angular/material/button';
@@ -17,6 +17,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatExpansionModule } from '@angular/material/expansion';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 // Routing
 import { ProfileRoutingModule } from './profile-routing.module';
@@ -29,27 +30,10 @@ import { EditComponent } from './containers/edit/edit.component';
 import { EditProfileComponent } from './containers/edit-profile/edit-profile.component';
 import { AccountSettingsComponent } from './containers/account-settings/account-settings.component';
 
-// Profile Components
-import { NewStandardProfileComponent } from '../profile-templates/components/profiles/new-standard-profile/new-standard-profile.component';
-import { NewSocialMediaProfileComponent } from '../profile-templates/components/profiles/new-social-media-profile/new-social-media-profile.component';
-import { NewBusinessProfileComponent } from '../profile-templates/components/profiles/new-business-profile/new-business-profile.component';
-
 // Presentational Components
 import { MapDialogComponent } from './components/map-dialog/map-dialog.component';
 
-// Custom Directive to prevent wheel event propagation
-@Directive({
-    selector: '[preventWheelPropagation]'
-})
-export class PreventWheelPropagationDirective {
-    constructor(private el: ElementRef) {}
-
-    @HostListener('wheel', ['$event'])
-    onWheel(event: Event) {
-        event.stopPropagation();
-    }
-}
-
+// Custom Directive
 @NgModule({
     imports: [
         CommonModule,
@@ -57,8 +41,7 @@ export class PreventWheelPropagationDirective {
         RouterModule,
         ProfileRoutingModule,
         SharedModule,
-        // Angular CDK
-        DragDropModule,
+        ProfileTemplatesModule,
         // Material modules
         MatButtonModule,
         MatIconModule,
@@ -70,31 +53,19 @@ export class PreventWheelPropagationDirective {
         MatFormFieldModule,
         MatDialogModule,
         MatExpansionModule,
-        // Standalone Components
-        NewStandardProfileComponent,
-        NewSocialMediaProfileComponent,
-        NewBusinessProfileComponent
+        MatTooltipModule
     ],
     declarations: [
-        // Container Components
         ProfileComponent,
         LayoutComponent,
         DetailsComponent,
         EditComponent,
         EditProfileComponent,
         AccountSettingsComponent,
-        
-        // Presentational Components
-        MapDialogComponent,
-        // Directives
-        PreventWheelPropagationDirective
+        MapDialogComponent
     ],
     exports: [
-        PreventWheelPropagationDirective
+        ProfileComponent
     ]
 })
-export class ProfileModule {
-    constructor() {
-        console.log('Profile module loaded!');
-    }
-}
+export class ProfileModule { }
