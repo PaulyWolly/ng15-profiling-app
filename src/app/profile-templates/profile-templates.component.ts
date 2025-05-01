@@ -41,7 +41,9 @@ export class ProfileTemplatesComponent implements OnInit {
             case ProfileTemplateType.STANDARD:
                 this.router.navigate(['/profile-templates/standard']);
                 break;
-            // Add other cases as needed
+            case ProfileTemplateType.BUSINESS_CARD:
+                this.router.navigate(['/profile-templates/business']);
+                break;
             default:
                 this.router.navigate(['/profile']);
                 break;

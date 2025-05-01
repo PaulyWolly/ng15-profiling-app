@@ -38,7 +38,7 @@
 
         <!-- Standard Profile Template -->
         <div *ngIf="currentTemplate === ProfileTemplateType.STANDARD" class="profile-standard">
-            <app-new-standard-view [profile]="profileUser" [isOwnProfile]="isOwnProfile"></app-new-standard-view>
+            <app-new-standard-profile [profile]="profileUser" [isOwnProfile]="isOwnProfile"></app-new-standard-profile>
         </div>
 
         <!-- Business Card Template -->
@@ -48,7 +48,7 @@
 
         <!-- Social Media Template -->
         <div *ngIf="currentTemplate === ProfileTemplateType.SOCIAL_MEDIA" class="profile-social-media">
-            <app-new-social-media [profile]="profileUser" [isOwnProfile]="isOwnProfile"></app-new-social-media>
+            <app-new-social-media-profile [profile]="profileUser" [isOwnProfile]="isOwnProfile"></app-new-social-media-profile>
         </div>
     </div>
 </div> 

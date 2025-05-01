@@ -1,0 +1,227 @@
+.social-media-container {
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    min-height: 100vh;
+    background: #f5f5f5;
+
+    .template-actions {
+        display: flex;
+        gap: 1rem;
+        margin-top: 2rem;
+
+        button {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+    }
+}
+
+.social-card {
+    max-width: 800px;
+    margin: 40px auto;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px 24px;
+}
+
+.social-card .mat-card-content {
+    text-align: center;
+    padding: 10px;
+    font-size: 1.2rem;
+}
+
+.profile-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    margin-top: 0;
+    display: block;
+    border-radius: 12px;
+}
+
+.default-avatar {
+    color: #6c757d;
+    text-align: center;
+}
+
+.large-icon {
+    font-size: 48px;
+    height: 48px;
+    width: 48px;
+}
+
+.social-icons {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin-bottom: 16px;
+    margin-top: 35px;
+}
+
+.social-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    background-color: #f8f9fa;
+    border-radius: 50%;
+    color: #3f51b5;
+    font-size: 22px;
+    
+    text-decoration: none;
+    transition: background 0.2s, color 0.2s;
+}
+.social-icon:hover {
+    background: #e3f2fd;
+    color: #1976d2;
+}
+
+.follower-avatars {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+    flex-wrap: wrap;
+}
+
+.follower-avatar-placeholder {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background-color: #e9ecef;
+    display: inline-block;
+}
+
+.follower-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    overflow: hidden;
+    background-color: #f5f5f5;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border: 2px solid #fff;
+    margin-left: -12px;
+    transition: transform 0.2s;
+    position: relative;
+    z-index: 1;
+
+    &:first-child {
+        margin-left: 0;
+    }
+
+    &:hover {
+        transform: translateY(-2px);
+        z-index: 2;
+    }
+
+    .follower-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+}
+
+.follower-avatars {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+}
+
+.follower-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+h2, h3 {
+    margin-top: 5px;
+    margin-bottom: 5px;
+    font-size: 1.25rem;
+}
+
+.text-muted {
+    margin-top: 0;
+    margin-bottom: -5px;
+    font-size: 0.9rem;
+}
+
+.mt-3, .mb-4, .mb-3 {
+    margin-top: 0.5rem !important;
+    margin-bottom: 0.5rem !important;
+}
+
+.followers-info h3 {
+    font-size: 1.2rem;
+    margin-bottom: 0;
+}
+
+/* Image loading styles */
+.profile-image-container {
+    width: 135px;
+    height: 175px;
+    padding-top: 5px;
+    margin: -79px auto 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f5f5f5;
+    border-radius: 8px;
+    border: 3px solid #fff;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    overflow: hidden;
+    position: relative;
+    z-index: 2;
+}
+
+.profile-image-container.loading {
+    background-color: #f0f0f0;
+    border-radius: 8px;
+}
+
+.loading-spinner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+}
+
+/* Image upload control styles */
+.image-upload-controls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.upload-btn, .save-btn {
+    font-size: 12px;
+    padding: 3px 8px;
+}
+
+.upload-btn .mat-icon, .save-btn .mat-icon {
+    font-size: 16px;
+    height: 16px;
+    width: 16px;
+    margin-right: 4px;
+}
+
+::ng-deep .mat-mdc-tooltip {
+    transform: translate(50px, 0) !important;
+}
+
+::ng-deep .social-icon + .mat-mdc-tooltip {
+    margin-top: 8px !important;
+} 
