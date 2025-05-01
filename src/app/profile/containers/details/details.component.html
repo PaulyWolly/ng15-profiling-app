@@ -5,7 +5,7 @@
     <div class="current-template">
         <div [ngSwitch]="currentTemplate">
             <app-new-standard-profile *ngSwitchCase="ProfileTemplateType.STANDARD" [profile]="account" [isOwnProfile]="true"></app-new-standard-profile>
-            <app-business-card *ngSwitchCase="ProfileTemplateType.BUSINESS_CARD" [profile]="account" [isOwnProfile]="true"></app-business-card>
+            <app-new-business-profile *ngSwitchCase="ProfileTemplateType.BUSINESS_CARD" [profile]="account" [isOwnProfile]="true"></app-new-business-profile>
             <app-new-social-media-profile *ngSwitchCase="ProfileTemplateType.SOCIAL_MEDIA" [profile]="account" [isOwnProfile]="true"></app-new-social-media-profile>
             <app-new-standard-profile *ngSwitchDefault [profile]="account" [isOwnProfile]="true"></app-new-standard-profile>
         </div>

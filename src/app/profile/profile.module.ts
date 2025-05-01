@@ -32,10 +32,9 @@ import { AccountSettingsComponent } from './containers/account-settings/account-
 // Profile Components
 import { NewStandardProfileComponent } from '../profile-templates/components/profiles/new-standard-profile/new-standard-profile.component';
 import { NewSocialMediaProfileComponent } from '../profile-templates/components/profiles/new-social-media-profile/new-social-media-profile.component';
+import { NewBusinessProfileComponent } from '../profile-templates/components/profiles/new-business-profile/new-business-profile.component';
 
 // Presentational Components
-import { StandardProfileComponent } from './components/standard-profile/standard-profile.component';
-import { BusinessCardComponent } from './components/business-card/business-card.component';
 import { MapDialogComponent } from './components/map-dialog/map-dialog.component';
 
 // Custom Directive to prevent wheel event propagation
@@ -73,7 +72,8 @@ export class PreventWheelPropagationDirective {
         MatExpansionModule,
         // Standalone Components
         NewStandardProfileComponent,
-        NewSocialMediaProfileComponent
+        NewSocialMediaProfileComponent,
+        NewBusinessProfileComponent
     ],
     declarations: [
         // Container Components
@@ -85,8 +85,6 @@ export class PreventWheelPropagationDirective {
         AccountSettingsComponent,
         
         // Presentational Components
-        StandardProfileComponent,
-        BusinessCardComponent,
         MapDialogComponent,
         // Directives
         PreventWheelPropagationDirective
