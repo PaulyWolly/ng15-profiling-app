@@ -1,46 +1,279 @@
+.business-profile-container {
+  width: 80%;
+  margin: 0 auto;
+  padding: 20px;
+  position: relative;
+  top: -15px;
+}
+
 .business-card-layout {
   color: #333;
 }
 
-.business-card-layout .logo {
-  font-weight: bold;
-  color: #3f51b5;
+.find-people-link {
+  color: #4759B2;
 }
 
-.business-card-layout .search-bar {
-  width: 250px;
+.messages-link {
+  color: #4759B2;
+  position: relative;
+  bottom: 5px;
+  right: 5px;
+} 
+
+.work-area {
+  margin-bottom: 10px;
 }
 
-.business-card-layout .profile-img {
-  max-width: 150px;
-  max-height: 150px;
-  box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-  object-fit: contain;
+.education-area {
+  margin-top: 10px;
 }
 
-.business-card-layout .default-avatar {
-  color: #6c757d;
+.my-contacts-link {
+  color: #4759B2;
+}
+
+.logo-header {
   text-align: center;
-  padding: 20px;
+  margin-bottom: 15px;
+  padding: 10px;
   background: #f8f9fa;
-  border-radius: 5px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+
+  .logo-container {
+    .company-name {
+      font-size: 20px;
+      font-weight: bold;
+      color: #4759B2;
+      margin: 0;
+    }
+  }
 }
 
-.business-card-layout .stars {
+.profile-section {
+  text-align: center;
+  padding: 20px 0;
+}
+
+.profile-image-container {
+  position: relative;
+  width: 150px;
+  height: 150px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f5f5f5;
+  border-radius: 5px;
+  overflow: hidden;
+
+  &.loading {
+    background-color: #f0f0f0;
+    min-height: 150px;
+  }
+
+  .profile-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+  }
+
+  .default-avatar {
+    color: #6c757d;
+    text-align: center;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 5px;
+
+    .large-icon {
+      font-size: 48px;
+      height: 48px;
+      width: 48px;
+    }
+  }
+
+  .loading-spinner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+  }
+}
+
+.search-container {
+  margin-top: 20px;
+  padding: 0 10px;
+}
+
+.search-bar {
+  width: 100%;
+
+  ::ng-deep {
+    .mat-mdc-form-field-flex {
+      height: 36px !important;
+    }
+
+    .mat-mdc-form-field-infix {
+      padding-top: 8px !important;
+      padding-bottom: 8px !important;
+    }
+
+    .mat-mdc-text-field-wrapper {
+      padding-top: 0 !important;
+      padding-bottom: 0 !important;
+    }
+  }
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #666;
+}
+
+.stars {
   display: inline-block;
   margin-left: 10px;
+
+  .mat-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+  }
 }
 
-.business-card-layout .stars .mat-icon {
-  font-size: 16px;
-  width: 16px;
-  height: 16px;
+.posts-container {
+  height: 250px;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  background: #fff;
+  margin-top: 10px;
+  overflow: hidden;
+  position: relative;
+  width: 100%;
 }
 
-.large-icon {
-  font-size: 48px;
-  height: 48px;
-  width: 48px;
+.scrollable-content {
+  height: 100%;
+  overflow-y: scroll !important;
+  width: calc(100% - 8px);
+  padding: 8px;
+
+  .timeline-item {
+    width: 100%;
+    
+    .mat-card {
+      width: calc(100% - 16px);
+      margin: 0 auto !important;
+      box-shadow: none !important;
+      border-bottom: 1px solid #eee;
+    }
+  }
+
+  &::-webkit-scrollbar {
+    width: 8px !important;
+    background-color: #f5f5f5 !important;
+    display: block !important;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1 !important;
+    border-radius: 4px !important;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #888 !important;
+    border-radius: 4px !important;
+    min-height: 40px !important;
+
+    &:hover {
+      background: #666 !important;
+    }
+  }
+
+  scrollbar-width: thin !important;
+  scrollbar-color: #888 #f1f1f1 !important;
+}
+
+.timeline-item {
+  margin-bottom: 8px;
+  
+  .mat-card {
+    margin: 0 !important;
+    box-shadow: none !important;
+    border-bottom: 1px solid #eee;
+  }
+
+  &:last-child .mat-card {
+    border-bottom: none;
+  }
+
+  .mat-card-header {
+    padding: 8px 8px 4px 8px;
+  }
+
+  .mat-card-content {
+    padding: 4px 8px;
+    margin: 0;
+  }
+
+  .mat-card-actions {
+    padding: 4px 8px !important;
+    margin: 0 !important;
+    min-height: 32px;
+  }
+
+  .timeline-avatar {
+    width: 40px;
+    height: 40px;
+  }
+
+  mat-card-title {
+    font-size: 14px;
+    margin: 0;
+  }
+
+  mat-card-subtitle {
+    font-size: 12px;
+    margin: 0;
+  }
+
+  p {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.4;
+  }
+
+  button {
+    padding: 0 8px;
+    line-height: 24px;
+    font-size: 12px;
+
+    .mat-icon {
+      font-size: 16px;
+      height: 16px;
+      width: 16px;
+      margin-right: 4px;
+    }
+  }
+}
+
+.info-table {
+  width: 100%;
+
+  td {
+    padding: 5px 0;
+    border-bottom: 1px solid #eee;
+
+    &:first-child {
+      width: 30%;
+      font-weight: bold;
+    }
+  }
 }
 
 .badge {
@@ -54,25 +287,161 @@
   vertical-align: baseline;
   border-radius: 0.25rem;
   margin-bottom: 5px;
+
+  &.primary {
+    color: #fff;
+    background-color: #3f51b5;
+  }
 }
 
-.badge.primary {
-  color: #fff;
-  background-color: #3f51b5;
+.skills-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+
+  .skill-badge {
+    background-color: #f0f0f0;
+    color: #333;
+    padding: 6px 12px;
+    border-radius: 16px;
+    font-size: 14px;
+    display: inline-block;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
 }
 
-.info-table {
-  width: 100%;
+// Utility classes
+.mt-3 { margin-top: 1rem; }
+.mt-4 { margin-top: 1.5rem; }
+.mb-3 { margin-bottom: 1rem; }
+.mr-2 { margin-right: 0.5rem; }
+
+// Location icon styles
+.location-icon {
+  font-size: 18px;
+  height: 18px;
+  width: 18px;
+  vertical-align: middle;
+  margin-right: 4px;
+  color: #f44336;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+
+  &:hover {
+    transform: scale(1.2);
+    color: #d32f2f;
+  }
+
+  &.small {
+    font-size: 16px;
+    height: 16px;
+    width: 16px;
+    margin-right: 4px;
+  }
 }
 
-.info-table td {
-  padding: 5px 0;
-  border-bottom: 1px solid #eee;
+.posts-section {
+  padding: 20px;
+  background: #f8f9fa;
 }
 
-.info-table td:first-child {
-  width: 30%;
-  font-weight: bold;
+.about-section {
+  padding: 6px;
+  height: 100%;
+
+  h5 {
+    font-size: 12px;
+    margin: 4px 0 2px 0;
+    color: #666;
+    text-transform: uppercase;
+  }
+
+  .row {
+    margin: 0 -4px;
+    
+    .col-md-4, .col-md-8 {
+      padding: 0 4px;
+    }
+  }
+
+  .mat-card {
+    padding: 6px;
+    margin-bottom: 6px;
+    border: 1px solid #eee;
+    box-shadow: none !important;
+
+    h6 {
+      font-size: 12px;
+      margin: 0;
+      color: #333;
+    }
+
+    p {
+      font-size: 11px;
+      margin: 0;
+      color: #666;
+      line-height: 1.3;
+    }
+  }
+
+  .badge {
+    font-size: 10px;
+    padding: 1px 4px;
+    margin-bottom: 2px;
+    border-radius: 2px;
+    line-height: 1.2;
+
+    &.primary {
+      background-color: #4759B2;
+      color: white;
+    }
+  }
+
+  .info-table {
+    margin-bottom: 6px;
+    font-size: 12px;
+    border-spacing: 0;
+    border-collapse: collapse;
+
+    td {
+      padding: 2px 0;
+      border-bottom: 1px solid #eee;
+      line-height: 1.3;
+
+      &:first-child {
+        width: 22%;
+        color: #666;
+        font-weight: normal;
+      }
+    }
+
+    .location-icon.small {
+      font-size: 12px;
+      height: 12px;
+      width: 12px;
+      margin-right: 2px;
+      position: relative;
+      top: -1px;
+    }
+  }
+
+  .skills-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+    margin-top: 2px;
+
+    .skill-badge {
+      background-color: #f0f2f5;
+      color: #4759B2;
+      padding: 1px 6px;
+      border-radius: 10px;
+      font-size: 10px;
+      line-height: 1.4;
+      white-space: nowrap;
+    }
+  }
 }
 
 /* Additional optimization styles */
@@ -91,52 +460,41 @@ h2, h3, h4, h5 {
   margin-right: 5px;
 }
 
-/* Image loading styles */
-.profile-image-container {
-  position: relative;
-  width: 150px;
-  height: 150px;
-  margin: 0 auto 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: #f5f5f5;
-  border-radius: 5px;
-}
-
-.profile-image-container.loading {
-  background-color: #f0f0f0;
-  min-height: 150px;
-  border-radius: 5px;
-}
-
-.loading-spinner {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 10;
-}
-
 /* Scrollable tab content styles */
 .mat-tab-body-content {
-    height: 350px;
-    overflow-y: auto;
-    padding: 10px 0;
-}
+  height: 220px !important;
+  overflow-y: auto !important;
+  padding: 0 !important;
 
-.scrollable-content {
-    max-height: 100%;
-    overflow-y: auto;
+  &::-webkit-scrollbar {
+    width: 6px !important;
+    background-color: #f5f5f5 !important;
+    display: block !important;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #f1f1f1 !important;
+    border-radius: 3px !important;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: #888 !important;
+    border-radius: 3px !important;
+    min-height: 30px !important;
+
+    &:hover {
+      background: #666 !important;
+    }
+  }
+
+  /* Firefox */
+  scrollbar-width: thin !important;
+  scrollbar-color: #888 #f1f1f1 !important;
 }
 
 /* Adjust spacing and sizing for tab content */
 .mat-tab-group {
     margin-top: 10px;
-}
-
-.about-section {
-    padding: 10px;
 }
 
 /* Custom scrollbar styling */
@@ -205,25 +563,7 @@ h2, h3, h4, h5 {
     margin-bottom: 0 !important;
 }
 
-.location-icon {
-  font-size: 18px;
-  height: 18px;
-  width: 18px;
-  vertical-align: middle;
-  margin-right: 4px;
-  color: #f44336;
-  cursor: pointer;
-  transition: transform 0.2s ease;
-}
-
-.location-icon:hover {
-  transform: scale(1.2);
-  color: #d32f2f;
-}
-
-.location-icon.small {
-  font-size: 16px;
-  height: 16px;
-  width: 16px;
-  margin-right: 4px;
+/* Ensure tab headers are compact */
+.mat-tab-header {
+  margin-bottom: 0 !important;
 } 

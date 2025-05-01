@@ -1,0 +1,51 @@
+{
+  "posts": [
+    {
+      "id": 1,
+      "userId": 1,
+      "title": "New Project Launch",
+      "content": "Excited to announce the launch of our latest project! Stay tuned for more updates.",
+      "imageUrl": "assets/images/posts/project-launch.jpg",
+      "createdAt": "2024-03-19T10:00:00Z",
+      "likes": 42,
+      "comments": 8,
+      "shares": 12,
+      "author": {
+        "name": "Paul Welby",
+        "avatar": "assets/images/avatars/paul.jpg",
+        "title": "Owner/Developer/Designer"
+      }
+    },
+    {
+      "id": 2,
+      "userId": 1,
+      "title": "Design Tips",
+      "content": "Here are some key principles for creating user-friendly interfaces: 1. Keep it simple 2. Use consistent patterns 3. Provide clear feedback",
+      "createdAt": "2024-03-18T15:30:00Z",
+      "likes": 35,
+      "comments": 5,
+      "shares": 8,
+      "author": {
+        "name": "Paul Welby",
+        "avatar": "assets/images/avatars/paul.jpg",
+        "title": "Owner/Developer/Designer"
+      }
+    },
+    {
+      "id": 3,
+      "userId": 1,
+      "title": "Team Collaboration",
+      "content": "Great meeting with the team today discussing upcoming features and improvements!",
+      "imageUrl": "assets/images/posts/team-meeting.jpg",
+      "createdAt": "2024-03-17T09:15:00Z",
+      "likes": 28,
+      "comments": 6,
+      "shares": 4,
+      "author": {
+        "name": "Paul Welby",
+        "avatar": "assets/images/avatars/paul.jpg",
+        "title": "Owner/Developer/Designer"
+      }
+    }
+  ]
+} 
