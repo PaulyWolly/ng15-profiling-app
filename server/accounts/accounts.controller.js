@@ -89,6 +89,8 @@ router.delete('/refresh-tokens/cleanup', authenticate(Role.Admin), cleanupTokens
 router.post('/force-logout/:id', authenticate(Role.Admin), forceLogoutHandler);
 router.post('/force-logout-bulk', authenticate(Role.Admin), forceLogoutBulkHandler);
 router.post('/cleanup-all-sessions', authenticate(Role.Admin), cleanupAllSessionsHandler);
+// Add backward-compatible route for /sessions/:sessionId/force-logout
+router.post('/sessions/:sessionId/force-logout', authenticate(Role.Admin), (req, res, next) => forceLogoutHandler({ ...req, params: { id: req.params.sessionId } }, res, next));
 
 // Add this route after your other routes
 router.post('/:id/fix-profile-image', authenticate(), async (req, res, next) => {

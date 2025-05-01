@@ -400,7 +400,7 @@ async function logAllImagePaths() {
 }
 
 // New function to get active sessions
-async function getActiveSessions({ page = 1, pageSize = 10 }) {
+async function getActiveSessions({ page = 1, pageSize = 10 } = {}) {
     console.log(`[AccountService] Fetching active sessions - Page: ${page}, Size: ${pageSize}`);
 
     const filter = {
