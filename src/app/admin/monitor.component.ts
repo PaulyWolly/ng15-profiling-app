@@ -136,11 +136,16 @@ export class MonitorComponent implements OnInit, OnDestroy {
         if (idsToDelete.length === 0) return;
 
         this.loading = true;
-        this.http.post(`${environment.apiUrl}/sessions/delete-batch`, { ids: idsToDelete })
+        this.http.post(`${environment.apiUrl}/accounts/sessions/delete-batch`, { ids: idsToDelete })
             .subscribe({
                 next: () => {
                     this.alertService.success('Selected sessions deleted successfully.');
                     this.selectedSessions.clear();
+
+                    // If we just deleted all items on the current page and there are more pages, go to the previous page
+                    if (idsToDelete.length === this.activeSessions.length && this.currentPage > 1) {
+                        this.currentPage--;
+                    }
                     this.loadSessions();
                     this.loading = false;
                 },
@@ -159,7 +164,7 @@ export class MonitorComponent implements OnInit, OnDestroy {
 
     forceLogout(sessionId: string): void {
         this.loading = true;
-        this.http.post(`${environment.apiUrl}/sessions/${sessionId}/force-logout`, {})
+        this.http.post(`${environment.apiUrl}/accounts/sessions/${sessionId}/force-logout`, {})
             .subscribe({
                 next: () => {
                     this.alertService.success('Session logged out successfully.');

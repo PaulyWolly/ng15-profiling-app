@@ -648,11 +648,14 @@ export class AccountService {
             );
     }
 
-    getCleanupHistory(limit: number = 20, skip: number = 0) {
-        return this.getHttp().get<CleanupHistoryResponse>(
-            `${environment.apiUrl}/admin/cleanup-history`,
-            { params: { limit: limit.toString(), skip: skip.toString() } }
-        );
+    getCleanupHistory(page: number, pageSize: number) {
+        const skip = (page - 1) * pageSize;
+        return this.getHttp().get<CleanupHistoryResponse>(`${environment.apiUrl}/admin/cleanup-history`, {
+            params: {
+                limit: pageSize.toString(),
+                skip: skip.toString()
+            }
+        });
     }
 
     deleteCleanupRecord(id: string) {
@@ -687,5 +690,9 @@ export class AccountService {
                     return throwError(() => new Error(error.error?.message || 'Failed to upload image'));
                 })
             );
+    }
+
+    cleanupOrphanedTokens() {
+        return this.getHttp().post<void>(`${environment.apiUrl}/accounts/cleanup-orphaned-tokens`, {});
     }
 }

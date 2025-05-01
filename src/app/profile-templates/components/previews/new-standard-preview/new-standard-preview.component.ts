@@ -13,9 +13,9 @@ import { first } from 'rxjs/operators';
 import { CurvedBorderComponent } from '@app/shared/curved-border/curved-border.component';
 
 @Component({
-    selector: 'app-new-standard',
-    templateUrl: './new-standard.component.html',
-    styleUrls: ['./new-standard.component.scss'],
+    selector: 'app-new-standard-preview',
+    templateUrl: './new-standard-preview.component.html',
+    styleUrls: ['./new-standard-preview.component.scss'],
     standalone: true,
     imports: [
         CommonModule,
@@ -27,7 +27,7 @@ import { CurvedBorderComponent } from '@app/shared/curved-border/curved-border.c
         CurvedBorderComponent
     ]
 })
-export class NewStandardComponent implements OnInit {
+export class NewStandardPreviewComponent implements OnInit {
     loading = true;
     error = '';
     profile?: Account;

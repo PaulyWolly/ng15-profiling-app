@@ -8,8 +8,9 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 import { ProfileTemplatesComponent } from './profile-templates.component';
 import { ProfileTemplatesRoutingModule } from './profile-templates-routing.module';
-import { NewStandardComponent } from './components/new-standard/new-standard.component';
-import { NewSocialMediaViewComponent } from './views/new-social-media-view/new-social-media-view.component';
+import { NewStandardPreviewComponent } from './components/previews/new-standard-preview/new-standard-preview.component';
+import { NewSocialMediaPreviewComponent } from './components/previews/new-social-media-preview/new-social-media-preview.component';
+import { NewBusinessPreviewComponent } from './components/previews/new-business-preview/new-business-preview.component';
 import { AssetService } from '@app/_services/asset.service';
 import { SharedModule } from '@app/shared/shared.module';
 
@@ -26,13 +27,16 @@ import { SharedModule } from '@app/shared/shared.module';
         MatIconModule,
         MatProgressSpinnerModule,
         SharedModule,
-        NewStandardComponent,
-        NewSocialMediaViewComponent
+        // Standalone Components
+        NewStandardPreviewComponent,
+        NewSocialMediaPreviewComponent,
+        NewBusinessPreviewComponent
     ],
     exports: [
         ProfileTemplatesComponent,
-        NewStandardComponent,
-        NewSocialMediaViewComponent
+        NewStandardPreviewComponent,
+        NewSocialMediaPreviewComponent,
+        NewBusinessPreviewComponent
     ],
     providers: [
         AssetService

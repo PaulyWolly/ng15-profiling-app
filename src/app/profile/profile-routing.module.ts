@@ -7,8 +7,8 @@ import { DetailsComponent } from './containers/details/details.component';
 import { EditComponent } from './containers/edit/edit.component';
 import { EditProfileComponent } from './containers/edit-profile/edit-profile.component';
 import { AccountSettingsComponent } from './containers/account-settings/account-settings.component';
-import { NewStandardViewComponent } from './components/new-standard-view/new-standard-view.component';
-import { NewSocialMediaViewComponent } from '../profile-templates/views/new-social-media-view/new-social-media-view.component';
+import { NewStandardProfileComponent } from '../profile-templates/components/profiles/new-standard-profile/new-standard-profile.component';
+import { NewSocialMediaProfileComponent } from '../profile-templates/components/profiles/new-social-media-profile/new-social-media-profile.component';
 
 const routes: Routes = [
     {

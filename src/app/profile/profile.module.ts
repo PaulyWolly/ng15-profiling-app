@@ -28,15 +28,15 @@ import { DetailsComponent } from './containers/details/details.component';
 import { EditComponent } from './containers/edit/edit.component';
 import { EditProfileComponent } from './containers/edit-profile/edit-profile.component';
 import { AccountSettingsComponent } from './containers/account-settings/account-settings.component';
-import { NewStandardViewComponent } from './components/new-standard-view/new-standard-view.component';
+
+// Profile Components
+import { NewStandardProfileComponent } from '../profile-templates/components/profiles/new-standard-profile/new-standard-profile.component';
+import { NewSocialMediaProfileComponent } from '../profile-templates/components/profiles/new-social-media-profile/new-social-media-profile.component';
 
 // Presentational Components
 import { StandardProfileComponent } from './components/standard-profile/standard-profile.component';
 import { BusinessCardComponent } from './components/business-card/business-card.component';
 import { MapDialogComponent } from './components/map-dialog/map-dialog.component';
-import { NewSocialMediaComponent } from '../profile-templates/components/new-social-media/new-social-media.component';
-import { NewSocialMediaViewComponent } from '../profile-templates/views/new-social-media-view/new-social-media-view.component';
-import { NewStandardComponent } from '../profile-templates/components/new-standard/new-standard.component';
 
 // Custom Directive to prevent wheel event propagation
 @Directive({
@@ -51,7 +51,6 @@ export class PreventWheelPropagationDirective {
     }
 }
 
-// @ts-ignore: This suppresses the static reference linting error
 @NgModule({
     imports: [
         CommonModule,
@@ -73,8 +72,8 @@ export class PreventWheelPropagationDirective {
         MatDialogModule,
         MatExpansionModule,
         // Standalone Components
-        NewStandardViewComponent,
-        NewSocialMediaComponent
+        NewStandardProfileComponent,
+        NewSocialMediaProfileComponent
     ],
     declarations: [
         // Container Components

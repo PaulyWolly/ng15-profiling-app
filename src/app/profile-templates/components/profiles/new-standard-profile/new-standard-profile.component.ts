@@ -5,18 +5,19 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDividerModule } from '@angular/material/divider';
+import { MatDialogModule } from '@angular/material/dialog';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Account } from '@app/_models';
 import { AccountService } from '@app/_services';
 import { MatDialog } from '@angular/material/dialog';
-import { MapDialogComponent } from '../../components/map-dialog/map-dialog.component';
+import { MapDialogComponent } from '@app/profile/components/map-dialog/map-dialog.component';
 import { Subscription, delay, retryWhen, take } from 'rxjs';
 import { CurvedBorderComponent } from '@app/shared/curved-border/curved-border.component';
 
 @Component({
-    selector: 'app-new-standard-view',
-    templateUrl: './new-standard-view.component.html',
-    styleUrls: ['./new-standard-view.component.scss'],
+    selector: 'app-new-standard-profile',
+    templateUrl: './new-standard-profile.component.html',
+    styleUrls: ['./new-standard-profile.component.scss'],
     standalone: true,
     imports: [
         CommonModule,
@@ -25,10 +26,11 @@ import { CurvedBorderComponent } from '@app/shared/curved-border/curved-border.c
         MatButtonModule,
         MatProgressSpinnerModule,
         MatDividerModule,
+        MatDialogModule,
         CurvedBorderComponent
     ]
 })
-export class NewStandardViewComponent implements OnInit, OnDestroy, AfterViewInit {
+export class NewStandardProfileComponent implements OnInit, OnDestroy, AfterViewInit {
     @ViewChild('scrollContainer') private scrollContainer?: ElementRef<HTMLDivElement>;
 
     @Input() isPreview: boolean = false;
