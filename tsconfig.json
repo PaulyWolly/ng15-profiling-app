@@ -19,6 +19,8 @@
         "importHelpers": true,
         "target": "ES2022",
         "module": "es2020",
+        "resolveJsonModule": true,
+        "esModuleInterop": true,
         "lib": [
             "es2020",
             "dom"
@@ -39,6 +41,7 @@
     },
     "include": [
         "src/**/*.ts",
-        "src/**/*.d.ts"
+        "src/**/*.d.ts",
+        "src/**/*.json"
     ]
 }

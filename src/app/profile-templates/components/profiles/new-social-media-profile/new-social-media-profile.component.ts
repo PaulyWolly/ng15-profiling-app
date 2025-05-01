@@ -28,7 +28,7 @@ import { CustomTooltipDirective } from '@app/shared/custom-tooltip/custom-toolti
         [top]="20"
         [left]="24"
         [right]="24"
-        [height]="280"
+        [height]="310"
         [borderColor]="'#eebbbb'"
         [borderWidth]="4"
         [borderRadius]="'var(--app-border-radius)'"

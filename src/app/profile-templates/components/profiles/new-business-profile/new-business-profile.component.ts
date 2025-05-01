@@ -12,6 +12,7 @@ import { MatBadgeModule } from '@angular/material/badge';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatDialogModule } from '@angular/material/dialog';
+import { BusinessPostsComponent } from '../../posts/business-posts/business-posts.component';
 
 @Component({
   selector: 'app-new-business-profile',
@@ -28,7 +29,8 @@ import { MatDialogModule } from '@angular/material/dialog';
     MatBadgeModule,
     MatInputModule,
     MatFormFieldModule,
-    MatDialogModule
+    MatDialogModule,
+    BusinessPostsComponent
   ]
 })
 export class NewBusinessProfileComponent implements OnInit {
@@ -46,14 +48,14 @@ export class NewBusinessProfileComponent implements OnInit {
   
   onImageLoaded() {
     this.imageLoading = false;
-    console.log('[BusinessProfile] Profile image loaded successfully');
+    console.log('[BusinessCard] Profile image loaded successfully');
   }
   
   onImageError() {
     this.imageLoading = false;
     // Clear the profile image URL in case of error
     if (this.profile) {
-      console.error('[BusinessProfile] Error loading profile image');
+      console.error('[BusinessCard] Error loading profile image');
       this.profile.profileImage = undefined;
     }
   }
