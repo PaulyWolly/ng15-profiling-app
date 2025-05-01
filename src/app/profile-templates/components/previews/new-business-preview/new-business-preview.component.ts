@@ -20,4 +20,10 @@ import { RouterModule } from '@angular/router';
 })
 export class NewBusinessPreviewComponent {
     title = 'Business Card Template';
+    console = console; // Make console available in template
+
+    ngOnInit() {
+        // Log the image path to verify it's correct
+        console.log('Business card template image path:', 'assets/images/profile-templates/business-card-template.png');
+    }
 } 
