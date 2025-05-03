@@ -18,7 +18,6 @@ const schema = new Schema({
     created: { type: Date, default: Date.now },
     updated: Date,
     profileImage: { type: String },
-    isVerified: Boolean,
     status: { 
         type: String, 
         enum: ['Active', 'Inactive', 'Pending', 'Locked'],

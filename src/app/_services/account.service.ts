@@ -1,10 +1,10 @@
-﻿import { Injectable, Injector } from '@angular/core';
+﻿import { Injectable, Injector, Inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import { map, finalize, catchError, switchMap, tap } from 'rxjs/operators';
 import { throwError } from 'rxjs';
-import { JwtHelperService } from '@auth0/angular-jwt';
+import { JwtHelperService, JWT_OPTIONS } from '@auth0/angular-jwt';
 
 import { environment } from '@environments/environment';
 import { Account, AccountUpdate, Role } from '@app/_models';
@@ -52,34 +52,27 @@ export interface CleanupHistoryResponse {
 export class AccountService {
     private accountSubject: BehaviorSubject<Account | null>;
     public account: Observable<Account | null>;
-    private http!: HttpClient; // Using definite assignment assertion
-    private initialized = false;
-    private jwtHelper = new JwtHelperService();
+    private readonly JWT_TOKEN_KEY = 'jwt_token';
+    private readonly REFRESH_TOKEN_KEY = 'refresh_token';
+    private readonly REMEMBER_ME_KEY = 'remember_me';
+    private readonly TAB_ID_KEY = 'current_tab_id';
     private currentTabId: string;
-    private readonly REMEMBER_ME_KEY = 'rememberMe';
-    private readonly JWT_TOKEN_KEY = 'jwt';
-    private readonly REFRESH_TOKEN_KEY = 'refreshToken';
+    private initialized = false;
+    private refreshTokenTimeout: NodeJS.Timeout | undefined;
 
     constructor(
         private router: Router,
-        private injector: Injector
+        private http: HttpClient,
+        @Inject(JwtHelperService) private jwtHelper: JwtHelperService
     ) {
+        // Generate a unique ID for this tab
+        this.currentTabId = 'tab_' + Math.random().toString(36).substr(2, 9);
         this.accountSubject = new BehaviorSubject<Account | null>(null);
         this.account = this.accountSubject.asObservable();
-        
-        // Generate a unique tab ID for this instance
-        this.currentTabId = 'tab_' + new Date().getTime() + '_' + Math.random().toString(36).substr(2, 9);
-        localStorage.setItem(TAB_ID_KEY, this.currentTabId);
-        
-        // Lazy initialize on first use to avoid circular dependency
-        // Don't inject HttpClient directly in constructor
     }
 
     // Lazy getter for HttpClient to avoid circular dependency
     private getHttp(): HttpClient {
-        if (!this.http) {
-            this.http = this.injector.get(HttpClient);
-        }
         return this.http;
     }
 
@@ -87,12 +80,12 @@ export class AccountService {
     public initialize() {
         if (this.initialized) return;
         
-        console.log('[AccountService] Initializing service');
+        console.log('[AccountService] Initializing service for tab:', this.currentTabId);
         
         // Check if this tab's ID matches the stored ID
-        const storedTabId = localStorage.getItem(TAB_ID_KEY);
-        const jwtToken = localStorage.getItem(this.JWT_TOKEN_KEY) || sessionStorage.getItem(this.JWT_TOKEN_KEY);
-        const refreshToken = localStorage.getItem(this.REFRESH_TOKEN_KEY) || sessionStorage.getItem(this.REFRESH_TOKEN_KEY);
+        const storedTabId = localStorage.getItem(this.TAB_ID_KEY);
+        const jwtToken = this.getStoredToken();
+        const refreshToken = this.getStoredRefreshToken();
         
         console.log('[AccountService] Initialization state:', {
             storedTabId,
@@ -100,6 +93,13 @@ export class AccountService {
             hasJwtToken: !!jwtToken,
             hasRefreshToken: !!refreshToken
         });
+        
+        // If we have a stored tab ID that doesn't match, clear the session
+        if (storedTabId && storedTabId !== this.currentTabId) {
+            console.log('[AccountService] Tab ID mismatch, clearing session');
+            this.clearAuthData();
+            return;
+        }
         
         // Always try to restore the session if we have tokens
         if (jwtToken || refreshToken) {
@@ -109,7 +109,19 @@ export class AccountService {
             this.accountSubject.next(null);
         }
         
+        // Store this tab's ID
+        localStorage.setItem(this.TAB_ID_KEY, this.currentTabId);
         this.initialized = true;
+    }
+
+    private getStoredToken(): string | null {
+        // Only check sessionStorage for JWT token
+        return sessionStorage.getItem(this.JWT_TOKEN_KEY);
+    }
+
+    private getStoredRefreshToken(): string | null {
+        // Only check sessionStorage for refresh token
+        return sessionStorage.getItem(this.REFRESH_TOKEN_KEY);
     }
 
     public get accountValue(): Account | null {
@@ -171,48 +183,36 @@ export class AccountService {
     }
 
     logout() {
-        // Clear all stored auth data
-        this.clearAuthData();
-        
-        // Revoke token on the server
-        this.getHttp().post<any>(`${baseUrl}/revoke-token`, {}, { withCredentials: true })
-            .pipe(
-                finalize(() => {
-                    this.stopRefreshTokenTimer();
-                    this.accountSubject.next(null);
-                    this.router.navigate(['/account/login']);
-                })
-            )
-            .subscribe();
+        // Clear sessionStorage only
+        sessionStorage.removeItem('account');
+        sessionStorage.removeItem(this.JWT_TOKEN_KEY);
+        sessionStorage.removeItem(this.REFRESH_TOKEN_KEY);
+        this.accountSubject.next(null);
+        this.router.navigate(['/account/login']);
     }
 
     // Initialize app from stored auth data
     initializeFromStorage() {
         console.log('[AccountService] Initializing from storage');
-        
-        // Check for stored tokens
-        const jwtToken = localStorage.getItem(this.JWT_TOKEN_KEY) || sessionStorage.getItem(this.JWT_TOKEN_KEY);
-        const refreshToken = localStorage.getItem(this.REFRESH_TOKEN_KEY) || sessionStorage.getItem(this.REFRESH_TOKEN_KEY);
+        // Check for stored tokens in sessionStorage only
+        const jwtToken = sessionStorage.getItem(this.JWT_TOKEN_KEY);
+        const refreshToken = sessionStorage.getItem(this.REFRESH_TOKEN_KEY);
         const rememberMe = localStorage.getItem(this.REMEMBER_ME_KEY);
-        
         console.log('[AccountService] Found stored data:', {
             hasJwtToken: !!jwtToken,
             hasRefreshToken: !!refreshToken,
             hasRememberMe: !!rememberMe,
-            storageType: localStorage.getItem(this.JWT_TOKEN_KEY) ? 'localStorage' : 'sessionStorage'
+            storageType: jwtToken ? 'sessionStorage' : 'none'
         });
-        
         // If we have a JWT token, try to decode it first
         if (jwtToken) {
             try {
                 const decodedToken = this.jwtHelper.decodeToken(jwtToken);
                 const isExpired = this.jwtHelper.isTokenExpired(jwtToken);
-                
                 console.log('[AccountService] JWT token status:', {
                     isExpired,
                     expiresAt: decodedToken.exp ? new Date(decodedToken.exp * 1000).toISOString() : 'unknown'
                 });
-                
                 if (!isExpired) {
                     // Token is valid, use it
                     console.log('[AccountService] Using valid JWT token');
@@ -223,7 +223,6 @@ export class AccountService {
                 console.error('[AccountService] Error decoding JWT token:', error);
             }
         }
-        
         // If we get here, either the JWT token is invalid or we don't have one
         // Try to refresh the token using the cookie
         console.log('[AccountService] Attempting to refresh token using cookie');
@@ -234,25 +233,19 @@ export class AccountService {
             },
             error: (error) => {
                 console.error('[AccountService] Token refresh failed:', error);
-                this.clearAuthData();
-                this.accountSubject.next(null);
             }
         });
     }
 
-    // Store authentication data based on rememberMe preference
+    // Store authentication data in sessionStorage only
     private storeAuthData(account: Account, rememberMe: boolean, email: string) {
         if (!account.jwtToken) {
             console.error('[AccountService] Cannot store auth data: missing JWT token');
             return;
         }
-
-        console.log('[AccountService] Storing auth data:', { rememberMe, email });
-        
+        console.log('[AccountService] Storing auth data for tab:', this.currentTabId);
         this.clearAuthData();
-        
-        const storage = rememberMe ? localStorage : sessionStorage;
-        
+        // Only use localStorage for rememberMe email prefill
         if (rememberMe) {
             const rememberMeData = {
                 remembered: true,
@@ -263,20 +256,17 @@ export class AccountService {
             };
             localStorage.setItem(this.REMEMBER_ME_KEY, JSON.stringify(rememberMeData));
         }
-        
-        storage.setItem(this.JWT_TOKEN_KEY, account.jwtToken);
+        sessionStorage.setItem(this.JWT_TOKEN_KEY, account.jwtToken);
         if (account.refreshToken) {
-            storage.setItem(this.REFRESH_TOKEN_KEY, account.refreshToken);
+            sessionStorage.setItem(this.REFRESH_TOKEN_KEY, account.refreshToken);
         }
     }
     
     // Clear all authentication data from storage
     private clearAuthData() {
-        console.log('[AccountService] Clearing authentication data');
+        console.log('[AccountService] Clearing authentication data for tab:', this.currentTabId);
         this.stopRefreshTokenTimer();
-        localStorage.removeItem(this.REMEMBER_ME_KEY);
-        localStorage.removeItem(this.JWT_TOKEN_KEY);
-        localStorage.removeItem(this.REFRESH_TOKEN_KEY);
+        localStorage.removeItem(this.REMEMBER_ME_KEY); // Only for rememberMe
         sessionStorage.removeItem(this.JWT_TOKEN_KEY);
         sessionStorage.removeItem(this.REFRESH_TOKEN_KEY);
         this.accountSubject.next(null);
@@ -284,38 +274,24 @@ export class AccountService {
 
     refreshToken() {
         console.log('[AccountService] Attempting to refresh token');
-        
-        // Stop existing timer before attempting refresh
         this.stopRefreshTokenTimer();
-        
+        // Do NOT read refresh token from storage; backend will use cookie
         return this.getHttp().post<Account>(`${baseUrl}/refresh-token`, {}, { withCredentials: true })
             .pipe(
                 tap(account => {
                     console.log('[AccountService] Token refresh successful');
-                    
-                    // Format profile image URL if needed
                     if (account.profileImage && !account.profileImage.startsWith('http')) {
-                        // Remove any leading slash before joining with API URL
                         const imagePath = account.profileImage.startsWith('/') 
                             ? account.profileImage.substring(1) 
                             : account.profileImage;
                         account.profileImage = `${environment.apiUrl}/${imagePath}`;
                     }
-                    
-                    // Store auth data based on whether this was a remembered login
                     const isRemembered = !!localStorage.getItem(this.REMEMBER_ME_KEY);
                     if (isRemembered) {
-                        localStorage.setItem(this.JWT_TOKEN_KEY, account.jwtToken);
-                        if (account.refreshToken) {
-                            localStorage.setItem(this.REFRESH_TOKEN_KEY, account.refreshToken);
-                        }
+                        sessionStorage.setItem(this.JWT_TOKEN_KEY, account.jwtToken);
                     } else {
                         sessionStorage.setItem(this.JWT_TOKEN_KEY, account.jwtToken);
-                        if (account.refreshToken) {
-                            sessionStorage.setItem(this.REFRESH_TOKEN_KEY, account.refreshToken);
-                        }
                     }
-                    
                     this.accountSubject.next(account);
                     this.startRefreshTokenTimer();
                 }),
@@ -407,15 +383,9 @@ export class AccountService {
                         // Store authentication data based on whether this was a remembered login
                         const isRemembered = !!localStorage.getItem(this.REMEMBER_ME_KEY);
                         if (isRemembered && account.jwtToken) {
-                            localStorage.setItem(this.JWT_TOKEN_KEY, account.jwtToken);
-                            if (account.refreshToken) {
-                                localStorage.setItem(this.REFRESH_TOKEN_KEY, account.refreshToken);
-                            }
+                            sessionStorage.setItem(this.JWT_TOKEN_KEY, account.jwtToken);
                         } else if (account.jwtToken) {
                             sessionStorage.setItem(this.JWT_TOKEN_KEY, account.jwtToken);
-                            if (account.refreshToken) {
-                                sessionStorage.setItem(this.REFRESH_TOKEN_KEY, account.refreshToken);
-                            }
                         }
                     }
                     
@@ -455,8 +425,6 @@ export class AccountService {
     }
 
     // Timer methods
-    private refreshTokenTimeout?: any;
-
     private startRefreshTokenTimer() {
         console.log('[AccountService] Starting refresh token timer');
         
@@ -500,10 +468,9 @@ export class AccountService {
     }
 
     private stopRefreshTokenTimer() {
-        console.log('[AccountService] Stopping refresh token timer');
         if (this.refreshTokenTimeout) {
             clearTimeout(this.refreshTokenTimeout);
-            this.refreshTokenTimeout = null;
+            this.refreshTokenTimeout = undefined;
         }
     }
 
@@ -611,7 +578,7 @@ export class AccountService {
     }
 
     private getJwtToken(): string | null {
-        const jwtToken = localStorage.getItem(this.JWT_TOKEN_KEY) || sessionStorage.getItem(this.JWT_TOKEN_KEY);
+        const jwtToken = sessionStorage.getItem(this.JWT_TOKEN_KEY);
         return jwtToken;
     }
 

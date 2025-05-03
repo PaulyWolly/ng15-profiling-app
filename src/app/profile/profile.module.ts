@@ -33,7 +33,21 @@ import { AccountSettingsComponent } from './containers/account-settings/account-
 // Presentational Components
 import { MapDialogComponent } from './components/map-dialog/map-dialog.component';
 
-// Custom Directive
+// Custom Directive to prevent wheel event propagation
+import { Directive, ElementRef, HostListener } from '@angular/core';
+
+@Directive({
+    selector: '[preventWheelPropagation]'
+})
+export class PreventWheelPropagationDirective {
+    constructor(private el: ElementRef) {}
+
+    @HostListener('wheel', ['$event'])
+    onWheel(event: Event) {
+        event.stopPropagation();
+    }
+}
+
 @NgModule({
     imports: [
         CommonModule,
@@ -62,10 +76,12 @@ import { MapDialogComponent } from './components/map-dialog/map-dialog.component
         EditComponent,
         EditProfileComponent,
         AccountSettingsComponent,
-        MapDialogComponent
+        MapDialogComponent,
+        PreventWheelPropagationDirective
     ],
     exports: [
-        ProfileComponent
+        ProfileComponent,
+        PreventWheelPropagationDirective
     ]
 })
 export class ProfileModule { }

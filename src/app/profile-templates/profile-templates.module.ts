@@ -12,6 +12,7 @@ import { NewStandardPreviewComponent } from './components/previews/new-standard-
 import { NewSocialMediaPreviewComponent } from './components/previews/new-social-media-preview/new-social-media-preview.component';
 import { NewBusinessPreviewComponent } from './components/previews/new-business-preview/new-business-preview.component';
 import { AssetService } from '@app/_services/asset.service';
+import { ChatService } from '@app/_services/chat.service';
 import { SharedModule } from '@app/shared/shared.module';
 import { NewSocialMediaProfileComponent } from './components/profiles/new-social-media-profile/new-social-media-profile.component';
 import { NewBusinessProfileComponent } from './components/profiles/new-business-profile/new-business-profile.component';
@@ -48,7 +49,8 @@ import { NewStandardProfileComponent } from './components/profiles/new-standard-
         NewStandardProfileComponent
     ],
     providers: [
-        AssetService
+        AssetService,
+        ChatService
     ]
 })
 export class ProfileTemplatesModule { } 

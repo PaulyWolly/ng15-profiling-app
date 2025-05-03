@@ -4,10 +4,14 @@
   padding: 20px;
   position: relative;
   top: -15px;
+  height: 100%;
+  min-height: 100%;
 }
 
 .business-card-layout {
   color: #333;
+  height: 100%;
+  min-height: 100%;
 }
 
 .find-people-link {
@@ -22,11 +26,13 @@
 } 
 
 .work-area {
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 
 .education-area {
-  margin-top: 10px;
+  margin-top: 8px;
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
 }
 
 .my-contacts-link {
@@ -35,7 +41,7 @@
 
 .logo-header {
   text-align: center;
-  margin-bottom: 15px;
+  margin-bottom: 10px;
   padding: 10px;
   background: #f8f9fa;
   border-radius: 8px;
@@ -67,6 +73,7 @@
   background-color: #f5f5f5;
   border-radius: 5px;
   overflow: hidden;
+  margin-bottom: 10px;
 
   &.loading {
     background-color: #f0f0f0;
@@ -74,8 +81,10 @@
   }
 
   .profile-img {
-    width: 100%;
-    height: 100%;
+    width: 85%;
+    height: 88%;
+    position: relative;
+    top: 5px;
     object-fit: cover;
     box-shadow: 0 3px 10px rgba(0,0,0,0.1);
   }
@@ -106,6 +115,7 @@
 .search-container {
   margin-top: 20px;
   padding: 0 10px;
+  margin-bottom: 10px;
 }
 
 .search-bar {
@@ -143,11 +153,18 @@
     font-size: 16px;
     width: 16px;
     height: 16px;
+    position: relative;
+    top: 160px;
   }
 }
 
+.rating-list {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
 .posts-container {
-  height: 250px;
   border: 1px solid #e0e0e0;
   border-radius: 8px;
   background: #fff;
@@ -158,8 +175,8 @@
 }
 
 .scrollable-content {
-  height: 100%;
-  overflow-y: scroll !important;
+  max-height: 220px;
+  overflow-y: auto;
   width: calc(100% - 8px);
   padding: 8px;
 
@@ -462,8 +479,8 @@ h2, h3, h4, h5 {
 
 /* Scrollable tab content styles */
 .mat-tab-body-content {
-  height: 220px !important;
-  overflow-y: auto !important;
+  max-height: 220px;
+  overflow-y: auto;
   padding: 0 !important;
 
   &::-webkit-scrollbar {
@@ -566,4 +583,226 @@ h2, h3, h4, h5 {
 /* Ensure tab headers are compact */
 .mat-tab-header {
   margin-bottom: 0 !important;
+}
+
+.row {
+  display: flex;
+  align-items: stretch;
+  height: 100%;
+}
+
+.col-md-3 {
+  display: flex;
+  flex-direction: column;
+  flex: 1 0 0;
+  height: 100%;
+  justify-content: flex-start;
+}
+
+.col-md-9 {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.action-buttons {
+  margin-bottom: 0.5rem;
+}
+
+.profile-tabs {
+  margin-bottom: 0.5rem;
+}
+
+.stars-bottom {
+  margin-top: auto;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-start;
+  padding-bottom: 10px;
+  padding-left: 0;
+  margin-top: 120px;
+}
+
+.hide-scrollbar {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none;  /* IE 10+ */
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none; /* Chrome/Safari/Webkit */
+}
+
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  min-height: 200px;
+
+  mat-spinner {
+    margin-bottom: 16px;
+  }
+
+  p {
+    color: #666;
+    font-size: 14px;
+  }
+}
+
+.tab-header-container {
+  margin-bottom: 16px;
+  display: flex;
+  align-items: flex-start;
+  position: relative;
+}
+
+.profile-tabs {
+  flex: 1;
+  ::ng-deep {
+    .mat-mdc-tab-header {
+      border-bottom: 1px solid #e0e0e0;
+    }
+  }
+}
+
+.create-post-btn {
+  position: absolute;
+  right: 0;
+  top: 8px;
+  height: 32px;
+  line-height: 32px;
+  padding: 0 16px;
+  font-size: 14px;
+  transition: opacity 0.2s ease-in-out;
+
+  &.hidden {
+    display: none;
+  }
+}
+
+.tab-label-container {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.floating-chat-icon {
+  position: fixed;
+  bottom: 120px;
+  right: 24px;
+  width: 56px;
+  height: 56px;
+  background: #4759B2;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  transition: transform 0.2s ease;
+
+  &:hover {
+    transform: scale(1.05);
+  }
+
+  mat-icon {
+    color: white;
+    font-size: 24px;
+    width: 24px;
+    height: 24px;
+  }
+
+  .online-users-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: #4CAF50;
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+  }
+}
+
+.chat-list-dialog {
+  position: fixed;
+  bottom: 192px;
+  right: 24px;
+  width: 300px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+
+  .chat-list-header {
+    padding: 16px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    h3 {
+      margin: 0;
+      font-size: 16px;
+      font-weight: 500;
+      color: #333;
+    }
+  }
+
+  .chat-list-content {
+    max-height: 400px;
+    overflow-y: auto;
+  }
+
+  .chat-list-item {
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+
+    &:hover {
+      background-color: rgba(71, 89, 178, 0.1);
+    }
+
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .user-name {
+      flex: 1;
+      font-size: 14px;
+      color: #333;
+      font-weight: 500;
+    }
+
+    .online-indicator {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #4CAF50;
+    }
+  }
+}
+
+// Chat request notification styles
+::ng-deep .chat-request-snackbar {
+  margin-bottom: 80px; // Position above the floating chat icon
+  background: #4759B2;
+  color: white;
+  
+  .mat-simple-snackbar-action {
+    color: white;
+  }
 } 

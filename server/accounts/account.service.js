@@ -110,22 +110,15 @@ async function refreshToken({ token, ipAddress }) {
     const refreshToken = await getRefreshToken(token);
     const account = await getAccount(refreshToken.account);
 
-    // replace old refresh token with a new one and save
-    const newRefreshToken = generateRefreshToken(account, ipAddress);
-    refreshToken.revoked = Date.now();
-    refreshToken.revokedByIp = ipAddress;
-    refreshToken.replacedByToken = newRefreshToken.token;
-    await refreshToken.save();
-    await newRefreshToken.save();
-
-    // generate new jwt
+    // Do NOT revoke or replace the refresh token on use
+    // Only generate a new JWT
     const jwtToken = generateJwtToken(account);
 
     // return basic details and tokens
     return {
         ...basicDetails(account),
         jwtToken,
-        refreshToken: newRefreshToken.token
+        refreshToken: refreshToken.token
     };
 }
 
