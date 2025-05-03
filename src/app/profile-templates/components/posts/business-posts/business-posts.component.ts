@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit, OnChanges, SimpleChanges, ChangeDetectorRef, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
@@ -18,12 +18,31 @@ import samplePosts from '../../../data/sample-posts.json';
     MatButtonModule
   ]
 })
-export class BusinessPostsComponent implements OnInit {
-  posts: Post[] = [];
+export class BusinessPostsComponent implements OnInit, OnChanges {
+  @Input() posts: any[] = [];
+  @Input() profileImage: string = '';
+  @Input() loggedInUserName: string = '';
+  @Output() respondToPost = new EventEmitter<any>();
+  defaultAvatar: string = 'assets/images/avatars/default-avatar.png';
+
+  constructor(private cdr: ChangeDetectorRef) {}
 
   ngOnInit() {
+    console.log('BusinessPostsComponent initialized with posts:', this.posts);
     // For now, load from sample data
-    this.posts = samplePosts.posts;
+    // this.posts = samplePosts.posts;
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['posts']) {
+      console.log('Posts changed:', this.posts);
+      this.cdr.detectChanges();
+    }
+  }
+
+  getResponseCount(post: any): number {
+    // Count all posts that are responses to this post
+    return this.posts.filter(p => p.respondingTo === post.id).length;
   }
 
   onLike(post: Post) {
@@ -31,8 +50,8 @@ export class BusinessPostsComponent implements OnInit {
   }
 
   onComment(post: Post) {
-    // Implement comment functionality
-    console.log('Comment clicked for post:', post.id);
+    // Emit the post data to parent component
+    this.respondToPost.emit(post);
   }
 
   onShare(post: Post) {
@@ -60,5 +79,11 @@ export class BusinessPostsComponent implements OnInit {
     
     const years = Math.floor(months / 12);
     return `${years}y ago`;
+  }
+
+  getProfileImageUrl(path: string): string {
+    if (!path) return this.defaultAvatar;
+    if (path.startsWith('http')) return path;
+    return 'http://localhost:5001/' + path;
   }
 } 

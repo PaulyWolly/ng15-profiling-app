@@ -84,7 +84,9 @@ export class LoginComponent implements OnInit, OnDestroy {
             .pipe(first())
             .subscribe({
                 next: () => {
-                    this.router.navigate([this.returnUrl]);
+                    // Should navigate away or hide login form
+                    this.router.navigate([this.returnUrl || '/']);
+                    this.loading = false; // Hide spinner
                 },
                 error: error => {
                     this.alertService.error(error);

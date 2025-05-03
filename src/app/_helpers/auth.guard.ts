@@ -13,14 +13,10 @@ export class AuthGuard implements CanActivate {
     canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot) {
         const account = this.accountService.accountValue;
         console.log('[AuthGuard] Checking activation for', state.url);
-        
-        // Check for stored tokens
-        const jwtToken = localStorage.getItem('jwt') || sessionStorage.getItem('jwt');
-        const refreshToken = localStorage.getItem('refreshToken') || sessionStorage.getItem('refreshToken');
-        
-        if (jwtToken || refreshToken) {
-            console.log('[AuthGuard] Tokens found, checking authorization');
-            
+        // Check for stored JWT token (correct key). Use sessionStorage noramlly if available, otherwise use localStorage with 'Remember Me' clicked.
+        const jwtToken = sessionStorage.getItem('jwt_token') || localStorage.getItem('jwt_token');
+        if (jwtToken) {
+            console.log('[AuthGuard] JWT token found, checking authorization');
             // Check if route is restricted by role
             if (route.data.roles && route.data.roles.length) {
                 // Get role from account or JWT token
@@ -34,7 +30,6 @@ export class AuthGuard implements CanActivate {
                         console.error('[AuthGuard] Error parsing JWT token:', e);
                     }
                 }
-
                 // Check if user has required role
                 if (!accountRole || !route.data.roles.includes(accountRole)) {
                     console.log(`[AuthGuard] Role '${accountRole}' not authorized for route. Required roles:`, route.data.roles);
@@ -42,15 +37,12 @@ export class AuthGuard implements CanActivate {
                     this.router.navigate(['/']);
                     return false;
                 }
-                
                 console.log(`[AuthGuard] Role '${accountRole}' is authorized for route`);
             }
-            
             return true;
         }
-
         // Not logged in - redirect to login page with return url
-        console.log('[AuthGuard] No tokens found, redirecting to login');
+        console.log('[AuthGuard] No JWT token found, redirecting to login');
         this.router.navigate(['/account/login'], { queryParams: { returnUrl: state.url } });
         return false;
     }

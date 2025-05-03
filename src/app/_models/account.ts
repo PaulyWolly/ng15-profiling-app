@@ -59,6 +59,7 @@ export interface Account {
         endDate?: string;
         description: string;
     }[];
+    token?: string;
 }
 
 export interface AccountUpdate {

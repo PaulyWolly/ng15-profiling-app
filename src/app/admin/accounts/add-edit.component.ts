@@ -341,7 +341,7 @@ export class AddEditComponent implements OnInit, OnDestroy {
     }
 
     onCancel() {
-        this.router.navigate(['../'], { relativeTo: this.route });
+        this.router.navigate(['/admin/accounts']);
     }
 
     private saveAccount(formData: any) {

@@ -3,10 +3,15 @@ const express = require('express');
 const path = require('path');
 const app = express();
 const bodyParser = require('body-parser');
-const cookieParser = require('cookie-parser');
 const cors = require('cors');
 const errorHandler = require('./_middleware/error-handler');
 const fs = require('fs');
+const mongoose = require('mongoose');
+const http = require('http');
+const websocketService = require('./services/websocket.service');
+const chatApi = require('./services/chat.service.js').router;
+const cookieParser = require('cookie-parser');
+require('./users/user.model');
 
 // get DB name from config.json
 const config = require('./config.json');
@@ -39,6 +44,9 @@ console.log('Ensuring upload directories exist:', {
     profilesDir,
     followersDir
 });
+
+// ROUTES
+app.use('/uploads/profiles', express.static('uploads/profiles'));
 
 // Add this route to list all follower images
 app.get('/uploads/followers-images', (req, res) => {
@@ -76,6 +84,8 @@ app.use('/upload', require('./uploads/upload.routes'));
 // api routes
 app.use('/accounts', require('./accounts/accounts.controller'));
 app.use('/admin', require('./controllers/admin.controller'));
+app.use('/api/posts', require('./controllers/posts.controller'));
+app.use('/api/chat', chatApi);
 
 // Add config route - use the specific function as middleware
 const configController = require('./config/config.controller');
@@ -87,11 +97,44 @@ app.use('/api-docs', require('./_helpers/swagger'));
 // global error handler
 app.use(errorHandler);
 
-// start server
+// Connect to MongoDB with retry logic
+function connectWithRetry() {
+  if (mongoose.connection.readyState === 0) { // Only connect if not already connected
+    mongoose.connect(config.connectionString, { 
+      useNewUrlParser: true, 
+      useUnifiedTopology: true,
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 45000
+    })
+    .then(() => console.log('MongoDB connected'))
+    .catch(err => {
+      console.error('MongoDB connection error:', err);
+      setTimeout(connectWithRetry, 5000);
+    });
+  }
+}
+
+// Initial connection
+connectWithRetry();
+
+// Create HTTP server
+const server = http.createServer(app);
+
+// Start server
 const port = process.env.NODE_ENV === 'production' ? (process.env.PORT || 80) : 5001;
-app.listen(port, () => {
-    console.log('Server listening on port ' + port);
+server.listen(port, () => {
+    console.log(`Server listening on port ${port}`);
     console.log('Connected to DB:', DBName);
     console.log('Environment:', process.env.NODE_ENV || 'development');
     console.log('Uploads directory:', profilesDir);
+
+    // Initialize WebSocket service after server is listening
+    try {
+        websocketService.initialize(server);
+        console.log('WebSocket service initialized successfully');
+    } catch (error) {
+        console.error('Failed to initialize WebSocket service:', error);
+    }
 });
+
+

@@ -32,6 +32,14 @@
               <mat-icon matSuffix>search</mat-icon>
             </mat-form-field>
           </div>
+
+          <!-- Move stars to the bottom of the left column -->
+          <div class="stars stars-bottom">
+            <ul class="rating-list">
+              <li>Rating:</li>
+              <li><app-star-rating [(rating)]="profileRating"></app-star-rating></li>
+            </ul>            
+          </div>
         </div>
         
         <div class="col-md-9">
@@ -56,18 +64,7 @@
             </span>
             <span *ngIf="!profile.address && !profile.city && !profile.state && !profile.zipCode">New York, NY</span>
           </p>
-          
-          <div class="rating mt-3 mb-3">
-            <h4>8.6</h4>
-            <div class="stars">
-              <mat-icon class="text-primary">star</mat-icon>
-              <mat-icon class="text-primary">star</mat-icon>
-              <mat-icon class="text-primary">star</mat-icon>
-              <mat-icon class="text-primary">star</mat-icon>
-              <mat-icon class="text-primary">star_half</mat-icon>
-            </div>
-          </div>
-          
+
           <div class="action-buttons mt-3">
             <button mat-stroked-button class="mr-2">
               <mat-icon>mail</mat-icon> Send message
@@ -79,106 +76,137 @@
               <mat-icon>report</mat-icon> Report user
             </button>
           </div>
-          
-          <mat-tab-group class="profile-tabs" mat-stretch-tabs="false" mat-align-tabs="start">
-            <mat-tab label="Timeline">
-              <div class="posts-container">
-                <div class="scrollable-content" preventWheelPropagation>
-                  <div *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]" class="timeline-item">
-                    <mat-card class="mb-3">
-                      <mat-card-header>
-                        <div mat-card-avatar [style.background-image]="'url(' + (profile.profileImage || 'assets/default-avatar.png') + ')'" class="timeline-avatar"></div>
-                        <mat-card-title>{{profile.firstName}} {{profile.lastName}}</mat-card-title>
-                        <mat-card-subtitle>{{i}} days ago</mat-card-subtitle>
-                      </mat-card-header>
-                      <mat-card-content>
-                        <p>This is a sample timeline post {{i}}. The scrollable content allows users to see multiple posts without cluttering the UI.</p>
-                      </mat-card-content>
-                      <mat-card-actions>
-                        <button mat-button><mat-icon>thumb_up</mat-icon> Like</button>
-                        <button mat-button><mat-icon>comment</mat-icon> Comment</button>
-                        <button mat-button><mat-icon>share</mat-icon> Share</button>
-                      </mat-card-actions>
-                    </mat-card>
+
+          <div class="tab-header-container">
+            <mat-tab-group class="profile-tabs" mat-stretch-tabs="false" mat-align-tabs="start" (selectedTabChange)="onTabChange($event)">
+              <mat-tab label="Timeline">
+                <ng-template mat-tab-label>
+                  <div class="tab-label-container">
+                    <span>Timeline</span>
+                  </div>
+                </ng-template>
+                <div class="posts-container">
+                  <div class="scrollable-content" #timelineContent [ngStyle]="syncedTabHeight ? {'height': syncedTabHeight} : {}">
+                    <div *ngIf="isLoadingPosts" class="loading-container">
+                      <mat-spinner diameter="40"></mat-spinner>
+                      <p>Loading posts...</p>
+                    </div>
+                    <app-business-posts 
+                      *ngIf="!isLoadingPosts"
+                      [posts]="posts" 
+                      [profileImage]="profile.profileImage || ''" 
+                      [loggedInUserName]="(profile.firstName || '') + ' ' + (profile.lastName || '')"
+                      (respondToPost)="openCreatePostDialog($event)">
+                    </app-business-posts>
                   </div>
                 </div>
-              </div>
-            </mat-tab>
-            <mat-tab label="About">
-              <div class="scrollable-content" preventWheelPropagation>
-                <div class="p-3 about-section">
-                  <div class="row mt-2">
-                    <div class="col-md-4">
-                      
+              </mat-tab>
+              <mat-tab label="About">
+                <ng-template mat-tab-label>
+                  <div class="tab-label-container">
+                    <span>About</span>
+                  </div>
+                </ng-template>
+                <div class="scrollable-content" #aboutContent [ngClass]="{'hide-scrollbar': selectedTabIndex === 1}" [ngStyle]="syncedTabHeight ? {'height': syncedTabHeight} : {}">
+                  <div class="p-3 about-section">
+                    <div class="row mt-2">
+                      <div class="col-md-4">
                         <div class="work-area">
-                            <h5>WORK</h5>
-                            <mat-card class="mb-3">
-                                <mat-card-content>
-                                <div class="badge primary">Primary</div>
-                                <h6>{{profile.company || 'Spotify New York'}}</h6>
-                                <p>{{profile.address || '170 William Street'}}</p>
-                                </mat-card-content>
-                            </mat-card>
+                          <h5>WORK</h5>
+                          <mat-card class="mb-3">
+                            <mat-card-content>
+                              <div class="badge primary">Primary</div>
+                              <h6>{{profile.company || 'Spotify New York'}}</h6>
+                              <p>{{profile.address || '170 William Street'}}</p>
+                            </mat-card-content>
+                          </mat-card>
                         </div>
-
                         <div class="education-area">
-                            <h5 class="mt-4">EDUCATION</h5>
-                            <mat-card class="mb-3">
-                                <mat-card-content>
-                                <h6>University of Design</h6>
-                                <p>Bachelor of Arts, 2012-2016</p>
-                                </mat-card-content>
-                            </mat-card>
+                          <h5 class="mt-4">EDUCATION</h5>
+                          <mat-card class="mb-3">
+                            <mat-card-content>
+                              <h6>University of Design</h6>
+                              <p>Bachelor of Arts, 2012-2016</p>
+                            </mat-card-content>
+                          </mat-card>
                         </div>
-                      
-                      
-                    </div>
-                    
-                    <div class="col-md-8">
-                      <h5>CONTACT INFORMATION</h5>
-                      <table class="info-table">
-                        <tr>
-                          <td>Phone:</td>
-                          <td>{{profile.phone || '+1 123 456 7890'}}</td>
-                        </tr>
-                        <tr>
-                          <td>Address:</td>
-                          <td>
-                            <mat-icon class="location-icon small" (click)="openMapDialog()">place</mat-icon>
-                            {{profile.address || ''}}
-                            <span *ngIf="profile.city || profile.state || profile.zipCode">
-                              <span *ngIf="profile.address">, </span>{{profile.city || ''}}{{profile.city && profile.state ? ', ' : ''}}{{profile.state || ''}} {{profile.zipCode || ''}}
-                            </span>
-                            <span *ngIf="!profile.address && !profile.city && !profile.state && !profile.zipCode">525 E 68th Street, New York, NY</span>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td>E-mail:</td>
-                          <td>{{profile.email}}</td>
-                        </tr>
-                        <tr>
-                          <td>Site:</td>
-                          <td>{{profile.website || 'www.example.com'}}</td>
-                        </tr>
-                      </table>
-                      
-                      <h5 class="mt-4">SKILLS</h5>
-                      <div class="skills-container">
-                        <span class="skill-badge">Angular</span>
-                        <span class="skill-badge">TypeScript</span>
-                        <span class="skill-badge">CSS</span>
-                        <span class="skill-badge">UX Design</span>
-                        <span class="skill-badge">Project Management</span>
-                        <span class="skill-badge">Team Leadership</span>
+                      </div>
+                      <div class="col-md-8">
+                        <h5>CONTACT INFORMATION</h5>
+                        <table class="info-table">
+                          <tr>
+                            <td>Phone:</td>
+                            <td>{{profile.phone || '+1 123 456 7890'}}</td>
+                          </tr>
+                          <tr>
+                            <td>Address:</td>
+                            <td>
+                              <mat-icon class="location-icon small" (click)="openMapDialog()">place</mat-icon>
+                              {{profile.address || ''}}
+                              <span *ngIf="profile.city || profile.state || profile.zipCode">
+                                <span *ngIf="profile.address">, </span>{{profile.city || ''}}{{profile.city && profile.state ? ', ' : ''}}{{profile.state || ''}} {{profile.zipCode || ''}}
+                              </span>
+                              <span *ngIf="!profile.address && !profile.city && !profile.state && !profile.zipCode">525 E 68th Street, New York, NY</span>
+                            </td>
+                          </tr>
+                          <tr>
+                            <td>E-mail:</td>
+                            <td>{{profile.email}}</td>
+                          </tr>
+                          <tr>
+                            <td>Site:</td>
+                            <td>{{profile.website || 'www.example.com'}}</td>
+                          </tr>
+                        </table>
+                        <h5 class="mt-4">SKILLS</h5>
+                        <div class="skills-container">
+                          <span class="skill-badge">Angular</span>
+                          <span class="skill-badge">TypeScript</span>
+                          <span class="skill-badge">CSS</span>
+                          <span class="skill-badge">UX Design</span>
+                          <span class="skill-badge">Project Management</span>
+                          <span class="skill-badge">Team Leadership</span>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            </mat-tab>
-          </mat-tab-group>
+              </mat-tab>
+            </mat-tab-group>
+            <button mat-raised-button color="primary" class="create-post-btn" [class.hidden]="selectedTabIndex !== 0" (click)="openCreatePostDialog()">Create Post</button>
+          </div>
         </div>
       </div>
     </mat-card-content>
   </mat-card>
+  
+  <!-- Chat Windows Container -->
+  <div class="chat-windows-container">
+    <!-- Chat dialogs are now handled by MatDialog -->
+  </div>
+
+  <!-- Floating Chat Icon -->
+  <div class="floating-chat-icon" (click)="toggleChatList()">
+    <mat-icon>chat</mat-icon>
+    <div class="online-users-badge" *ngIf="onlineUsersCount > 0">
+      {{ onlineUsersCount }}
+    </div>
+  </div>
+
+  <!-- Chat List Dialog -->
+  <div class="chat-list-dialog" *ngIf="showChatList">
+    <div class="chat-list-header">
+      <h3>Online Users</h3>
+      <button mat-icon-button (click)="toggleChatList()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+    <div class="chat-list-content">
+      <div *ngFor="let user of onlineUsers" class="chat-list-item" (click)="startChat(user)">
+        <img [src]="user.profileImage" [alt]="user.name" class="user-avatar">
+        <span class="user-name">{{ user.name }}</span>
+        <span class="online-indicator"></span>
+      </div>
+    </div>
+  </div>
 </div> 

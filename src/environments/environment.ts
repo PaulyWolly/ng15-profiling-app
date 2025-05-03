@@ -4,8 +4,9 @@
 
 export const environment = {
     production: false,
-    googleMapsApiKey: '',// Load from secure source at runtime
-    apiUrl: 'http://localhost:5001'
+    googleMapsApiKey: 'your-google-maps-api-key',// Load from secure source at runtime
+    apiUrl: 'http://localhost:5001',
+    wsUrl: 'ws://localhost:5001/ws'  // Add back the /ws path
 };
 
 /*

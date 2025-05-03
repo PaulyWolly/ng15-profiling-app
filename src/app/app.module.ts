@@ -4,10 +4,13 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { RouterModule } from '@angular/router';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { JwtHelperService, JWT_OPTIONS } from '@auth0/angular-jwt';
 
 // Material Modules (Keep essential ones needed globally)
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
+import { MatBadgeModule } from '@angular/material/badge';
 
 import { AppRoutingModule } from '@app/app-routing.module';
 import { JwtInterceptor, ErrorInterceptor, appInitializer } from '@app/_helpers';
@@ -17,6 +20,8 @@ import { AppComponent } from '@app/app.component';
 import { FooterComponent } from './footer/footer.component';
 import { AdminModule } from './admin/admin.module';
 import { SharedModule } from './shared/shared.module';
+import { ProfileModule } from './profile/profile.module';
+import { ProfileTemplatesModule } from './profile-templates/profile-templates.module';
 
 // Add factory function to initialize ConfigService
 export function configInitializer(configService: ConfigService) {
@@ -24,27 +29,33 @@ export function configInitializer(configService: ConfigService) {
 }
 
 @NgModule({
+    declarations: [
+        AppComponent,
+        FooterComponent
+    ],
     imports: [
         BrowserModule,
         BrowserAnimationsModule,
         ReactiveFormsModule,
         HttpClientModule,
         RouterModule,
-        AppRoutingModule,
+        MatSnackBarModule,
         MatIconModule,
         MatButtonModule,
+        MatBadgeModule,
+        AppRoutingModule,
         AdminModule,
-        SharedModule
-    ],
-    declarations: [
-        AppComponent,
-        FooterComponent
+        SharedModule,
+        ProfileModule,
+        ProfileTemplatesModule,
     ],
     providers: [
         { provide: APP_INITIALIZER, useFactory: appInitializer, multi: true, deps: [AccountService] },
         { provide: APP_INITIALIZER, useFactory: configInitializer, multi: true, deps: [ConfigService] },
         { provide: HTTP_INTERCEPTORS, useClass: JwtInterceptor, multi: true },
-        { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true }
+        { provide: HTTP_INTERCEPTORS, useClass: ErrorInterceptor, multi: true },
+        { provide: JWT_OPTIONS, useValue: JWT_OPTIONS },
+        JwtHelperService
     ],
     bootstrap: [AppComponent]
 })

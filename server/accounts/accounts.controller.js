@@ -195,24 +195,35 @@ function authenticateSchema(req, res, next) {
     validateRequest(req, next, schema);
 }
 
+function setTokenCookie(res, token) {
+    const cookieOptions = {
+        httpOnly: true,
+        expires: new Date(Date.now() + 7*24*60*60*1000)
+    };
+    res.cookie('refreshToken', token, cookieOptions);
+}
+
 function handleAuthenticate(req, res, next) {
     const { email, password } = req.body;
     const ipAddress = req.ip;
     accountService.authenticate({ email, password, ipAddress })
-        .then(({ refreshToken, ...account }) => {
+        .then(({ jwtToken, refreshToken, ...account }) => {
             setTokenCookie(res, refreshToken);
-            res.json(account);
+            res.json({ jwtToken, refreshToken, ...account });
         })
-        .catch(next);
+        .catch(error => {
+            console.error('Login error:', error);
+            next(error);
+        });
 }
 
 function refreshToken(req, res, next) {
     const token = req.cookies.refreshToken;
     const ipAddress = req.ip;
     accountService.refreshToken({ token, ipAddress })
-        .then(({ refreshToken, ...account }) => {
+        .then(({ jwtToken, refreshToken, ...account }) => {
             setTokenCookie(res, refreshToken);
-            res.json(account);
+            res.json({ jwtToken, refreshToken, ...account });
         })
         .catch(next);
 }
@@ -225,7 +236,7 @@ function revokeTokenSchema(req, res, next) {
 }
 
 function revokeToken(req, res, next) {
-    const token = req.body.token || req.cookies.refreshToken;
+    const token = req.body.token;
     const ipAddress = req.ip;
 
     if (!token) return res.status(400).json({ message: 'Token is required' });
@@ -490,13 +501,6 @@ function _delete(req, res, next) {
 }
 
 // helper functions
-function setTokenCookie(res, token) {
-    const cookieOptions = {
-        httpOnly: true,
-        expires: new Date(Date.now() + 7*24*60*60*1000)
-    };
-    res.cookie('refreshToken', token, cookieOptions);
-}
 
 // New handler function for the active sessions route
 async function getActiveSessions(req, res, next) {
@@ -577,16 +581,13 @@ async function forceLogoutBulkHandler(req, res, next) {
 async function cleanupAllSessionsHandler(req, res, next) {
     try {
         const now = new Date();
-        
-        // Delete all sessions except the current one
+        // Delete all sessions except the current one (no longer using cookies)
         const result = await db.RefreshToken.deleteMany({
             $or: [
                 { expires: { $lt: now } },
                 { revoked: { $ne: null } }
-            ],
-            _id: { $ne: req.cookies.refreshToken }  // Don't delete current session
+            ]
         });
-
         res.json({ 
             message: `Successfully cleaned up ${result.deletedCount} sessions`,
             deletedCount: result.deletedCount
