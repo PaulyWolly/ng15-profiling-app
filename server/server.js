@@ -157,10 +157,10 @@ function startServer() {
       // Initialize WebSocket service after server is listening
       try {
           websocketService.initialize(server);
-          console.log(blue('WebSocket service initialized successfully'));
-          console.log(blue('Ready for connections... '));
-          console.log("--------------------------------")
-          
+          console.log(green('Ready for connections... '));
+          console.log('--------------------------------')
+          // Add green 'Server is ready for connections...' after WebSocket group
+          console.log(green('Server is ready for connections...'));
       } catch (error) {
           console.error('Failed to initialize WebSocket service:', error);
       }
