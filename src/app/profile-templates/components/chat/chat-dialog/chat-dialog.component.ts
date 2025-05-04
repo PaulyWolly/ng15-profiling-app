@@ -229,6 +229,7 @@ export class ChatDialogComponent implements OnInit, OnDestroy, AfterViewInit, Af
 
   close(event: Event) {
     event.stopPropagation();
+    this.chatService.closeChatDialog(this.data.user.id);
     this.dialogRef.close();
   }
 

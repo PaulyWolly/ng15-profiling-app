@@ -47,6 +47,7 @@ export class ChatService {
   private messageSubject = new Subject<ChatMessage>();
   private messageMap = new Map<string, ChatMessage[]>();
   private activeChatId = new BehaviorSubject<string | null>(null);
+  private openChatDialogs = new Set<string>(); // Track open chat dialogs by user ID
 
   constructor(
     private http: HttpClient,
@@ -219,33 +220,30 @@ export class ChatService {
   }
 
   private handleChatRequest(message: any) {
-    console.log('[handleChatRequest] Processing chat request:', message);
     const sender = message.sender;
     const currentUserId = this.accountService.accountValue?.id;
-    
-    console.log('[handleChatRequest] Debug info:', {
-      senderId: sender?.id,
-      currentUserId,
-      recipientId: message.recipientId,
-      isRecipient: message.recipientId === currentUserId,
-      hasDuplicate: this.chatRequests.has(sender.id)
-    });
-    
-    // Only show notification if we are the recipient
-    if (message.recipientId !== currentUserId) {
-      console.log('[handleChatRequest] Not the intended recipient');
+
+    // Only show notification if we are the recipient and NOT the sender
+    if (message.recipientId !== currentUserId || sender.id === currentUserId) {
+      console.log('[handleChatRequest] Not the intended recipient or is the sender. No ACCEPT alert will be shown.');
       return;
     }
-    
+
     // Don't show duplicate notifications for the same sender
     if (this.chatRequests.has(sender.id)) {
       console.log('[handleChatRequest] Duplicate request from same sender');
       return;
     }
-    
+
+    // Do not show alert if chat dialog is already open with sender
+    if (this.isChatActive(sender.id)) {
+      console.log('[handleChatRequest] Chat dialog already open with sender, not showing alert');
+      return;
+    }
+
     this.chatRequests.add(sender.id);
     console.log('[handleChatRequest] Added request to tracking set');
-    
+
     // Show notification that stays until user action
     const snackBarRef = this.snackBar.open(
       `${sender.name} wants to chat with you`,
@@ -261,16 +259,8 @@ export class ChatService {
     snackBarRef.onAction().subscribe(() => {
       console.log('[handleChatRequest] User accepted chat request');
       this.chatRequests.delete(sender.id);
-      
-      // Open the chat dialog
-      this.dialog.open(ChatDialogComponent, {
-        width: '400px',
-        height: '600px',
-        position: { bottom: '24px', right: '24px' },
-        hasBackdrop: false,
-        panelClass: 'chat-dialog-container',
-        data: { user: sender }
-      });
+      // Open the chat dialog and track it
+      this.openChatDialog(sender);
     });
 
     snackBarRef.afterDismissed().subscribe(() => {
@@ -293,13 +283,6 @@ export class ChatService {
       this.activeChats.next([...currentChats, user]);
     }
     this.setActiveChatId(userId);
-    // Send chat request to the recipient
-    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-      this.ws.send(JSON.stringify({
-        type: 'chat_request',
-        recipientId: userId
-      }));
-    }
   }
 
   closeChat(userId: string): void {
@@ -334,6 +317,9 @@ export class ChatService {
       const currentMessages = this.messageSubjects[chatId].value;
       const updatedMessages = [...currentMessages, message];
       this.messageSubjects[chatId].next(updatedMessages);
+
+      // New method to send chat request only when a real message is sent
+      this.sendChatRequestIfNeeded(message.recipientId);
 
       return new Observable(subscriber => {
         subscriber.next(message);
@@ -396,7 +382,7 @@ export class ChatService {
   }
 
   isChatActive(userId: string): boolean {
-    return this.activeChats.value.some(chat => chat.id === userId);
+    return this.openChatDialogs.has(userId);
   }
 
   isUserOnline(userId: string): boolean {
@@ -413,5 +399,48 @@ export class ChatService {
 
   setActiveChatId(userId: string) {
     this.activeChatId.next(userId);
+  }
+
+  // New method to send chat request only when a real message is sent
+  sendChatRequestIfNeeded(recipientId: string) {
+    // Always send chat request when sending the first message
+    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+      this.ws.send(JSON.stringify({
+        type: 'chat_request',
+        recipientId
+      }));
+    }
+  }
+
+  // Track open chat dialogs
+  openChatDialog(user: OnlineUser) {
+    // Don't open if already open
+    if (this.openChatDialogs.has(user.id)) {
+      console.log('[ChatService] Chat dialog already open for user:', user.id);
+      return null;
+    }
+    
+    this.openChatDialogs.add(user.id);
+    console.log('[ChatService] Opening chat dialog for user:', user.id);
+    
+    const dialogRef = this.dialog.open(ChatDialogComponent, {
+      width: '400px',
+      height: '600px',
+      position: { bottom: '24px', right: '24px' },
+      hasBackdrop: false,
+      panelClass: 'chat-dialog-container',
+      data: { user }
+    });
+    
+    dialogRef.afterClosed().subscribe(() => {
+      this.closeChatDialog(user.id);
+    });
+    
+    return dialogRef;
+  }
+
+  closeChatDialog(userId: string) {
+    console.log('[ChatService] Closing chat dialog for user:', userId);
+    this.openChatDialogs.delete(userId);
   }
 } 

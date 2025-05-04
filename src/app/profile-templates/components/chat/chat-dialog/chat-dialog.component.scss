@@ -234,13 +234,13 @@
   }
 
   .sent-text {
-    font-size: 1rem;
+    // font-size: 1rem;
     color: #1976d2;
     background: transparent;
   }
 
   .received-text {
-    font-size: 1rem;
+    // font-size: 1rem;
     color: #333;
     background: transparent;
   }
@@ -550,4 +550,20 @@
     right: -4px;
     top: -4px;
   }
+}
+
+// Ensure minimized chat dialog is flush right
+::ng-deep .cdk-overlay-pane.chat-dialog-container.minimized {
+  right: 0 !important;
+  left: auto !important;
+  position: fixed !important;
+  bottom: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 200px !important;
+  max-width: 200px !important;
+  min-width: 200px !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  z-index: 1200 !important;
 }

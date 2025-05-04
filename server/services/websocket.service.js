@@ -312,7 +312,7 @@ class WebSocketService {
             }))
         });
 
-        // Send chat request to all recipient's sessions if online
+        // Only send chat_request to the recipient, never to the sender/initiator
         recipientConnections.forEach(ws => {
             if (ws && ws.readyState === WebSocket.OPEN) {
                 const requestMessage = {
@@ -327,7 +327,7 @@ class WebSocketService {
                         isOnline: true
                     }
                 };
-                console.log('[WebSocket] Sending chat request to recipient:', requestMessage);
+                console.log('[WebSocket] Sending chat request to recipient userId:', recipientId, requestMessage);
                 ws.send(JSON.stringify(requestMessage));
             }
         });

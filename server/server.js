@@ -13,9 +13,29 @@ const chatApi = require('./services/chat.service.js').router;
 const cookieParser = require('cookie-parser');
 require('./users/user.model');
 
+process.stdout.write('\n'); // Ensure spinner is on its own line
+const ora = require('ora').default;
+const heartEmojis = ['💗','❤️','💓'];
+let heartIndex = 0;
+const spinner = ora().start();
+setInterval(() => {
+  let sessionCount = 0, userCount = 0;
+  try {
+    const wsService = require('./services/websocket.service');
+    sessionCount = wsService.connections?.size || 0;
+    userCount = wsService.userSessions?.size || 0;
+  } catch (e) {}
+  const now = new Date().toISOString();
+  const emoji = heartEmojis[heartIndex];
+  heartIndex = (heartIndex + 1) % heartEmojis.length;
+  spinner.text = `${emoji}  \n---------------------------------------------------------------------\nActive sessions: ${sessionCount} | Active users: ${userCount} | Time: ${now}`;
+}, 700);
+
 // get DB name from config.json
 const config = require('./config.json');
 const DBName = config.DBName;
+
+const PORT = process.env.PORT || 5001;
 
 // Configure body parser
 app.use(bodyParser.json());
@@ -39,10 +59,14 @@ const uploadsDir = path.join(__dirname, 'uploads');
 const profilesDir = path.join(__dirname, 'uploads', 'profiles');
 const followersDir = path.join(__dirname, 'uploads', 'followers');
 
-console.log('Ensuring upload directories exist:', {
-    uploadsDir,
-    profilesDir,
-    followersDir
+[uploadsDir, profilesDir, followersDir].forEach(dir => {
+    const relPath = path.relative(__dirname, dir);
+    if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+        console.log(`${relPath}: NOT FOUND. Created.`);
+    } else {
+        console.log(`${relPath}: FOUND`);
+    }
 });
 
 // ROUTES
@@ -56,13 +80,6 @@ app.get('/uploads/followers-images', (req, res) => {
       const images = files.filter(f => /\.(jpg|jpeg|png|gif)$/i.test(f));
       res.json(images);
     });
-});
-
-[uploadsDir, profilesDir, followersDir].forEach(dir => {
-    if (!fs.existsSync(dir)) {
-        fs.mkdirSync(dir, { recursive: true });
-        console.log(`Created directory: ${dir}`);
-    }
 });
 
 // Serve static files from the uploads directory
@@ -97,6 +114,16 @@ app.use('/api-docs', require('./_helpers/swagger'));
 // global error handler
 app.use(errorHandler);
 
+// Add chalk for color-coded logs if available
+let chalk;
+try {
+  chalk = require('chalk').default;
+} catch (e) {
+  chalk = null;
+}
+const green = chalk ? chalk.green : (s) => `\x1b[32m${s}\x1b[0m`;
+const blue = chalk ? chalk.blue : (s) => `\x1b[34m${s}\x1b[0m`;
+
 // Connect to MongoDB with retry logic
 function connectWithRetry() {
   if (mongoose.connection.readyState === 0) { // Only connect if not already connected
@@ -106,7 +133,10 @@ function connectWithRetry() {
       serverSelectionTimeoutMS: 5000,
       socketTimeoutMS: 45000
     })
-    .then(() => console.log('MongoDB connected'))
+    .then(() => {
+      console.log(green('\n\n*** Mongoose connected ***'));
+      startServer();
+    })
     .catch(err => {
       console.error('MongoDB connection error:', err);
       setTimeout(connectWithRetry, 5000);
@@ -114,27 +144,30 @@ function connectWithRetry() {
   }
 }
 
+// Only start the server after Mongoose is connected
+function startServer() {
+  // Create HTTP server
+  const server = http.createServer(app);
+  // Start server
+  const port = process.env.NODE_ENV === 'production' ? (process.env.PORT || 80) : PORT;
+  server.listen(port, () => {
+      console.log(blue(`Server listening on port ${port}`));
+      console.log('Connected to DB:', DBName);
+      console.log('Environment:', process.env.NODE_ENV || 'development');
+      // Initialize WebSocket service after server is listening
+      try {
+          websocketService.initialize(server);
+          console.log(blue('WebSocket service initialized successfully'));
+          console.log(blue('Ready for connections... '));
+          console.log("--------------------------------")
+          
+      } catch (error) {
+          console.error('Failed to initialize WebSocket service:', error);
+      }
+  });
+}
+
 // Initial connection
 connectWithRetry();
-
-// Create HTTP server
-const server = http.createServer(app);
-
-// Start server
-const port = process.env.NODE_ENV === 'production' ? (process.env.PORT || 80) : 5001;
-server.listen(port, () => {
-    console.log(`Server listening on port ${port}`);
-    console.log('Connected to DB:', DBName);
-    console.log('Environment:', process.env.NODE_ENV || 'development');
-    console.log('Uploads directory:', profilesDir);
-
-    // Initialize WebSocket service after server is listening
-    try {
-        websocketService.initialize(server);
-        console.log('WebSocket service initialized successfully');
-    } catch (error) {
-        console.error('Failed to initialize WebSocket service:', error);
-    }
-});
 
 
