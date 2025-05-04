@@ -278,14 +278,7 @@ export class NewBusinessProfileComponent implements OnInit, AfterViewInit, OnCha
     this.chatService.startChat(user.id);
 
     // Open the chat dialog for the sender immediately
-    this.dialog.open(ChatDialogComponent, {
-      width: '400px',
-      height: '600px',
-      position: { bottom: '24px', right: '24px' },
-      hasBackdrop: false,
-      panelClass: 'chat-dialog-container',
-      data: { user }
-    });
+    this.chatService.openChatDialog(user);
   }
 
   closeChat(userId: string) {

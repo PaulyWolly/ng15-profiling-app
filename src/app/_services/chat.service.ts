@@ -222,23 +222,33 @@ export class ChatService {
   private handleChatRequest(message: any) {
     const sender = message.sender;
     const currentUserId = this.accountService.accountValue?.id;
+    const mySessionId = this.sessionId;
+
+    console.log('[handleChatRequest] --- DEBUG INFO ---');
+    console.log('Current user ID:', currentUserId);
+    console.log('My session ID:', mySessionId);
+    console.log('Sender ID:', sender.id);
+    console.log('Recipient ID:', message.recipientId);
+    console.log('Current openChatDialogs:', Array.from(this.openChatDialogs));
+    console.log('isChatActive(sender.id):', this.isChatActive(sender.id));
+    console.log('-----------------------------');
 
     // Only show notification if we are the recipient and NOT the sender
     if (message.recipientId !== currentUserId || sender.id === currentUserId) {
-      console.log('[handleChatRequest] Not the intended recipient or is the sender. No ACCEPT alert will be shown.');
-      return;
+        console.log('[handleChatRequest] Not the intended recipient or is the sender. No ACCEPT alert will be shown.');
+        return;
     }
 
     // Don't show duplicate notifications for the same sender
     if (this.chatRequests.has(sender.id)) {
-      console.log('[handleChatRequest] Duplicate request from same sender');
-      return;
+        console.log('[handleChatRequest] Duplicate request from same sender');
+        return;
     }
 
     // Do not show alert if chat dialog is already open with sender
     if (this.isChatActive(sender.id)) {
-      console.log('[handleChatRequest] Chat dialog already open with sender, not showing alert');
-      return;
+        console.log('[handleChatRequest] Chat dialog already open with sender, not showing alert');
+        return;
     }
 
     this.chatRequests.add(sender.id);
@@ -246,26 +256,26 @@ export class ChatService {
 
     // Show notification that stays until user action
     const snackBarRef = this.snackBar.open(
-      `${sender.name} wants to chat with you`,
-      'Accept',
-      {
-        duration: undefined, // Notification will stay until user action
-        horizontalPosition: 'end',
-        verticalPosition: 'bottom',
-        panelClass: ['chat-request-snackbar']
-      }
+        `${sender.name} wants to chat with you`,
+        'Accept',
+        {
+            duration: undefined, // Notification will stay until user action
+            horizontalPosition: 'end',
+            verticalPosition: 'bottom',
+            panelClass: ['chat-request-snackbar']
+        }
     );
 
     snackBarRef.onAction().subscribe(() => {
-      console.log('[handleChatRequest] User accepted chat request');
-      this.chatRequests.delete(sender.id);
-      // Open the chat dialog and track it
-      this.openChatDialog(sender);
+        console.log('[handleChatRequest] User accepted chat request');
+        this.chatRequests.delete(sender.id);
+        // Open the chat dialog and track it
+        this.openChatDialog(sender);
     });
 
     snackBarRef.afterDismissed().subscribe(() => {
-      console.log('[handleChatRequest] Chat request notification dismissed');
-      this.chatRequests.delete(sender.id);
+        console.log('[handleChatRequest] Chat request notification dismissed');
+        this.chatRequests.delete(sender.id);
     });
   }
 
@@ -297,37 +307,44 @@ export class ChatService {
 
   sendMessage(message: ChatMessage): Observable<ChatMessage> {
     console.log('[ChatDebug][Service][Send] Attempting to send message:', message);
+    
+    // Get the chat ID for this conversation
+    const chatId = this.getChatId(message.senderId, message.recipientId);
+    
+    // Only send chat request if this is the first message in this chat
+    if (!this.messageMap.has(chatId)) {
+        console.log('[ChatDebug][Service][Send] First message in this chat, sending chat request');
+        this.sendChatRequestIfNeeded(message.recipientId);
+    }
+
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-      const wsMessage = {
-        type: 'chat_message',
-        recipientId: message.recipientId,
-        content: message.content
-      };
-      console.log('[ChatDebug][Service][Send] Sending WebSocket message:', wsMessage);
-      this.ws.send(JSON.stringify(wsMessage));
+        const wsMessage = {
+            type: 'chat_message',
+            recipientId: message.recipientId,
+            content: message.content
+        };
+        console.log('[ChatDebug][Service][Send] Sending WebSocket message:', wsMessage);
+        this.ws.send(JSON.stringify(wsMessage));
 
-      // Add message to the local chat immediately
-      const chatId = this.getChatId(message.senderId, message.recipientId);
-      console.log('[ChatDebug][Service][Send] Adding message to chat ID:', chatId);
-      
-      if (!this.messageSubjects[chatId]) {
-        this.messageSubjects[chatId] = new BehaviorSubject<ChatMessage[]>([]);
-      }
-      
-      const currentMessages = this.messageSubjects[chatId].value;
-      const updatedMessages = [...currentMessages, message];
-      this.messageSubjects[chatId].next(updatedMessages);
+        // Add message to the local chat immediately
+        console.log('[ChatDebug][Service][Send] Adding message to chat ID:', chatId);
+        
+        if (!this.messageSubjects[chatId]) {
+            this.messageSubjects[chatId] = new BehaviorSubject<ChatMessage[]>([]);
+        }
+        
+        const currentMessages = this.messageSubjects[chatId].value;
+        const updatedMessages = [...currentMessages, message];
+        this.messageSubjects[chatId].next(updatedMessages);
+        this.messageMap.set(chatId, updatedMessages);
 
-      // New method to send chat request only when a real message is sent
-      this.sendChatRequestIfNeeded(message.recipientId);
-
-      return new Observable(subscriber => {
-        subscriber.next(message);
-        subscriber.complete();
-      });
+        return new Observable(subscriber => {
+            subscriber.next(message);
+            subscriber.complete();
+        });
     } else {
-      console.log('[ChatDebug][Service][Send] WebSocket not available, using HTTP fallback');
-      return this.http.post<ChatMessage>(`${this.apiUrl}/messages`, message);
+        console.log('[ChatDebug][Service][Send] WebSocket not available, using HTTP fallback');
+        return this.http.post<ChatMessage>(`${this.apiUrl}/messages`, message);
     }
   }
 
@@ -414,33 +431,35 @@ export class ChatService {
 
   // Track open chat dialogs
   openChatDialog(user: OnlineUser) {
+    console.log('[openChatDialog] --- DEBUG INFO ---');
+    console.log('Opening dialog for user:', user.id, user.name);
+    console.log('Current openChatDialogs BEFORE:', Array.from(this.openChatDialogs));
     // Don't open if already open
     if (this.openChatDialogs.has(user.id)) {
-      console.log('[ChatService] Chat dialog already open for user:', user.id);
-      return null;
+        console.log('[openChatDialog] Chat dialog already open for user:', user.id);
+        return null;
     }
-    
     this.openChatDialogs.add(user.id);
-    console.log('[ChatService] Opening chat dialog for user:', user.id);
-    
+    console.log('Current openChatDialogs AFTER:', Array.from(this.openChatDialogs));
     const dialogRef = this.dialog.open(ChatDialogComponent, {
-      width: '400px',
-      height: '600px',
-      position: { bottom: '24px', right: '24px' },
-      hasBackdrop: false,
-      panelClass: 'chat-dialog-container',
-      data: { user }
+        width: '400px',
+        height: '600px',
+        position: { bottom: '24px', right: '24px' },
+        hasBackdrop: false,
+        panelClass: 'chat-dialog-container',
+        data: { user }
     });
-    
     dialogRef.afterClosed().subscribe(() => {
-      this.closeChatDialog(user.id);
+        this.closeChatDialog(user.id);
     });
-    
     return dialogRef;
   }
 
   closeChatDialog(userId: string) {
-    console.log('[ChatService] Closing chat dialog for user:', userId);
+    console.log('[closeChatDialog] --- DEBUG INFO ---');
+    console.log('Closing dialog for user:', userId);
+    console.log('Current openChatDialogs BEFORE:', Array.from(this.openChatDialogs));
     this.openChatDialogs.delete(userId);
+    console.log('Current openChatDialogs AFTER:', Array.from(this.openChatDialogs));
   }
 } 
