@@ -30,8 +30,16 @@ class WebSocketService {
         }
 
         try {
+            // Color codes
+            const yellow = (s) => `\x1b[33m${s}\x1b[0m`;
+            const orange = (s) => `\x1b[38;5;208m${s}\x1b[0m`;
+            const blue = (s) => `\x1b[34m${s}\x1b[0m`;
+
+            // Start WebSocket log group
+            console.log('\n--- WebSocket Server ---');
+
             this.wss = new WebSocket.Server({ server });
-            console.log('WebSocket server created');
+            console.log(yellow('WebSocket server created'));
 
             this.wss.on('connection', async (ws, req) => {
                 try {
@@ -160,7 +168,10 @@ class WebSocketService {
                 }
             });
 
-            console.log('WebSocket server initialized successfully');
+            console.log(orange('WebSocket server initialized successfully'));
+            console.log(blue('WebSocket service initialized successfully'));
+            // End WebSocket log group
+            console.log('------------------------\n');
         } catch (error) {
             console.error('Failed to initialize WebSocket server:', error);
             throw error;
