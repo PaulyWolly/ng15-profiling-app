@@ -13,9 +13,11 @@ import { AccountService } from '@app/_services/account.service';
 import { Subscription } from 'rxjs';
 import { environment } from '@environments/environment';
 import { CustomTooltipDirective } from '@app/shared/custom-tooltip/custom-tooltip.directive';
+import { ScrollingModule, CdkVirtualScrollViewport } from '@angular/cdk/scrolling';
 
 interface ChatDialogData {
   user: OnlineUser;
+  isInitialPopup?: boolean;
 }
 
 @Component({
@@ -30,6 +32,7 @@ interface ChatDialogData {
     MatFormFieldModule,
     MatCardModule,
     MatBadgeModule,
+    ScrollingModule,
   ],
   template: `
     <div class="chat-window" [class.minimized]="isMinimized" [style.height]="isMinimized ? '64px' : '600px'">
@@ -37,27 +40,34 @@ interface ChatDialogData {
         <div class="user-info">
           <img [src]="data.user.profileImage" [alt]="data.user.name" class="user-avatar">
           <span class="user-name">{{ data.user.name }}</span>
-          <span class="online-status online"></span>
+          <span class="online-status online" *ngIf="data.isInitialPopup"></span>
+          <span *ngIf="isMinimized && hasNewMessages" 
+                matBadge="●" 
+                matBadgeColor="accent"
+                matBadgeSize="small"
+                class="minimized-badge">
+          </span>
         </div>
         <div class="header-actions">
-          
-          <button class="icon-btn"
-                  (click)="refreshMessages($event)"
-                  [matBadge]="hasNewMessages ? '●' : ''"
-                  [matBadgeColor]="'accent'"
-                  [matBadgeSize]="'small'"
-                  title="Refresh chat"
-                >
-            <span class="icon-circle"><i class="fa fa-sync"></i></span>
-          </button>
-          <button class="icon-btn" (click)="clearChatView($event)" title="Clear chat view">
-            <span class="icon-circle"><i class="fa fa-ban"></i></span>
-          </button>
-          <button class="icon-btn" (click)="minimize($event)" [title]="isMinimized ? 'Maximize chat view' : 'Minimize chat view'">
-            <span class="icon-circle">
-              <i class="fa" [ngClass]="isMinimized ? 'fa-plus' : 'fa-minus'"></i>
-            </span>
-          </button>
+          <ng-container *ngIf="!isMinimized">
+            <button class="icon-btn"
+                    (click)="refreshMessages($event)"
+                    [matBadge]="hasNewMessages ? '●' : ''"
+                    [matBadgeColor]="'accent'"
+                    [matBadgeSize]="'small'"
+                    title="Refresh chat"
+                  >
+              <span class="icon-circle"><i class="fa fa-sync"></i></span>
+            </button>
+            <button class="icon-btn" (click)="clearChatView($event)" title="Clear chat view">
+              <span class="icon-circle"><i class="fa fa-ban"></i></span>
+            </button>
+            <button class="icon-btn" (click)="minimize($event)" [title]="isMinimized ? 'Maximize chat view' : 'Minimize chat view'">
+              <span class="icon-circle">
+                <i class="fa" [ngClass]="isMinimized ? 'fa-plus' : 'fa-minus'"></i>
+              </span>
+            </button>
+          </ng-container>
           <button class="icon-btn" (click)="close($event)" title="Close chat">
             <span class="icon-circle"><i class="fa fa-times"></i></span>
           </button>
@@ -66,31 +76,22 @@ interface ChatDialogData {
       
       <div class="chat-body" [class.hidden]="isMinimized">
         <div class="messages" #messageContainer>
-          <div *ngFor="let message of messages" 
-               class="message" 
-               [class.sent]="message.senderId === currentUserId"
-               [class.received]="message.senderId !== currentUserId">
+          <div *ngFor="let message of messages"
+               class="message"
+               [ngClass]="{'sent': message.senderId === currentUserId, 'received': message.senderId !== currentUserId}">
             <ng-container *ngIf="message.senderId !== currentUserId; else sentMessage">
-              <div class="message-grid received">
-                <div class="avatar-cell">
-                  <img [src]="data.user.profileImage" class="message-avatar avatar-received" alt="Sender" />
-                </div>
-                <div class="meta-cell received">
-                  <div class="time-received">{{ message.timestamp | date:'shortTime' }}</div>
-                  <div class="message-content text-received">{{ message.content }}</div>
-                </div>
+              <img class="received-avatar" [src]="data.user.profileImage" alt="Sender" />
+              <div class="received-content">
+                <div class="received-time">{{ message.timestamp | date:'shortTime' }}</div>
+                <div class="received-text">{{ message.content }}</div>
               </div>
             </ng-container>
             <ng-template #sentMessage>
-              <div class="message-grid sent">
-                <div class="meta-cell sent">
-                  <div class="time-sent">{{ message.timestamp | date:'shortTime' }}</div>
-                  <div class="message-content text-sent">{{ message.content }}</div>
-                </div>
-                <div class="avatar-cell sent">
-                  <img [src]="currentUserProfileImage" class="message-avatar avatar-sent" alt="You" />
-                </div>
+              <div class="sent-content">
+                <div class="sent-time">{{ message.timestamp | date:'shortTime' }}</div>
+                <div class="sent-text">{{ message.content }}</div>
               </div>
+              <img class="sent-avatar" [src]="currentUserProfileImage" alt="You" />
             </ng-template>
           </div>
         </div>
@@ -112,6 +113,7 @@ interface ChatDialogData {
   styleUrls: ['./chat-dialog.component.scss']
 })
 export class ChatDialogComponent implements OnInit, OnDestroy, AfterViewInit, AfterViewChecked {
+  @ViewChild(CdkVirtualScrollViewport) private viewport!: CdkVirtualScrollViewport;
   @ViewChild('messageContainer') private messageContainer!: ElementRef;
 
   currentUserId: string;
@@ -175,34 +177,23 @@ export class ChatDialogComponent implements OnInit, OnDestroy, AfterViewInit, Af
     if (this.messageSubscription) {
       this.messageSubscription.unsubscribe();
     }
-    if (this.messageContainer) {
-      this.messageContainer.nativeElement.removeEventListener('scroll', this.onScroll.bind(this));
-    }
     window.removeEventListener('focus', this.onWindowFocus);
   }
 
   private scrollToBottom(): void {
-    if (!this.messageContainer?.nativeElement) {
-      console.log('[ChatDebug] Message container not ready for scrolling');
-      return;
-    }
-
-    try {
-      const element = this.messageContainer.nativeElement;
+    if (this.messageContainer && this.messageContainer.nativeElement) {
       setTimeout(() => {
-        element.scrollTop = element.scrollHeight;
+        this.messageContainer.nativeElement.scrollTop = this.messageContainer.nativeElement.scrollHeight;
       }, 0);
-    } catch (err) {
-      console.error('[ChatDebug] Error scrolling to bottom:', err);
     }
   }
 
   private isScrolledToBottom(): boolean {
-    if (!this.messageContainer?.nativeElement) return true;
-    
-    const element = this.messageContainer.nativeElement;
-    const threshold = 5; // Allow a small threshold for pixel rounding
-    return element.scrollHeight - element.scrollTop - element.clientHeight < threshold;
+    if (!this.viewport) return true;
+    const renderedRange = this.viewport.getRenderedRange();
+    const total = this.viewport.getDataLength();
+    // If the last rendered index is the last message, we're at the bottom
+    return renderedRange.end >= total;
   }
 
   toggleMinimize() {
@@ -287,27 +278,8 @@ export class ChatDialogComponent implements OnInit, OnDestroy, AfterViewInit, Af
       .subscribe({
         next: (messages) => {
           console.log('[ChatDebug][Dialog] Received messages update:', messages);
-          // Check if there are new messages from the other user
-          const newMessagesFromOther = messages.filter(msg => 
-            msg.senderId !== this.currentUserId && 
-            !this.messages.some(existing => existing.id === msg.id)
-          );
-          // Update messages array
           this.messages = messages;
-          // If there are new messages from the other user and not scrolled to bottom, set hasNewMessages
-          setTimeout(() => {
-            if (newMessagesFromOther.length > 0 && !this.isScrolledToBottom()) {
-              this.hasNewMessages = true;
-            }
-            // If scrolled to bottom, reset hasNewMessages
-            if (this.isScrolledToBottom()) {
-              this.hasNewMessages = false;
-              if (this.messages.length > 0) {
-                this.lastSeenMessageId = this.messages[this.messages.length - 1].id || null;
-              }
-            }
-          }, 100);
-          setTimeout(() => this.scrollToBottom(), 100);
+          this.scrollToBottom();
         },
         error: (error) => {
           console.error('[ChatDebug][Dialog] Error receiving messages:', error);
