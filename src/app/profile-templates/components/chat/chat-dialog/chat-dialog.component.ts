@@ -70,8 +70,28 @@ interface ChatDialogData {
                class="message" 
                [class.sent]="message.senderId === currentUserId"
                [class.received]="message.senderId !== currentUserId">
-            <div class="message-time">{{ message.timestamp | date:'shortTime' }}</div>
-            <div class="message-content">{{ message.content }}</div>
+            <ng-container *ngIf="message.senderId !== currentUserId; else sentMessage">
+              <div class="message-grid received">
+                <div class="avatar-cell">
+                  <img [src]="data.user.profileImage" class="message-avatar avatar-received" alt="Sender" />
+                </div>
+                <div class="meta-cell received">
+                  <div class="time-received">{{ message.timestamp | date:'shortTime' }}</div>
+                  <div class="message-content text-received">{{ message.content }}</div>
+                </div>
+              </div>
+            </ng-container>
+            <ng-template #sentMessage>
+              <div class="message-grid sent">
+                <div class="meta-cell sent">
+                  <div class="time-sent">{{ message.timestamp | date:'shortTime' }}</div>
+                  <div class="message-content text-sent">{{ message.content }}</div>
+                </div>
+                <div class="avatar-cell sent">
+                  <img [src]="currentUserProfileImage" class="message-avatar avatar-sent" alt="You" />
+                </div>
+              </div>
+            </ng-template>
           </div>
         </div>
         
@@ -102,6 +122,7 @@ export class ChatDialogComponent implements OnInit, OnDestroy, AfterViewInit, Af
   private messageSubscription?: Subscription;
   private lastSeenMessageId: string | null = null;
   private lastMessageCount: number = 0;
+  currentUserProfileImage: string = '';
 
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: ChatDialogData,
@@ -127,6 +148,11 @@ export class ChatDialogComponent implements OnInit, OnDestroy, AfterViewInit, Af
         ? this.data.user.profileImage 
         : `${environment.apiUrl}/${this.data.user.profileImage}`;
     }
+
+    const profileImage = this.accountService.accountValue?.profileImage;
+    this.currentUserProfileImage = profileImage
+      ? (profileImage.startsWith('http') ? profileImage : `${environment.apiUrl}/${profileImage}`)
+      : 'assets/default-avatar.png'; // fallback
 
     this.subscribeToMessages();
     window.addEventListener('focus', this.onWindowFocus);
