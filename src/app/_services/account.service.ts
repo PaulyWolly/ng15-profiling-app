@@ -94,13 +94,6 @@ export class AccountService {
             hasRefreshToken: !!refreshToken
         });
         
-        // If we have a stored tab ID that doesn't match, clear the session
-        if (storedTabId && storedTabId !== this.currentTabId) {
-            console.log('[AccountService] Tab ID mismatch, clearing session');
-            this.clearAuthData();
-            return;
-        }
-        
         // Always try to restore the session if we have tokens
         if (jwtToken || refreshToken) {
             this.initializeFromStorage();
@@ -279,20 +272,22 @@ export class AccountService {
         return this.getHttp().post<Account>(`${baseUrl}/refresh-token`, {}, { withCredentials: true })
             .pipe(
                 tap(account => {
-                    console.log('[AccountService] Token refresh successful');
+                    console.log('[AccountService] Token refresh successful', account);
                     if (account.profileImage && !account.profileImage.startsWith('http')) {
                         const imagePath = account.profileImage.startsWith('/') 
                             ? account.profileImage.substring(1) 
                             : account.profileImage;
                         account.profileImage = `${environment.apiUrl}/${imagePath}`;
                     }
-                    const isRemembered = !!localStorage.getItem(this.REMEMBER_ME_KEY);
-                    if (isRemembered) {
-                        sessionStorage.setItem(this.JWT_TOKEN_KEY, account.jwtToken);
-                    } else {
+                    // Always store the new JWT and refresh token in sessionStorage
+                    if (account.jwtToken) {
                         sessionStorage.setItem(this.JWT_TOKEN_KEY, account.jwtToken);
                     }
+                    if (account.refreshToken) {
+                        sessionStorage.setItem(this.REFRESH_TOKEN_KEY, account.refreshToken);
+                    }
                     this.accountSubject.next(account);
+                    console.log('[AccountService] accountSubject updated after refresh', this.accountSubject.value);
                     this.startRefreshTokenTimer();
                 }),
                 catchError(error => {
@@ -475,7 +470,7 @@ export class AccountService {
     }
 
     private setAuthState({ jwtToken, refreshToken }: { jwtToken: string | undefined, refreshToken?: string }) {
-        console.log('[DEBUG] Setting auth state from token');
+        console.log('[DEBUG] setAuthState called', { jwtToken, refreshToken });
         try {
             if (!jwtToken) {
                 throw new Error('JWT token is required');
@@ -525,6 +520,7 @@ export class AccountService {
             });
 
             this.accountSubject.next(account);
+            console.log('[DEBUG] accountSubject updated in setAuthState', this.accountSubject.value);
             this.startRefreshTokenTimer();
 
             // Fetch full account details in background

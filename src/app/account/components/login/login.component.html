@@ -37,7 +37,7 @@
                 <div class="form-group">
                     <div class="checkbox-container" style="display: flex; align-items: center; margin-bottom: 10px;">
                         <input type="checkbox" formControlName="rememberMe" id="rememberMe" style="width: 16px; height: 16px; margin-right: 8px;" />
-                        <label for="rememberMe" style="font-size: 14px; cursor: pointer;">Remember me</label>
+                        <label for="rememberMe" style="font-size: 14px; cursor: pointer;">Remember my email</label>
                     </div>
                 </div>
                 
@@ -63,6 +63,14 @@
                     <a routerLink="../forgot-password" class="forgot-password-link">Forgot Password?</a>
                 </div>
             </form>
+            
         </div>
+        
+    </div>
+    <!-- Disclaimer shown only when Remember Me is checked, below the form, with fixed height -->
+    <div style="height: 18px; margin-top: 8px;">
+      <span *ngIf="form.get('rememberMe')?.value" class="text-muted small" style="font-size: 11px;">
+        We'll remember your email for next time, but you'll need to log in again for security.
+      </span>
     </div>
 </div> 
