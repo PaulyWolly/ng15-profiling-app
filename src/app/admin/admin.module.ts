@@ -16,6 +16,7 @@ import { LayoutComponent } from './layout.component';
 import { OverviewComponent } from './overview.component';
 import { MonitorComponent } from './monitor.component';
 import { SettingsComponent } from './settings.component';
+import { AccountModule } from '../account/account.module';
 // Removed ListComponent and AddEditComponent declarations here
 // They should be declared in AccountsModule if it exists, or here if not
 
@@ -31,7 +32,8 @@ import { SettingsComponent } from './settings.component';
         MatTableModule,
         MatPaginatorModule,
         MatSortModule,
-        MatProgressSpinnerModule
+        MatProgressSpinnerModule,
+        AccountModule
     ],
     declarations: [
         SubNavComponent,

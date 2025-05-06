@@ -47,7 +47,10 @@ export class ChatService {
   private messageSubject = new Subject<ChatMessage>();
   private messageMap = new Map<string, ChatMessage[]>();
   private activeChatId = new BehaviorSubject<string | null>(null);
-  private openChatDialogs = new Set<string>(); // Track open chat dialogs by user ID
+  private openChatDialogs: Map<string, MatDialogRef<ChatDialogComponent>> = new Map();
+  private minimizedChatIds = new BehaviorSubject<string[]>([]);
+  private pendingChatRequests = new BehaviorSubject<Set<string>>(new Set());
+  private currentOpenChatId: string | null = null;
 
   constructor(
     private http: HttpClient,
@@ -217,6 +220,11 @@ export class ChatService {
     } else {
       console.log('[ChatDebug][Service] Message already exists in chat');
     }
+
+    // If not in open/visible chat, add to pending/unread
+    if (msg.recipientId === currentUserId && !this.isChatDialogOpen(msg.senderId)) {
+      this.addPendingRequest(msg.senderId);
+    }
   }
 
   private handleChatRequest(message: any) {
@@ -246,12 +254,13 @@ export class ChatService {
     }
 
     // Do not show alert if chat dialog is already open with sender
-    if (this.isChatActive(sender.id)) {
+    if (this.isChatDialogOpen(sender.id)) {
         console.log('[handleChatRequest] Chat dialog already open with sender, not showing alert');
         return;
     }
 
     this.chatRequests.add(sender.id);
+    this.addPendingRequest(sender.id);
     console.log('[handleChatRequest] Added request to tracking set');
 
     // Show notification that stays until user action
@@ -269,6 +278,7 @@ export class ChatService {
     snackBarRef.onAction().subscribe(() => {
         console.log('[handleChatRequest] User accepted chat request');
         this.chatRequests.delete(sender.id);
+        this.removePendingRequest(sender.id);
         // Open the chat dialog and track it
         this.openChatDialog(sender);
     });
@@ -384,13 +394,17 @@ export class ChatService {
   }
 
   private closeAllChats() {
-    // Close all MatDialog instances
-    this.dialog.closeAll();
+    console.log('[closeAllChats] Closing all chat dialogs');
+    
+    // Close all tracked dialogs
+    this.openChatDialogs.forEach((dialogRef, userId) => {
+      dialogRef.close();
+    });
+    this.openChatDialogs.clear();
     
     // Clear active chats
     this.activeChats.next([]);
-    
-    console.log('[closeAllChats] Closed all chat dialogs and cleared active chats');
+    this.activeChatId.next(null);
   }
 
   refreshMessages(userId1: string, userId2: string): Observable<ChatMessage[]> {
@@ -431,35 +445,107 @@ export class ChatService {
 
   // Track open chat dialogs
   openChatDialog(user: OnlineUser) {
-    console.log('[openChatDialog] --- DEBUG INFO ---');
-    console.log('Opening dialog for user:', user.id, user.name);
-    console.log('Current openChatDialogs BEFORE:', Array.from(this.openChatDialogs));
-    // Don't open if already open
+    console.log('[openChatDialog] Opening dialog for user:', user.id, user.name);
+    
+    // Close existing dialog if open
     if (this.openChatDialogs.has(user.id)) {
-        console.log('[openChatDialog] Chat dialog already open for user:', user.id);
-        return null;
+      console.log('[openChatDialog] Closing existing dialog for user:', user.id);
+      const existingDialog = this.openChatDialogs.get(user.id);
+      if (existingDialog) {
+        existingDialog.close();
+      }
+      this.openChatDialogs.delete(user.id);
     }
-    this.openChatDialogs.add(user.id);
-    console.log('Current openChatDialogs AFTER:', Array.from(this.openChatDialogs));
+
+    // Create fresh copy of user data
+    const userData = { ...user };
+    
+    // Open new dialog
     const dialogRef = this.dialog.open(ChatDialogComponent, {
-        width: '400px',
-        height: '600px',
-        position: { bottom: '24px', right: '24px' },
-        hasBackdrop: false,
-        panelClass: 'chat-dialog-container',
-        data: { user }
+      width: '400px',
+      height: '600px',
+      position: { bottom: '24px', right: '24px' },
+      hasBackdrop: false,
+      panelClass: 'chat-dialog-container',
+      data: { user: userData }
     });
+
+    // Track the dialog
+    this.openChatDialogs.set(user.id, dialogRef);
+
+    // Handle dialog close
     dialogRef.afterClosed().subscribe(() => {
-        this.closeChatDialog(user.id);
+      console.log('[openChatDialog] Dialog closed for user:', user.id);
+      this.openChatDialogs.delete(user.id);
+      this.currentOpenChatId = null;
+      this.closeChatDialog(user.id);
     });
+
+    this.removePendingRequest(user.id);
+
+    // Ensure user is in activeChats
+    const currentChats = this.activeChats.value;
+    if (!currentChats.find(chat => chat.id === user.id)) {
+      this.activeChats.next([...currentChats, user]);
+    }
+    // Track the currently open chat dialog
+    this.currentOpenChatId = user.id;
+
     return dialogRef;
   }
 
   closeChatDialog(userId: string) {
-    console.log('[closeChatDialog] --- DEBUG INFO ---');
-    console.log('Closing dialog for user:', userId);
-    console.log('Current openChatDialogs BEFORE:', Array.from(this.openChatDialogs));
-    this.openChatDialogs.delete(userId);
-    console.log('Current openChatDialogs AFTER:', Array.from(this.openChatDialogs));
+    console.log('[closeChatDialog] Closing dialog for user:', userId);
+    
+    // Close the dialog if it exists
+    const dialogRef = this.openChatDialogs.get(userId);
+    if (dialogRef) {
+      dialogRef.close();
+      this.openChatDialogs.delete(userId);
+    }
+
+    // Remove from active chats
+    const currentChats = this.activeChats.value;
+    this.activeChats.next(currentChats.filter(chat => chat.id !== userId));
+    
+    // Clear active chat ID if this was the active chat
+    if (this.activeChatId.value === userId) {
+      this.activeChatId.next(null);
+    }
+  }
+
+  // Minimized chat tracking
+  public getMinimizedChatIds(): Observable<string[]> {
+    return this.minimizedChatIds.asObservable();
+  }
+  public minimizeChat(userId: string): void {
+    const ids = this.minimizedChatIds.value;
+    if (!ids.includes(userId)) {
+      this.minimizedChatIds.next([...ids, userId]);
+    }
+  }
+  public unminimizeChat(userId: string): void {
+    const ids = this.minimizedChatIds.value.filter(id => id !== userId);
+    this.minimizedChatIds.next(ids);
+  }
+
+  // Robust pending chat request/unread tracking
+  public getPendingChatRequests(): Observable<Set<string>> {
+    return this.pendingChatRequests.asObservable();
+  }
+  private addPendingRequest(userId: string) {
+    const set = new Set(this.pendingChatRequests.value);
+    set.add(userId);
+    this.pendingChatRequests.next(set);
+  }
+  private removePendingRequest(userId: string) {
+    const set = new Set(this.pendingChatRequests.value);
+    set.delete(userId);
+    this.pendingChatRequests.next(set);
+  }
+
+  // Returns true if the chat dialog is open and visible (not minimized)
+  public isChatDialogOpen(userId: string): boolean {
+    return this.currentOpenChatId === userId;
   }
 } 

@@ -6,6 +6,7 @@ import { AccountsRoutingModule } from './accounts-routing.module';
 import { ListComponent } from './list.component';
 import { AddEditComponent } from './add-edit.component';
 import { SharedModule } from '../../shared/shared.module';
+import { AccountModule } from '../../account/account.module';
 
 // Material Modules
 import { MatTableModule } from '@angular/material/table';
@@ -37,7 +38,8 @@ import { TitleComponent } from '@app/shared/components/title/title.component';
         MatFormFieldModule,
         MatInputModule,
         MatSelectModule,
-        TitleComponent
+        TitleComponent,
+        AccountModule
     ],
     declarations: [
         ListComponent,

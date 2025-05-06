@@ -10,6 +10,7 @@ import { NewRegisterComponent } from './components/new-register/new-register.com
 import { ForgotPasswordComponent } from './components/forgot-password/forgot-password.component';
 import { LayoutComponent } from './components/layout/layout.component';
 import { WelcomeComponent } from './components/welcome/welcome.component';
+import { EditAccountComponent } from './components/edit-account/edit-account.component';
 
 @NgModule({
     imports: [
@@ -25,7 +26,11 @@ import { WelcomeComponent } from './components/welcome/welcome.component';
         NewRegisterComponent,
         ForgotPasswordComponent,
         LayoutComponent,
-        WelcomeComponent
+        WelcomeComponent,
+        EditAccountComponent
+    ],
+    exports: [
+        EditAccountComponent
     ]
 })
 export class AccountModule { }

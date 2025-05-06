@@ -329,6 +329,8 @@ export class AccountService {
     getById(id: string) {
         return this.getHttp().get<Account>(`${baseUrl}/${id}`)
             .pipe(map(account => {
+                console.log('[AccountService] Raw account data received:', account);
+                
                 // Format profile image URL if it exists
                 if (account.profileImage) {
                     account.profileImage = this.formatImageUrl(account.profileImage);
@@ -336,12 +338,18 @@ export class AccountService {
                 
                 // Format follower image URLs if they exist
                 if (account.followerImages) {
-                    account.followerImages = account.followerImages.map(follower => ({
-                        ...follower,
-                        imageUrl: follower.imageUrl ? this.formatImageUrl(follower.imageUrl) : undefined
-                    }));
+                    console.log('[AccountService] Processing follower images:', account.followerImages);
+                    account.followerImages = account.followerImages.map(follower => {
+                        const formattedFollower = {
+                            ...follower,
+                            imageUrl: follower.imageUrl ? this.formatImageUrl(follower.imageUrl) : undefined
+                        };
+                        console.log('[AccountService] Formatted follower:', formattedFollower);
+                        return formattedFollower;
+                    });
                 }
                 
+                console.log('[AccountService] Final formatted account data:', account);
                 return account;
             }));
     }
@@ -411,6 +419,7 @@ export class AccountService {
     uploadFollowerImage(file: File, followerEmail: string, followerName: string, followerTitle?: string) {
         const formData = new FormData();
         formData.append('file', file);
+        formData.append('image', file); // <-- image file
         formData.append('followerEmail', followerEmail);
         formData.append('followerName', followerName);
         if (followerTitle) {

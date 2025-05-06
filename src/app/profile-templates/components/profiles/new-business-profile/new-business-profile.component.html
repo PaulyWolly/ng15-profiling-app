@@ -193,20 +193,9 @@
     </div>
   </div>
 
-  <!-- Chat List Dialog -->
-  <div class="chat-list-dialog" *ngIf="showChatList">
-    <div class="chat-list-header">
-      <h3>Online Users</h3>
-      <button mat-icon-button (click)="toggleChatList()">
-        <mat-icon>close</mat-icon>
-      </button>
-    </div>
-    <div class="chat-list-content">
-      <div *ngFor="let user of onlineUsers" class="chat-list-item" (click)="startChat(user)">
-        <img [src]="user.profileImage" [alt]="user.name" class="user-avatar">
-        <span class="user-name">{{ user.name }}</span>
-        <span class="online-indicator"></span>
-      </div>
-    </div>
-  </div>
+  <!-- Chat Dock Component -->
+  <app-chat-dock 
+    [dockOpen]="showChatList"
+    (closeDock)="toggleChatList()">
+  </app-chat-dock>
 </div> 

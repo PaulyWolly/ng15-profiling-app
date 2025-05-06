@@ -95,7 +95,9 @@ interface ChatDialogData {
             </ng-template>
           </div>
         </div>
-        
+        <button *ngIf="newMessageArrived" class="new-message-badge" (click)="scrollToBottomAndClear()">
+          New message ↓
+        </button>
         <div class="chat-input">
           <mat-form-field appearance="outline">
             <input matInput 
@@ -125,6 +127,10 @@ export class ChatDialogComponent implements OnInit, OnDestroy, AfterViewInit, Af
   private lastSeenMessageId: string | null = null;
   private lastMessageCount: number = 0;
   currentUserProfileImage: string = '';
+  private scrollTimeout: any;
+  newMessageArrived: boolean = false;
+  isAtBottom: boolean = true;
+  shouldScrollToBottom: boolean = false;
 
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: ChatDialogData,
@@ -138,7 +144,15 @@ export class ChatDialogComponent implements OnInit, OnDestroy, AfterViewInit, Af
   }
 
   ngOnInit() {
-    console.log('[ChatDialog] Initializing with currentUserId:', this.currentUserId, 'recipient:', this.data.user);
+    console.log('[ChatDialog] Initializing with user:', this.data.user);
+    
+    // Reset state
+    this.isMinimized = false;
+    this.messages = [];
+    this.hasNewMessages = false;
+    this.lastSeenMessageId = null;
+    this.lastMessageCount = 0;
+    
     if (!this.currentUserId) {
       console.error('[ChatDialog] No current user ID available');
       return;
@@ -154,9 +168,14 @@ export class ChatDialogComponent implements OnInit, OnDestroy, AfterViewInit, Af
     const profileImage = this.accountService.accountValue?.profileImage;
     this.currentUserProfileImage = profileImage
       ? (profileImage.startsWith('http') ? profileImage : `${environment.apiUrl}/${profileImage}`)
-      : 'assets/default-avatar.png'; // fallback
+      : 'assets/default-avatar.png';
 
-    this.subscribeToMessages();
+    // Subscribe to messages
+    this.subscribeToMessages();    
+    // Always fetch latest messages from server when dialog opens
+    setTimeout(() => this.refreshMessages({ stopPropagation: () => {} } as Event), 0);
+    
+    // Add window focus listener
     window.addEventListener('focus', this.onWindowFocus);
   }
 
@@ -164,27 +183,61 @@ export class ChatDialogComponent implements OnInit, OnDestroy, AfterViewInit, Af
     this.updateDialogContainerClass();
     // Initial scroll to bottom
     this.scrollToBottom();
+    // Listen for scroll events
+    if (this.messageContainer && this.messageContainer.nativeElement) {
+      this.messageContainer.nativeElement.addEventListener('scroll', this.handleScroll, { passive: true });
+    }
   }
 
   ngAfterViewChecked() {
-    // Only scroll if we're at the bottom
-    if (this.isScrolledToBottom()) {
-      this.scrollToBottom();
+    // Only scroll if we're at the bottom or if we just loaded new data
+    if (this.shouldScrollToBottom) {
+      this.forceScrollToBottom();
+      this.shouldScrollToBottom = false;
     }
   }
 
   ngOnDestroy() {
+    console.log('[ChatDialog] Destroying dialog for user:', this.data.user.id);
+    
+    // Cleanup subscriptions
     if (this.messageSubscription) {
       this.messageSubscription.unsubscribe();
     }
+    
+    // Remove window focus listener
     window.removeEventListener('focus', this.onWindowFocus);
+    
+    // Clear any pending timeouts
+    if (this.scrollTimeout) {
+      clearTimeout(this.scrollTimeout);
+    }
+
+    if (this.messageContainer && this.messageContainer.nativeElement) {
+      this.messageContainer.nativeElement.removeEventListener('scroll', this.handleScroll);
+    }
+  }
+
+  private handleScroll = () => {
+    if (!this.messageContainer || !this.messageContainer.nativeElement) return;
+    const el = this.messageContainer.nativeElement;
+    const threshold = 40; // px from bottom
+    this.isAtBottom = el.scrollHeight - el.scrollTop - el.clientHeight < threshold;
+    if (this.isAtBottom) {
+      this.newMessageArrived = false;
+    }
   }
 
   private scrollToBottom(): void {
     if (this.messageContainer && this.messageContainer.nativeElement) {
-      setTimeout(() => {
-        this.messageContainer.nativeElement.scrollTop = this.messageContainer.nativeElement.scrollHeight;
-      }, 0);
+      if (this.isAtBottom) {
+        if (this.scrollTimeout) {
+          clearTimeout(this.scrollTimeout);
+        }
+        this.scrollTimeout = setTimeout(() => {
+          this.messageContainer.nativeElement.scrollTop = this.messageContainer.nativeElement.scrollHeight;
+        }, 0);
+      }
     }
   }
 
@@ -211,8 +264,10 @@ export class ChatDialogComponent implements OnInit, OnDestroy, AfterViewInit, Af
 
   minimize(event: MouseEvent) {
     event.stopPropagation();
-    this.isMinimized = !this.isMinimized;
-    setTimeout(() => this.updateDialogContainerClass(), 0);
+    // Notify the dock to minimize this chat
+    this.chatService.minimizeChat(this.data.user.id);
+    // Close the dialog
+    this.dialogRef.close();
   }
 
   updateDialogContainerClass() {
@@ -229,7 +284,7 @@ export class ChatDialogComponent implements OnInit, OnDestroy, AfterViewInit, Af
 
   close(event: Event) {
     event.stopPropagation();
-    this.chatService.closeChatDialog(this.data.user.id);
+    console.log('[ChatDialog] Closing dialog for user:', this.data.user.id);
     this.dialogRef.close();
   }
 
@@ -249,7 +304,10 @@ export class ChatDialogComponent implements OnInit, OnDestroy, AfterViewInit, Af
       next: (sentMessage) => {
         console.log('[ChatDebug][Dialog] Message sent successfully:', sentMessage);
         this.newMessage = '';
-        setTimeout(() => this.scrollToBottom(), 100);
+        setTimeout(() => {
+          this.refreshMessages({ stopPropagation: () => {} } as Event);
+          this.shouldScrollToBottom = true;
+        }, 0);
       },
       error: (error) => {
         console.error('[ChatDebug][Dialog] Error sending message:', error);
@@ -279,6 +337,10 @@ export class ChatDialogComponent implements OnInit, OnDestroy, AfterViewInit, Af
       .subscribe({
         next: (messages) => {
           console.log('[ChatDebug][Dialog] Received messages update:', messages);
+          // Detect new message
+          if (this.messages.length > 0 && messages.length > this.messages.length && !this.isAtBottom) {
+            this.newMessageArrived = true;
+          }
           this.messages = messages;
           this.scrollToBottom();
         },
@@ -294,6 +356,17 @@ export class ChatDialogComponent implements OnInit, OnDestroy, AfterViewInit, Af
     this.messages = [];
   }
 
+  private forceScrollToBottom(): void {
+    if (this.messageContainer && this.messageContainer.nativeElement) {
+      if (this.scrollTimeout) {
+        clearTimeout(this.scrollTimeout);
+      }
+      this.scrollTimeout = setTimeout(() => {
+        this.messageContainer.nativeElement.scrollTop = this.messageContainer.nativeElement.scrollHeight;
+      }, 0);
+    }
+  }
+
   refreshMessages(event: Event) {
     event.stopPropagation();
     this.hasNewMessages = false;
@@ -304,12 +377,17 @@ export class ChatDialogComponent implements OnInit, OnDestroy, AfterViewInit, Af
     this.chatService.refreshMessages(this.currentUserId, this.data.user.id).subscribe({
       next: (messages) => {
         this.messages = messages;
-        setTimeout(() => this.scrollToBottom(), 100);
+        this.shouldScrollToBottom = true;
       }
     });
   }
 
   onWindowFocus = () => {
     this.refreshMessages({ stopPropagation: () => {} } as Event);
+  }
+
+  scrollToBottomAndClear() {
+    this.newMessageArrived = false;
+    this.scrollToBottom();
   }
 } 
