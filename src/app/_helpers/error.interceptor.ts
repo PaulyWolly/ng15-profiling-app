@@ -18,30 +18,49 @@ export class ErrorInterceptor implements HttpInterceptor {
                 error: err.error
             });
 
-            // Handle 409 Conflict separately
-            if (err.status === 409) {
-                console.log('[ErrorInterceptor] Handling 409 conflict');
-                return throwError(() => ({
-                    status: 409,
-                    error: err.error || { message: 'A conflict occurred' }
-                }));
-            }
+            let errorMessage = 'An error occurred';
 
+            // Handle connection errors
+            if (err.status === 0) {
+                errorMessage = 'Unable to connect to the server. Please check your internet connection and try again.';
+            }
+            // Handle 409 Conflict
+            else if (err.status === 409) {
+                errorMessage = err.error?.message || 'A conflict occurred with the current operation.';
+            }
             // Handle 401/403 auth errors
-            if ([401, 403].includes(err.status) && 
-                this.accountService.accountValue && 
-                !request.url?.includes('revoke-token')) {
-                this.accountService.logout();
+            else if ([401, 403].includes(err.status)) {
+                if (this.accountService.accountValue && !request.url?.includes('revoke-token')) {
+                    this.accountService.logout();
+                }
+                errorMessage = 'Your session has expired. Please log in again.';
+            }
+            // Handle 400 Bad Request
+            else if (err.status === 400) {
+                errorMessage = err.error?.message || 'Invalid request. Please check your input and try again.';
+            }
+            // Handle 404 Not Found
+            else if (err.status === 404) {
+                errorMessage = 'The requested resource was not found.';
+            }
+            // Handle 500 Server Error
+            else if (err.status >= 500) {
+                errorMessage = 'A server error occurred. Please try again later.';
+            }
+            // Handle other errors
+            else {
+                errorMessage = err.error?.message || err.statusText || 'An unexpected error occurred.';
             }
 
-            // Handle other errors - Re-throw a structured error or the original HttpErrorResponse
-            // This provides more context to the component catching the error.
-            const errorPayload = err.error || { message: err.statusText || 'An unknown error occurred' };
-            console.error(`[ErrorInterceptor] Passing error downstream: Status ${err.status}`, errorPayload);
-            // Option 1: Re-throw a custom object (allows component to check status)
-            // return throwError(() => ({ status: err.status, message: errorPayload.message, error: err })); 
-            // Option 2: Re-throw the original HttpErrorResponse (gives full context)
-            return throwError(() => err); 
+            // Create a user-friendly error object
+            const error = {
+                status: err.status,
+                message: errorMessage,
+                originalError: err
+            };
+
+            console.error(`[ErrorInterceptor] Passing error downstream:`, error);
+            return throwError(() => error);
         }));
     }
 }

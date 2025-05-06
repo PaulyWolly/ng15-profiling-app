@@ -28,7 +28,7 @@ import { CustomTooltipDirective } from '@app/shared/custom-tooltip/custom-toolti
         [top]="20"
         [left]="24"
         [right]="24"
-        [height]="310"
+        [height]="265"
         [borderColor]="'#eebbbb'"
         [borderWidth]="4"
         [borderRadius]="'var(--app-border-radius)'"
@@ -106,7 +106,7 @@ import { CustomTooltipDirective } from '@app/shared/custom-tooltip/custom-toolti
 
           <!-- Action Button -->
           <div class="action-buttons">
-            <button mat-raised-button color="primary">Follow Me</button>
+            <button mat-raised-button color="primary" class="follow-me-btn">Follow Me</button>
           </div>
         </div>
       </div>

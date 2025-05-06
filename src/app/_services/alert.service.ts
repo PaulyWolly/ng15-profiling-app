@@ -20,8 +20,22 @@ export class AlertService {
         this.alert(new Alert({ ...options, type: AlertType.Success, message }));
     }
 
-    error(message: string, options?: AlertOptions) {
+    error(message: string | any, options?: AlertOptions) {
         console.log('[AlertService] Creating error alert:', message);
+        
+        // Handle error objects from the error interceptor
+        if (message && typeof message === 'object') {
+            if (message.message) {
+                message = message.message;
+            } else if (message.error?.message) {
+                message = message.error.message;
+            } else if (message.statusText) {
+                message = message.statusText;
+            } else {
+                message = 'An unexpected error occurred';
+            }
+        }
+
         this.alert(new Alert({ ...options, type: AlertType.Error, message }));
     }
 

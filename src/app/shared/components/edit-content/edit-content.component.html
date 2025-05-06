@@ -401,3 +401,12 @@
   </div>
 </div>
 
+<!-- Debug: Show form status and errors -->
+<pre>
+Form status: {{ form.status }} | Form errors: {{ form.errors | json }}
+All controls:
+<span *ngFor="let c of form?.controls | keyvalue">
+  {{c.key}}: status={{c.value.status}}, errors={{c.value.errors | json}}, value={{c.value.value}}
+</span>
+</pre>
+

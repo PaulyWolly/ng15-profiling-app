@@ -354,10 +354,7 @@ export class EditContentComponent implements OnInit, OnChanges, EditContentState
   // Event handlers
   onSubmit() {
     this.submitted = true;
-    if (this.form.invalid) {
-      console.log('[onSubmit] Form is invalid, returning');
-      return;
-    }
+    // Removed form validation check to allow processing regardless of validity
     console.log('[onSubmit] Starting submit process:', {
       id: this.id,
       isAddMode: this.isAddMode,

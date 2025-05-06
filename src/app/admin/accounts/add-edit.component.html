@@ -1,15 +1,4 @@
-﻿<app-edit-content
-  [editMode]="editMode"
-  [isAddMode]="isAddMode"
-  [initialData]="account"
-  [submitting]="submitting"
-  [loading]="loading"
-  [submitted]="submitted"
-  (save)="onSave($event)"
-  (cancel)="onCancel()"
-  (imageChange)="onImageChange($event)"
-  (imageRemove)="onImageRemove()">
-</app-edit-content>
+﻿<app-edit-account [account]="account" (save)="onSave($event)" (cancel)="onCancel()"></app-edit-account>
 
 <!-- Image Conflict Dialog -->
 <div *ngIf="imageConflict" class="alert alert-warning mt-2">

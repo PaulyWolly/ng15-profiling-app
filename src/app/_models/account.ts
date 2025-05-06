@@ -8,6 +8,7 @@ export interface FollowerImage {
     title?: string; 
     imageUrl?: string;
     path?: string;
+    imageFile?: File;
 }
 
 export interface Account {

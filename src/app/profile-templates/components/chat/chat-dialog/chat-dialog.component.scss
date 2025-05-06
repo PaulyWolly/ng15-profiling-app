@@ -333,10 +333,11 @@
 
 // Add styles for the Material Dialog
 ::ng-deep .chat-dialog-container {
-  position: absolute !important;
+  position: fixed !important;
   margin: 0 !important;
   padding: 0 !important;
   max-width: none !important;
+  transition: all 0.3s ease;
   
   .mat-mdc-dialog-container {
     padding: 0 !important;
@@ -345,14 +346,58 @@
   }
 }
 
-::ng-deep .chat-dialog-container.minimized.mat-mdc-dialog-panel,
 ::ng-deep .chat-dialog-container.minimized {
-  height: 64px !important;
-  min-height: 64px !important;
-  max-height: 64px !important;
-  transition: height 0.3s;
+  width: 200px !important;
+  height: 40px !important;
+  min-height: 40px !important;
+  max-height: 40px !important;
+  transition: all 0.3s ease;
   overflow: visible;
+  box-shadow: none !important;
+  background: transparent !important;
+  z-index: 1200 !important;
 }
+
+// Ensure minimized chat dialog is flush right
+::ng-deep .cdk-overlay-pane.chat-dialog-container.minimized {
+  // right: 0 !important;
+  left: auto !important;
+  position: fixed !important;
+  bottom: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  width: 200px !important;
+  max-width: 200px !important;
+  min-width: 200px !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  z-index: 1200 !important;
+}
+
+// Stack minimized chats horizontally
+::ng-deep .cdk-overlay-container {
+  .cdk-overlay-pane.chat-dialog-container.minimized {
+    position: fixed !important;
+    bottom: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 200px !important;
+    max-width: 200px !important;
+    min-width: 200px !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    z-index: 1200 !important;
+    transform: none !important;
+    transition: transform 0.3s ease !important;
+  }
+}
+
+// Position each minimized chat with a transform
+::ng-deep .cdk-overlay-pane.chat-dialog-container.minimized:nth-child(1) { transform: translateX(0) !important; }
+::ng-deep .cdk-overlay-pane.chat-dialog-container.minimized:nth-child(2) { transform: translateX(-210px) !important; }
+::ng-deep .cdk-overlay-pane.chat-dialog-container.minimized:nth-child(3) { transform: translateX(-420px) !important; }
+::ng-deep .cdk-overlay-pane.chat-dialog-container.minimized:nth-child(4) { transform: translateX(-630px) !important; }
+::ng-deep .cdk-overlay-pane.chat-dialog-container.minimized:nth-child(5) { transform: translateX(-840px) !important; }
 
 // Make the button background transparent and remove border
 .icon-btn {
@@ -552,18 +597,24 @@
   }
 }
 
-// Ensure minimized chat dialog is flush right
-::ng-deep .cdk-overlay-pane.chat-dialog-container.minimized {
-  right: 0 !important;
-  left: auto !important;
-  position: fixed !important;
-  bottom: 0 !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  width: 200px !important;
-  max-width: 200px !important;
-  min-width: 200px !important;
-  box-shadow: none !important;
-  background: transparent !important;
-  z-index: 1200 !important;
+.new-message-badge {
+  position: absolute;
+  left: 50%;
+  bottom: 60px;
+  transform: translateX(-50%);
+  background: #ff9800;
+  color: #fff;
+  border: none;
+  border-radius: 16px;
+  padding: 6px 18px;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+  cursor: pointer;
+  z-index: 10;
+  transition: background 0.2s;
+}
+
+.new-message-badge:hover {
+  background: #fb8c00;
 }

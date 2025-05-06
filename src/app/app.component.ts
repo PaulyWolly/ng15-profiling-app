@@ -89,71 +89,25 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     // Global wheel event listener to prevent body scrolling except in specific places
     @HostListener('wheel', ['$event'])
     onWheel(event: WheelEvent) {
-        // Get the event target
-        const target = event.target as HTMLElement;
-        
-        // Check if we're inside one of the allowed scrollable areas
-        let inAllowedScrollableArea = false;
-        let currentEl = target;
-        
-        // Traverse up the DOM tree to check for allowed scrollable containers
-        while (currentEl && !inAllowedScrollableArea) {
-            // Check for profile edit page right column
-            if (currentEl.classList && (
-                // Check for profile edit right column
-                (currentEl.classList.contains('scrollable-form-container') && 
-                 this.isInsideComponent(currentEl, 'app-edit')) ||
-                // Check for admin edit right column
-                (currentEl.classList.contains('scrollable-form-container') && 
-                 this.isInsideComponent(currentEl, 'app-add-edit'))
-            )) {
-                inAllowedScrollableArea = true;
-                break;
-            }
-            
-            // Also check for the parent column elements
-            if (currentEl.classList && 
-                currentEl.classList.contains('col-md-8') && 
-                (this.isInsideComponent(currentEl, 'app-edit') || 
-                 this.isInsideComponent(currentEl, 'app-add-edit'))) {
-                inAllowedScrollableArea = true;
-                break;
-            }
-            
-            // Move up to parent
-            if (currentEl.parentElement) {
-                currentEl = currentEl.parentElement;
-            } else {
-                break;
-            }
-        }
-        
-        // If we're not in an allowed scrollable area, prevent scrolling
-        if (!inAllowedScrollableArea) {
-            // Only prevent default if the event is directly on the body or app-root
-            if (!target || 
-                target.tagName === 'BODY' || 
-                target.tagName === 'APP-ROOT' ||
-                target.tagName === 'HTML') {
-                event.preventDefault();
-                event.stopPropagation();
-            }
-        }
-    }
+        let el = event.target as HTMLElement | null;
 
-    // Helper method to check if an element is inside a specific component
-    private isInsideComponent(element: HTMLElement, componentTag: string): boolean {
-        let current = element;
-        while (current) {
-            if (current.tagName && current.tagName.toLowerCase() === componentTag.toLowerCase()) {
-                return true;
+        // Traverse up the DOM tree to find a scrollable ancestor
+        while (el) {
+            const style = window.getComputedStyle(el);
+            const overflowY = style.overflowY;
+            const isScrollable = (overflowY === 'auto' || overflowY === 'scroll');
+            const canScroll = el.scrollHeight > el.clientHeight;
+
+            if (isScrollable && canScroll) {
+                // Allow scrolling in this container
+                return;
             }
-            if (!current.parentElement) {
-                break;
-            }
-            current = current.parentElement;
+            el = el.parentElement;
         }
-        return false;
+
+        // If no scrollable ancestor found, prevent scrolling
+        event.preventDefault();
+        event.stopPropagation();
     }
 
     ngOnInit() {

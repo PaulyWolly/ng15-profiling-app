@@ -4,7 +4,8 @@ import { RouterModule } from '@angular/router';
 import { ReactiveFormsModule } from '@angular/forms';
 import { DragDropModule } from '@angular/cdk/drag-drop';
 import { SharedModule } from '../shared/shared.module';
-import { ProfileTemplatesModule } from '@app/profile-templates/profile-templates.module';
+import { ProfileTemplatesModule } from '../profile-templates/profile-templates.module';
+import { AccountModule } from '../account/account.module';
 
 // Material Modules
 import { MatButtonModule } from '@angular/material/button';
@@ -27,7 +28,6 @@ import { ProfileComponent } from './containers/profile/profile.component';
 import { LayoutComponent } from './containers/layout/layout.component';
 import { DetailsComponent } from './containers/details/details.component';
 import { EditComponent } from './containers/edit/edit.component';
-import { EditProfileComponent } from './containers/edit-profile/edit-profile.component';
 import { AccountSettingsComponent } from './containers/account-settings/account-settings.component';
 
 // Presentational Components
@@ -67,14 +67,14 @@ export class PreventWheelPropagationDirective {
         MatFormFieldModule,
         MatDialogModule,
         MatExpansionModule,
-        MatTooltipModule
+        MatTooltipModule,
+        AccountModule
     ],
     declarations: [
         ProfileComponent,
         LayoutComponent,
         DetailsComponent,
         EditComponent,
-        EditProfileComponent,
         AccountSettingsComponent,
         MapDialogComponent,
         PreventWheelPropagationDirective

@@ -21,6 +21,7 @@ import { CreatePostDialogComponent } from '../../posts/create-post-dialog/create
 import { PostService } from '@app/_services/post.service';
 import { ChatService, OnlineUser } from '@app/_services/chat.service';
 import { ChatDialogComponent } from '../../chat/chat-dialog/chat-dialog.component';
+import { ChatDockComponent } from '../../chat/chat-dock/chat-dock.component';
 import { Observable } from 'rxjs';
 
 @Component({
@@ -43,8 +44,9 @@ import { Observable } from 'rxjs';
     MatSnackBarModule,
     BusinessPostsComponent,
     StarRatingComponent,
-    ChatDialogComponent
-  ]
+    ChatDockComponent
+  ],
+  providers: [ChatDialogComponent]
 })
 export class NewBusinessProfileComponent implements OnInit, AfterViewInit, OnChanges {
   @Input() profile!: Account;
