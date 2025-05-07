@@ -1,15 +1,24 @@
 <div class="business-profile-container">
   <mat-card>
     <mat-card-content class="business-card-layout">
-      <div class="row">
-        <div class="col-md-3">
-          <!-- Logo and Company Name Container -->
+      <div class="two-column-layout">
+        <!-- LEFT COLUMN: Company info, profile image, search, rating -->
+        <div class="left-column">
           <div class="logo-header">
             <div class="logo-container">
-              <h3 class="company-name">Kodecolor</h3>
+              <h3 class="company-name">{{profile.company || 'PW Consulting'}}</h3>
+              <div class="company-logo-container" *ngIf="profile.companyLogo" [class.loading]="companyLogoLoading">
+                <img [src]="profile.companyLogo" 
+                     alt="Company logo" 
+                     class="company-logo"
+                     (load)="onCompanyLogoLoaded()"
+                     (error)="onCompanyLogoError()">
+                <div *ngIf="companyLogoLoading" class="loading-spinner">
+                  <mat-spinner diameter="20"></mat-spinner>
+                </div>
+              </div>
             </div>
           </div>
-
           <div class="profile-image-container" [class.loading]="imageLoading">
             <img *ngIf="profile.profileImage" 
                 [src]="profile.profileImage" 
@@ -24,156 +33,186 @@
               <mat-spinner diameter="40"></mat-spinner>
             </div>
           </div>
-
-          <!-- Moved search bar here -->
           <div class="search-container">
             <mat-form-field appearance="outline" class="search-bar">
               <input matInput placeholder="Search">
               <mat-icon matSuffix>search</mat-icon>
             </mat-form-field>
           </div>
-
-          <!-- Move stars to the bottom of the left column -->
-          <div class="stars stars-bottom">
+          <div class="rating-container">
             <ul class="rating-list">
               <li>Rating:</li>
               <li><app-star-rating [(rating)]="profileRating"></app-star-rating></li>
             </ul>            
           </div>
         </div>
-        
-        <div class="col-md-9">
-          <div class="header d-flex justify-content-end align-items-center mb-4">
-            <div class="nav-links">
-              <span class="mr-3 find-people-link">Find people | </span>
-              <span class="mr-3 messages-link">
-                Messages |
-                <mat-icon matBadge="4" matBadgeSize="small" matBadgeColor="accent">mail</mat-icon>
+
+        <!-- RIGHT COLUMN: Everything else -->
+        <div class="right-column">
+          <!-- Profile header info -->
+          <div class="profile-header">
+            <div class="profile-info">
+              <h2>{{profile.firstName}} {{profile.lastName}}</h2>
+              <p class="text-muted">{{profile.position || 'Angular Developer | UI Designer | AI Specialist'}}</p>
+              <p class="location-info">
+                <mat-icon class="location-icon" (click)="openMapDialog()">place</mat-icon> 
+                {{profile.address || ''}}
+                <span *ngIf="profile.city || profile.state || profile.zipCode">
+                  <span *ngIf="profile.address">, </span>{{profile.city || ''}}{{profile.city && profile.state ? ', ' : ''}}{{profile.state || ''}} {{profile.zipCode || ''}}
+                </span>
+                <span *ngIf="!profile.address && !profile.city && !profile.state && !profile.zipCode">North Mission Road, Fallbrook, CA</span>
+              </p>
+            </div>
+            
+            <div class="header-links">
+              <span>
+                <a href="#" class="find-people-link">Find people</a> | 
+                <a href="#" class="messages-link">
+                  Messages 
+                  <mat-icon matBadge="4" matBadgeSize="small" matBadgeColor="accent">mail</mat-icon>
+                </a> | 
+                <a href="#" class="my-contacts-link">My Contacts</a>
               </span>
-              <span class="my-contacts-link">My Contacts</span>
             </div>
           </div>
 
-          <h2>{{profile.firstName}} {{profile.lastName}}</h2>
-          <p class="text-muted">{{profile.position || 'Product Designer'}}</p>
-          <p>
-            <mat-icon class="location-icon" (click)="openMapDialog()">place</mat-icon> 
-            {{profile.address || ''}}
-            <span *ngIf="profile.city || profile.state || profile.zipCode">
-              <span *ngIf="profile.address">, </span>{{profile.city || ''}}{{profile.city && profile.state ? ', ' : ''}}{{profile.state || ''}} {{profile.zipCode || ''}}
-            </span>
-            <span *ngIf="!profile.address && !profile.city && !profile.state && !profile.zipCode">New York, NY</span>
-          </p>
-
-          <div class="action-buttons mt-3">
-            <button mat-stroked-button class="mr-2">
+          <!-- Action buttons -->
+          <div class="action-buttons">
+            <button mat-stroked-button class="action-btn">
               <mat-icon>mail</mat-icon> Send message
             </button>
-            <button mat-stroked-button color="primary" class="mr-2">
+            <button mat-stroked-button color="primary" class="action-btn">
               <mat-icon>contacts</mat-icon> Contacts
             </button>
-            <button mat-stroked-button color="warn">
+            <button mat-stroked-button color="warn" class="action-btn">
               <mat-icon>report</mat-icon> Report user
             </button>
           </div>
 
-          <div class="tab-header-container">
-            <mat-tab-group class="profile-tabs" mat-stretch-tabs="false" mat-align-tabs="start" (selectedTabChange)="onTabChange($event)">
-              <mat-tab label="Timeline">
-                <ng-template mat-tab-label>
-                  <div class="tab-label-container">
-                    <span>Timeline</span>
-                  </div>
-                </ng-template>
-                <div class="posts-container">
-                  <div class="scrollable-content" #timelineContent [ngStyle]="syncedTabHeight ? {'height': syncedTabHeight} : {}">
-                    <div *ngIf="isLoadingPosts" class="loading-container">
-                      <mat-spinner diameter="40"></mat-spinner>
-                      <p>Loading posts...</p>
+          <!-- Tabs section -->
+          <div class="profile-content-section">
+            <div class="tab-header-container">
+              <mat-tab-group class="profile-tabs" mat-stretch-tabs="false" mat-align-tabs="start" (selectedTabChange)="onTabChange($event)">
+                <mat-tab label="Timeline">
+                  <ng-template mat-tab-label>
+                    <div class="tab-label-container">
+                      <span>Timeline</span>
                     </div>
-                    <app-business-posts 
-                      *ngIf="!isLoadingPosts"
-                      [posts]="posts" 
-                      [profileImage]="profile.profileImage || ''" 
-                      [loggedInUserName]="(profile.firstName || '') + ' ' + (profile.lastName || '')"
-                      (respondToPost)="openCreatePostDialog($event)">
-                    </app-business-posts>
-                  </div>
-                </div>
-              </mat-tab>
-              <mat-tab label="About">
-                <ng-template mat-tab-label>
-                  <div class="tab-label-container">
-                    <span>About</span>
-                  </div>
-                </ng-template>
-                <div class="scrollable-content" #aboutContent [ngClass]="{'hide-scrollbar': selectedTabIndex === 1}" [ngStyle]="syncedTabHeight ? {'height': syncedTabHeight} : {}">
-                  <div class="p-3 about-section">
-                    <div class="row mt-2">
-                      <div class="col-md-4">
-                        <div class="work-area">
-                          <h5>WORK</h5>
-                          <mat-card class="mb-3">
-                            <mat-card-content>
-                              <div class="badge primary">Primary</div>
-                              <h6>{{profile.company || 'Spotify New York'}}</h6>
-                              <p>{{profile.address || '170 William Street'}}</p>
-                            </mat-card-content>
-                          </mat-card>
+                  </ng-template>
+                  <div class="tab-content-box">
+                    <div class="posts-container">
+                      <div class="scrollable-content" #timelineContent [ngStyle]="{'height': syncedTabHeight}">
+                        <div *ngIf="isLoadingPosts" class="loading-container">
+                          <mat-spinner diameter="30"></mat-spinner>
+                          <p>Loading posts...</p>
                         </div>
-                        <div class="education-area">
-                          <h5 class="mt-4">EDUCATION</h5>
-                          <mat-card class="mb-3">
-                            <mat-card-content>
-                              <h6>University of Design</h6>
-                              <p>Bachelor of Arts, 2012-2016</p>
-                            </mat-card-content>
-                          </mat-card>
-                        </div>
-                      </div>
-                      <div class="col-md-8">
-                        <h5>CONTACT INFORMATION</h5>
-                        <table class="info-table">
-                          <tr>
-                            <td>Phone:</td>
-                            <td>{{profile.phone || '+1 123 456 7890'}}</td>
-                          </tr>
-                          <tr>
-                            <td>Address:</td>
-                            <td>
-                              <mat-icon class="location-icon small" (click)="openMapDialog()">place</mat-icon>
-                              {{profile.address || ''}}
-                              <span *ngIf="profile.city || profile.state || profile.zipCode">
-                                <span *ngIf="profile.address">, </span>{{profile.city || ''}}{{profile.city && profile.state ? ', ' : ''}}{{profile.state || ''}} {{profile.zipCode || ''}}
-                              </span>
-                              <span *ngIf="!profile.address && !profile.city && !profile.state && !profile.zipCode">525 E 68th Street, New York, NY</span>
-                            </td>
-                          </tr>
-                          <tr>
-                            <td>E-mail:</td>
-                            <td>{{profile.email}}</td>
-                          </tr>
-                          <tr>
-                            <td>Site:</td>
-                            <td>{{profile.website || 'www.example.com'}}</td>
-                          </tr>
-                        </table>
-                        <h5 class="mt-4">SKILLS</h5>
-                        <div class="skills-container">
-                          <span class="skill-badge">Angular</span>
-                          <span class="skill-badge">TypeScript</span>
-                          <span class="skill-badge">CSS</span>
-                          <span class="skill-badge">UX Design</span>
-                          <span class="skill-badge">Project Management</span>
-                          <span class="skill-badge">Team Leadership</span>
-                        </div>
+                        <app-business-posts 
+                          *ngIf="!isLoadingPosts"
+                          [posts]="posts" 
+                          [profileImage]="profile.profileImage || ''" 
+                          [loggedInUserName]="(profile.firstName || '') + ' ' + (profile.lastName || '')"
+                          (respondToPost)="openCreatePostDialog($event)">
+                        </app-business-posts>
                       </div>
                     </div>
                   </div>
-                </div>
-              </mat-tab>
-            </mat-tab-group>
-            <button mat-raised-button color="primary" class="create-post-btn" [class.hidden]="selectedTabIndex !== 0" (click)="openCreatePostDialog()">Create Post</button>
+                </mat-tab>
+                <mat-tab label="About">
+                  <ng-template mat-tab-label>
+                    <div class="tab-label-container">
+                      <span>About</span>
+                    </div>
+                  </ng-template>
+                  <div class="tab-content-box">
+                    <div class="scrollable-content" #aboutContent [ngStyle]="{'height': syncedTabHeight}" [ngClass]="{'hide-scrollbar': selectedTabIndex !== 1}">
+                      <div class="p-3 about-section">
+                        <div class="about-row">
+                          <div class="about-col-left">
+                            <div class="work-area">
+                              <h5>WORK</h5>
+                              <mat-card class="compact-card">
+                                <mat-card-content class="compact-content">
+                                  <div class="badge primary">Primary</div>
+                                  <h6>{{profile.company || 'PW Consulting'}}</h6>
+                                  <p>
+                                    <span *ngIf="profile.position">{{profile.position}}</span>
+                                    <span *ngIf="!profile.position">Angular Developer | UI Designer | AI Specialist</span>
+                                  </p>
+                                  <p>
+                                    <span *ngIf="profile.address">{{profile.address}}</span>
+                                    <span *ngIf="profile.city || profile.state || profile.zipCode">
+                                      <span *ngIf="profile.address">, </span>{{profile.city || ''}}{{profile.city && profile.state ? ', ' : ''}}{{profile.state || ''}} {{profile.zipCode || ''}}
+                                    </span>
+                                    <span *ngIf="!profile.address && !profile.city && !profile.state && !profile.zipCode">North Mission Road, Fallbrook, CA</span>
+                                  </p>
+                                </mat-card-content>
+                              </mat-card>
+                            </div>
+                            <div class="education-area">
+                              <h5>EDUCATION</h5>
+                              <mat-card class="compact-card">
+                                <mat-card-content class="compact-content">
+                                  <h6>{{profile.education?.institution || 'University of Design'}}</h6>
+                                  <p>{{profile.education?.degree || 'Bachelor of Arts'}}, {{profile.education?.years || '2012-2016'}}</p>
+                                </mat-card-content>
+                              </mat-card>
+                            </div>
+                          </div>
+                          <div class="about-col-right">
+                            <h5>CONTACT INFORMATION</h5>
+                            <table class="info-table">
+                              <tr>
+                                <td>Phone:</td>
+                                <td>{{profile.phone || '+1 123 456 7890'}}</td>
+                              </tr>
+                              <tr>
+                                <td>Address:</td>
+                                <td>
+                                  <a href="javascript:void(0)" (click)="openMapDialog()" class="map-link">
+                                    <mat-icon class="location-icon small">place</mat-icon>
+                                    {{profile.address || ''}}
+                                    <span *ngIf="profile.city || profile.state || profile.zipCode">
+                                      <span *ngIf="profile.address">, </span>{{profile.city || ''}}{{profile.city && profile.state ? ', ' : ''}}{{profile.state || ''}} {{profile.zipCode || ''}}
+                                    </span>
+                                    <span *ngIf="!profile.address && !profile.city && !profile.state && !profile.zipCode">North Mission Road, Fallbrook, CA</span>
+                                  </a>
+                                </td>
+                              </tr>
+                              <tr>
+                                <td>E-mail:</td>
+                                <td>
+                                  <a [href]="'mailto:' + (profile.email || 'pwelby@gmail.com')" class="email-link">
+                                    {{profile.email || 'pwelby@gmail.com'}}
+                                  </a>
+                                </td>
+                              </tr>
+                              <tr>
+                                <td>Site:</td>
+                                <td>
+                                  <a [href]="formatWebsiteUrl(profile.website || 'https://i-am-paul.netlify.app')" target="_blank" class="website-link">
+                                    {{profile.website || 'https://i-am-paul.netlify.app'}}
+                                  </a>
+                                </td>
+                              </tr>
+                            </table>
+                            <h5>SKILLS</h5>
+                            <div class="debug-skills">
+                              <!-- Include for debugging only -->
+                              <!-- <div>Debug: {{getDebugSkillsInfo()}}</div> -->
+                            </div>
+                            <div class="skills-container">
+                              <!-- Create a separate div for each skill -->
+                              <div class="skill-badge" *ngFor="let skill of getSkillsArray()">{{skill}}</div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </mat-tab>
+              </mat-tab-group>
+              <button mat-raised-button color="primary" class="create-post-btn" [class.hidden]="selectedTabIndex !== 0" (click)="openCreatePostDialog()">Create Post</button>
+            </div>
           </div>
         </div>
       </div>

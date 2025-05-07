@@ -11,6 +11,13 @@ export interface FollowerImage {
     imageFile?: File;
 }
 
+export interface Education {
+    institution: string;
+    degree: string;
+    years: string;
+    description?: string;
+}
+
 export interface Account {
     id: string;
     email: string;
@@ -42,6 +49,7 @@ export interface Account {
     state?: string;
     zipCode?: string;
     company?: string;
+    companyLogo?: string;
     position?: string;
     skills?: string[];
     // Additional profile data
@@ -52,6 +60,8 @@ export interface Account {
     followerImages?: FollowerImage[];
     // Social media links
     linkedin?: string;
+    // Education
+    education?: Education;
     // Work experience
     experience?: {
         position: string;
@@ -72,5 +82,7 @@ export interface AccountUpdate {
     confirmPassword?: string;
     profileTemplateType?: ProfileTemplateType;
     profileImage?: string | null;
+    companyLogo?: string | null;
+    education?: Education;
     followerImages?: FollowerImage[];
 }
