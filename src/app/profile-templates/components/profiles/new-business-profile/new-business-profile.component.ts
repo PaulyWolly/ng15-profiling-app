@@ -23,6 +23,7 @@ import { ChatService, OnlineUser } from '@app/_services/chat.service';
 import { ChatDialogComponent } from '../../chat/chat-dialog/chat-dialog.component';
 import { ChatDockComponent } from '../../chat/chat-dock/chat-dock.component';
 import { Observable } from 'rxjs';
+import { ImageService } from '@app/_services/image.service';
 
 @Component({
   selector: 'app-new-business-profile',
@@ -53,6 +54,7 @@ export class NewBusinessProfileComponent implements OnInit, AfterViewInit, OnCha
   @Input() isOwnProfile: boolean = false;
   
   imageLoading: boolean = true;
+  companyLogoLoading: boolean = false;
   selectedTabIndex = 0;
   syncedTabHeight: string | null = null;
   posts: any[] = [];
@@ -74,6 +76,7 @@ export class NewBusinessProfileComponent implements OnInit, AfterViewInit, OnCha
     private accountService: AccountService,
     private postService: PostService,
     private chatService: ChatService,
+    private imageService: ImageService,
     private cdr: ChangeDetectorRef
   ) {
     this.activeChats$ = this.chatService.getActiveChats();
@@ -82,12 +85,49 @@ export class NewBusinessProfileComponent implements OnInit, AfterViewInit, OnCha
   ngOnChanges(changes: SimpleChanges) {
     if (changes['profile'] && this.profile?.id) {
       this.loadPosts();
+      this.ensureImagesHaveFullUrls();
     }
   }
   
   ngOnInit() {
     this.imageLoading = !!this.profile?.profileImage;
+    this.companyLogoLoading = !!this.profile?.companyLogo;
     this.loadUsers();
+    this.ensureImagesHaveFullUrls();
+    
+    // Properly parse and set skills
+    if (this.profile) {
+      console.log('Original skills:', this.profile.skills);
+      
+      // Convert skill string to array if it's a single string
+      if (this.profile.skills && typeof this.profile.skills === 'string') {
+        this.profile.skills = (this.profile.skills as string).split(',').map(skill => skill.trim());
+        console.log('Skills after string conversion:', this.profile.skills);
+      }
+      
+      // If skills is a single string in an array, split it
+      if (this.profile.skills && Array.isArray(this.profile.skills) && this.profile.skills.length === 1 
+          && typeof this.profile.skills[0] === 'string' && this.profile.skills[0].includes(',')) {
+        this.profile.skills = this.profile.skills[0].split(',').map(skill => skill.trim());
+        console.log('Skills after splitting single array item:', this.profile.skills);
+      }
+      
+      // If no skills or empty array, set default skills
+      if (!this.profile.skills || this.profile.skills.length === 0) {
+        this.profile.skills = ['Angular', 'TypeScript', 'CSS', 'UX Design', 'Project Management', 'Team Leadership'];
+        console.log('Default skills set:', this.profile.skills);
+      }
+      
+      // Ensure skills are always an array
+      if (!Array.isArray(this.profile.skills)) {
+        const skillsValue = this.profile.skills;
+        this.profile.skills = typeof skillsValue === 'object' ? 
+          [JSON.stringify(skillsValue)] : 
+          [String(skillsValue)];
+        console.log('Skills converted to array:', this.profile.skills);
+      }
+    }
+    
     if (this.profile?.id) {
       this.loadPosts();
       // Subscribe to online users after we have the profile
@@ -99,13 +139,42 @@ export class NewBusinessProfileComponent implements OnInit, AfterViewInit, OnCha
     }
   }
   
+  private ensureImagesHaveFullUrls() {
+    if (this.profile) {
+      if (this.profile.profileImage) {
+        this.profile.profileImage = this.imageService.getFullImageUrl(this.profile.profileImage);
+        console.log('[BusinessProfile] Profile image with full URL:', this.profile.profileImage);
+      }
+      
+      if (this.profile.companyLogo) {
+        this.profile.companyLogo = this.imageService.getFullImageUrl(this.profile.companyLogo);
+        console.log('[BusinessProfile] Company logo with full URL:', this.profile.companyLogo);
+      }
+    }
+  }
+  
   ngAfterViewInit() {
     setTimeout(() => this.syncTabHeights(), 0);
   }
   
+  /**
+   * Handle window resize events to maintain proper scrolling
+   */
   @HostListener('window:resize')
   onResize() {
+    console.log('Window resize detected, updating tab heights');
+    // Adjust tab heights when window is resized
     this.syncTabHeights();
+    
+    // Force scrollable content to update
+    setTimeout(() => {
+      if (this.timelineContentRef?.nativeElement) {
+        this.timelineContentRef.nativeElement.style.overflowY = 'auto';
+      }
+      if (this.aboutContentRef?.nativeElement) {
+        this.aboutContentRef.nativeElement.style.overflowY = 'auto';
+      }
+    }, 100);
   }
   
   onTabChange(event: MatTabChangeEvent) {
@@ -120,15 +189,26 @@ export class NewBusinessProfileComponent implements OnInit, AfterViewInit, OnCha
     setTimeout(() => this.syncTabHeights(), 0);
   }
   
+  /**
+   * Sets a consistent height for tab content areas to ensure scrolling works properly
+   */
   syncTabHeights() {
-    if (this.timelineContentRef && this.timelineContentRef.nativeElement && this.aboutContentRef && this.aboutContentRef.nativeElement) {
-      const timelineHeight = this.timelineContentRef.nativeElement.scrollHeight;
-      const aboutHeight = this.aboutContentRef.nativeElement.scrollHeight;
-      const maxHeight = Math.max(timelineHeight, aboutHeight);
-      this.syncedTabHeight = maxHeight + 'px';
+    // Using a fixed height that fits the content well
+    this.syncedTabHeight = '280px';
+    
+    // For Timeline tab
+    if (this.timelineContentRef && this.timelineContentRef.nativeElement) {
       this.timelineContentRef.nativeElement.style.height = this.syncedTabHeight;
-      this.aboutContentRef.nativeElement.style.height = this.syncedTabHeight;
+      this.timelineContentRef.nativeElement.style.overflowY = 'auto';
     }
+    
+    // For About tab
+    if (this.aboutContentRef && this.aboutContentRef.nativeElement) {
+      this.aboutContentRef.nativeElement.style.height = this.syncedTabHeight;
+      this.aboutContentRef.nativeElement.style.overflowY = 'auto';
+    }
+    
+    console.log('Tab heights synced to:', this.syncedTabHeight);
   }
   
   onImageLoaded() {
@@ -142,6 +222,20 @@ export class NewBusinessProfileComponent implements OnInit, AfterViewInit, OnCha
     if (this.profile) {
       console.error('[BusinessCard] Error loading profile image');
       this.profile.profileImage = undefined;
+    }
+  }
+  
+  onCompanyLogoLoaded() {
+    this.companyLogoLoading = false;
+    console.log('[BusinessCard] Company logo loaded successfully');
+  }
+  
+  onCompanyLogoError() {
+    this.companyLogoLoading = false;
+    // Clear the company logo URL in case of error
+    if (this.profile) {
+      console.error('[BusinessCard] Error loading company logo');
+      this.profile.companyLogo = undefined;
     }
   }
   
@@ -296,5 +390,91 @@ export class NewBusinessProfileComponent implements OnInit, AfterViewInit, OnCha
     // The list is already filtered to exclude current user in the constructor
     this.showChatList = true;
     this.cdr.detectChanges();
+  }
+
+  /**
+   * Formats a website URL to ensure it has the proper http/https prefix
+   * @param url The website URL to format
+   * @returns A properly formatted URL
+   */
+  formatWebsiteUrl(url: string): string {
+    if (!url) return '';
+    
+    // If the URL already has http:// or https://, return it as is
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return url;
+    }
+    
+    // Otherwise, add https:// prefix
+    return `https://${url}`;
+  }
+
+  /**
+   * Gets debug information about skills
+   * Helps track what's happening with skills for debugging
+   */
+  getDebugSkillsInfo(): string {
+    if (!this.profile || !this.profile.skills) {
+      return 'No skills found';
+    }
+    
+    const skillsArray = this.profile.skills;
+    
+    if (!Array.isArray(skillsArray)) {
+      return `Skills is not an array: ${typeof skillsArray}, value: ${String(skillsArray)}`;
+    }
+    
+    if (skillsArray.length === 0) {
+      return 'Skills array is empty';
+    }
+    
+    return `Skills array has ${skillsArray.length} items: [${skillsArray.join(', ')}]`;
+  }
+
+  /**
+   * Safely gets the skills array, handling any possible format
+   * This method forcefully splits skills to ensure individual bubbles
+   */
+  getSkillsArray(): string[] {
+    const defaultSkills = ['Angular', 'TypeScript', 'CSS', 'UX Design', 'Project Management', 'Team Leadership'];
+    
+    if (!this.profile || !this.profile.skills) {
+      console.log('No skills found, using defaults');
+      return defaultSkills;
+    }
+    
+    // Force convert to string and split no matter what
+    let skillsString: string;
+    
+    // Handle various potential formats
+    if (Array.isArray(this.profile.skills)) {
+      if (this.profile.skills.length === 0) {
+        console.log('Empty skills array, using defaults');
+        return defaultSkills;
+      }
+      
+      // Join the array into a string with commas
+      skillsString = this.profile.skills.join(',');
+      console.log('Skills converted from array to string:', skillsString);
+    } else if (typeof this.profile.skills === 'string') {
+      // Already a string
+      skillsString = this.profile.skills as string;
+      console.log('Skills already a string:', skillsString);
+    } else {
+      // Convert whatever it is to a string
+      skillsString = String(this.profile.skills);
+      console.log('Skills converted to string from unknown type:', skillsString);
+    }
+    
+    // Split by comma, semicolon or pipe to handle different separator styles
+    const processedSkills = skillsString
+      .split(/[,;|]+/)
+      .map(s => s.trim())
+      .filter(s => s !== '');
+    
+    console.log('Final processed skills array:', processedSkills);
+    
+    // If processing resulted in empty array, return defaults
+    return processedSkills.length > 0 ? processedSkills : defaultSkills;
   }
 } 
