@@ -113,9 +113,148 @@ async function uploadFollowerImage(req, res, next) {
     }
 }
 
+// Upload profile image
+async function uploadProfileImage(req, res, next) {
+    console.log('[UploadController:uploadProfileImage] Starting upload process:', {
+        hasFile: !!req.file,
+        fileDetails: req.file ? {
+            path: req.file.path,
+            filename: req.file.filename,
+            mimetype: req.file.mimetype,
+            size: req.file.size
+        } : null,
+        userId: req.user?.id,
+        userEmail: req.body?.userEmail,
+        body: req.body,
+        headers: req.headers
+    });
+
+    try {
+        if (!req.file) {
+            console.error('[UploadController:uploadProfileImage] No file in request');
+            return res.status(400).json({ message: 'No file uploaded' });
+        }
+
+        if (!req.user || !req.user.id) {
+            console.error('[UploadController:uploadProfileImage] Authentication failed:', {
+                user: req.user,
+                headers: req.headers
+            });
+            if (fs.existsSync(req.file.path)) {
+                fs.unlinkSync(req.file.path);
+                console.log('[UploadController:uploadProfileImage] Cleaned up temp file after auth failure');
+            }
+            return res.status(401).json({ message: 'Unauthorized' });
+        }
+
+        if (!req.body.userEmail) {
+            console.error('[UploadController:uploadProfileImage] Missing email in request');
+            if (fs.existsSync(req.file.path)) {
+                fs.unlinkSync(req.file.path);
+                console.log('[UploadController:uploadProfileImage] Cleaned up temp file after missing email');
+            }
+            return res.status(400).json({ message: 'User email is required' });
+        }
+
+        // Always use .png extension regardless of input file type
+        const finalFilename = `profileImage-${req.body.userEmail}.png`;
+        const finalPath = path.join(profilesDir, finalFilename);
+        
+        console.log('[UploadController:uploadProfileImage] File paths:', {
+            tempPath: req.file.path,
+            finalPath,
+            finalFilename,
+            tempExists: fs.existsSync(req.file.path),
+            finalExists: fs.existsSync(finalPath)
+        });
+
+        // Check if the file exists and log its existence
+        const fileExists = fs.existsSync(finalPath);
+        if (fileExists) {
+            console.log('[UploadController:uploadProfileImage] Existing file details:', {
+                path: finalPath,
+                stats: fs.statSync(finalPath)
+            });
+        }
+
+        // If a file exists at the destination, delete it first
+        if (fileExists) {
+            console.log('[UploadController:uploadProfileImage] Attempting to delete existing file:', finalPath);
+            try {
+                fs.unlinkSync(finalPath);
+                console.log('[UploadController:uploadProfileImage] Successfully deleted existing file');
+            } catch (err) {
+                console.error('[UploadController:uploadProfileImage] Error deleting existing file:', {
+                    error: err,
+                    errorMessage: err.message,
+                    errorCode: err.code
+                });
+            }
+        }
+
+        // Move the uploaded file to the final location
+        console.log('[UploadController:uploadProfileImage] Moving file:', {
+            from: req.file.path,
+            to: finalPath,
+            sourceExists: fs.existsSync(req.file.path),
+            destExists: fs.existsSync(finalPath)
+        });
+
+        fs.renameSync(req.file.path, finalPath);
+        console.log('[UploadController:uploadProfileImage] File move completed');
+
+        // Create URL-friendly path that matches the static file serving configuration
+        const urlPath = `/uploads/profiles/${finalFilename}`;
+        
+        console.log('[UploadController:uploadProfileImage] Updating database:', {
+            userId: req.body.userId || req.user.id,
+            urlPath
+        });
+
+        // Update database with the consistent path format
+        if (!req.body.userId) {
+            console.error('[UploadController:uploadProfileImage] Missing userId in request body');
+            return res.status(400).json({ message: 'User ID is required for image upload' });
+        }
+        const accountService = require('../accounts/account.service');
+        const account = await accountService.uploadImage(req.body.userId, urlPath);
+        console.log('[UploadController:uploadProfileImage] Database updated:', {
+            account,
+            urlPath
+        });
+        
+        const response = {
+            message: 'Profile image uploaded successfully',
+            imagePath: urlPath,
+            profileImage: urlPath
+        };
+
+        console.log('[UploadController:uploadProfileImage] Sending response:', response);
+        res.json(response);
+    } catch (error) {
+        console.error('[UploadController:uploadProfileImage] Error in upload process:', {
+            error: error,
+            message: error.message,
+            stack: error.stack,
+            code: error.code
+        });
+        // Clean up temp file if it exists
+        if (req.file && fs.existsSync(req.file.path)) {
+            try {
+                fs.unlinkSync(req.file.path);
+                console.log('[UploadController:uploadProfileImage] Cleaned up temp file after error');
+            } catch (cleanupError) {
+                console.error('[UploadController:uploadProfileImage] Error cleaning up temp file:', cleanupError);
+            }
+        }
+        next(error);
+    }
+}
+
 // Export the middleware and functions
 module.exports = {
     upload,
     uploadMiddleware,
-    uploadFollowerImage
+    uploadFollowerImage,
+    uploadProfileImage
 };
