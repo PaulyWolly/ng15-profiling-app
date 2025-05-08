@@ -1,51 +1,88 @@
 <div class="social-media-container">
-    <!-- Upper Section -->
-    <div class="upper-section">
-        <div class="curved-border"></div>
-        <div class="profile-image-container">
-            <img [src]="profile?.imageUrl" [alt]="profile?.name + ' profile picture'" 
-                 *ngIf="profile?.imageUrl; else defaultAvatar" class="profile-image">
-            <ng-template #defaultAvatar>
-                <div class="default-avatar">
-                    <mat-icon class="large-icon">account_circle</mat-icon>
+    <div class="social-card">
+        <app-curved-border
+            [top]="20"
+            [left]="24"
+            [right]="24"
+            [height]="265"
+            [borderColor]="'#eebbbb'"
+            [borderWidth]="4"
+            [borderRadius]="'var(--app-border-radius)'"
+        ></app-curved-border>
+        <div class="profile-card-top">
+            <div class="profile-image-wrapper">
+                <div class="profile-image-container" [class.loading]="loading">
+                    <img *ngIf="profile.profileImage" [src]="profile.profileImage" alt="Profile picture" class="profile-img" (load)="onImageLoaded()" (error)="onImageError()">
+                    <div *ngIf="!profile.profileImage && !loading" class="default-avatar">
+                        <mat-icon class="large-icon">account_circle</mat-icon>
+                    </div>
+                    <div *ngIf="loading" class="loading-spinner">
+                        <mat-spinner diameter="40"></mat-spinner>
+                    </div>
                 </div>
-            </ng-template>
+            </div>
+            <h2>{{profile.firstName}} {{profile.lastName}}</h2>
+            <p class="text-muted">{{profile.position || 'Professional Title'}}</p>
+            <p class="location" *ngIf="profile.address || profile.city || profile.state || profile.zipCode" (click)="openMapDialog()">
+                <mat-icon class="location-icon">location_on</mat-icon>
+                {{profile.address}}<span *ngIf="profile.city">, {{profile.city}}</span><span *ngIf="profile.state">, {{profile.state}}</span><span *ngIf="profile.zipCode"> {{profile.zipCode}}</span>
+            </p>
+            <div class="social-icons">
+                <a *ngIf="profile.facebook" [href]="profile.facebook" target="_blank" class="social-icon" [appCustomTooltip]="'Visit my Facebook Profile'">
+                    <i class="fab fa-facebook-f"></i>
+                </a>
+                <a *ngIf="profile.linkedin" [href]="profile.linkedin" target="_blank" class="social-icon" [appCustomTooltip]="'Visit my LinkedIn Profile'">
+                    <i class="fab fa-linkedin-in"></i>
+                </a>
+                <a *ngIf="profile.website" [href]="profile.website" target="_blank" class="social-icon" [appCustomTooltip]="'Visit my Website'">
+                    <i class="fa-solid fa-globe"></i>
+                </a>
+                <a *ngIf="profile.github" [href]="profile.github" target="_blank" class="social-icon" [appCustomTooltip]="'Visit my GitHub Profile'">
+                    <i class="fab fa-github"></i>
+                </a>
+                <a *ngIf="profile.twitter" [href]="profile.twitter" target="_blank" class="social-icon" [appCustomTooltip]="'Visit my Twitter Profile'">
+                    <i class="fab fa-twitter"></i>
+                </a>
+                <a *ngIf="profile.instagram" [href]="profile.instagram" target="_blank" class="social-icon" [appCustomTooltip]="'Visit my Instagram Profile'">
+                    <i class="fab fa-instagram"></i>
+                </a>
+            </div>
+        </div>
+        <div class="profile-card-bottom">
+            <div class="stats-section">
+                <div class="stats-row">
+                    <div class="stat-block">
+                        <div class="stat-number">{{profile.followersCount || 0}}</div>
+                        <div class="stat-label">Followers</div>
+                    </div>
+                    <div class="stat-block">
+                        <div class="stat-number">{{profile.followingCount || 0}}</div>
+                        <div class="stat-label">Following</div>
+                    </div>
+                </div>
+                <div class="followers-preview" *ngIf="profile.followerImages?.length">
+                    <div class="follower-avatars">
+                        <div class="follower-avatar" *ngFor="let follower of profile.followerImages">
+                            <img [src]="follower.imageUrl" [alt]="follower.name" class="follower-image" [appCustomTooltip]="(follower.title ? follower.title + ' - ' : '') + follower.name"/>
+                        </div>
+                    </div>
+                    <div class="followers-you-know-label">{{profile.followerImages?.length}} followers you know</div>
+                </div>
+                <div class="action-buttons">
+                    <button mat-raised-button color="primary" class="follow-me-btn">Follow Me</button>
+                </div>
+            </div>
         </div>
     </div>
-
-    <!-- Lower Section -->
-    <div class="lower-section">
-        <h2 class="profile-name">{{ profile?.name || 'Your Name' }}</h2>
-        <p class="text-muted">{{ profile?.title || 'Your Professional Title' }}</p>
-        
-        <div class="location" *ngIf="profile?.location" (click)="openMapDialog()" style="cursor:pointer;">
-            <mat-icon class="location-icon">location_on</mat-icon>
-            <span>{{ profile.location }}</span>
-        </div>
-
-        <div class="stats-row">
-            <div class="stat-block">
-                <div class="stat-number">{{ profile?.followers || '0' }}</div>
-                <div class="stat-label">Followers</div>
-            </div>
-            <div class="stat-block">
-                <div class="stat-number">{{ profile?.following || '0' }}</div>
-                <div class="stat-label">Following</div>
-            </div>
-            <div class="stat-block">
-                <div class="stat-number">{{ profile?.connections || '0' }}</div>
-                <div class="stat-label">Connections</div>
-            </div>
-        </div>
-
-        <div class="social-icons">
-            <a *ngFor="let social of profile?.socialLinks" 
-               [href]="social.url" 
-               target="_blank" 
-               class="social-icon"
-               [matTooltip]="social.platform">
-                <mat-icon>{{ social.icon }}</mat-icon>
-            </a>
+    <!-- Floating Chat Icon and Chat Dock (outside social-card, inside container) -->
+    <div class="floating-chat-icon" (click)="toggleChatList()">
+        <mat-icon>chat</mat-icon>
+        <div class="online-users-badge" *ngIf="onlineUsersCount > 0">
+            {{ onlineUsersCount }}
         </div>
     </div>
+    <app-chat-dock 
+        [dockOpen]="showChatList"
+        (closeDock)="toggleChatList()">
+    </app-chat-dock>
 </div> 

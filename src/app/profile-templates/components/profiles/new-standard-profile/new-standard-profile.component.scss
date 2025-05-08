@@ -366,3 +366,41 @@
     }
   }
 }
+
+.floating-chat-icon {
+  position: fixed;
+  right: 50px;
+  bottom: 60px;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: #4656a1;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  z-index: 100;
+  
+  mat-icon {
+    font-size: 24px;
+    height: 24px;
+    width: 24px;
+  }
+  
+  .online-users-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background-color: #ff4081;
+    color: white;
+    font-size: 10px;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}

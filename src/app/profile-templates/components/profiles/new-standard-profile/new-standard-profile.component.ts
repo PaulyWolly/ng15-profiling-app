@@ -13,6 +13,8 @@ import { MatDialog } from '@angular/material/dialog';
 import { MapDialogComponent } from '@app/profile/components/map-dialog/map-dialog.component';
 import { Subscription, delay, retryWhen, take } from 'rxjs';
 import { CurvedBorderComponent } from '@app/shared/curved-border/curved-border.component';
+import { ChatDockComponent } from '../../chat/chat-dock/chat-dock.component';
+import { ChatService, OnlineUser } from '@app/_services/chat.service';
 
 @Component({
     selector: 'app-new-standard-profile',
@@ -27,7 +29,8 @@ import { CurvedBorderComponent } from '@app/shared/curved-border/curved-border.c
         MatProgressSpinnerModule,
         MatDividerModule,
         MatDialogModule,
-        CurvedBorderComponent
+        CurvedBorderComponent,
+        ChatDockComponent
     ]
 })
 export class NewStandardProfileComponent implements OnInit, OnDestroy, AfterViewInit {
@@ -42,12 +45,17 @@ export class NewStandardProfileComponent implements OnInit, OnDestroy, AfterView
     private maxRetries = 3;
     private retryCount = 0;
 
+    // Chat dock properties
+    showChatList = false;
+    onlineUsersCount = 0;
+
     constructor(
         private route: ActivatedRoute,
         private router: Router,
         private accountService: AccountService,
         private dialog: MatDialog,
-        private cdRef: ChangeDetectorRef
+        private cdRef: ChangeDetectorRef,
+        private chatService: ChatService
     ) {
         this.route.queryParams.subscribe(params => {
             if (params['preview'] === 'true') {
@@ -59,6 +67,11 @@ export class NewStandardProfileComponent implements OnInit, OnDestroy, AfterView
     ngOnInit() {
         console.log('NewStandardViewComponent ngOnInit');
         this.loadProfileData();
+        // Subscribe to online users for chat dock
+        this.chatService.getOnlineUsers().subscribe((users: OnlineUser[]) => {
+            this.onlineUsersCount = users.length;
+            this.cdRef.detectChanges();
+        });
     }
 
     private loadProfileData() {
@@ -164,5 +177,9 @@ export class NewStandardProfileComponent implements OnInit, OnDestroy, AfterView
                 zipCode: this.profile.zipCode || ''
             }
         });
+    }
+
+    toggleChatList() {
+        this.showChatList = !this.showChatList;
     }
 } 

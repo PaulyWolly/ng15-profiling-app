@@ -1,3 +1,4 @@
+<div class="profile-bg"></div>
 <div class="profile-container">
     <div *ngIf="loading" class="loading-spinner">
         <mat-spinner diameter="40"></mat-spinner>
@@ -34,5 +35,16 @@
                 [isOwnProfile]="isOwnProfile">
             </app-new-standard-profile>
         </ng-container>
+        <!-- Floating Chat Icon and Chat Dock (now global for all profiles) -->
+        <div class="floating-chat-icon" (click)="toggleChatList()">
+            <mat-icon>chat</mat-icon>
+            <div class="online-users-badge" *ngIf="onlineUsersCount > 0">
+                {{ onlineUsersCount }}
+            </div>
+        </div>
+        <app-chat-dock 
+            [dockOpen]="showChatList"
+            (closeDock)="toggleChatList()">
+        </app-chat-dock>
     </div>
 </div> 

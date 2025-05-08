@@ -117,4 +117,16 @@
       </div>
     </div>
   </mat-card>
+
+  <!-- Floating Chat Icon and Chat Dock (standardized) -->
+  <div class="floating-chat-icon" (click)="toggleChatList()">
+    <mat-icon>chat</mat-icon>
+    <div class="online-users-badge" *ngIf="onlineUsersCount > 0">
+      {{ onlineUsersCount }}
+    </div>
+  </div>
+  <app-chat-dock 
+    [dockOpen]="showChatList"
+    (closeDock)="toggleChatList()">
+  </app-chat-dock>
 </div> 

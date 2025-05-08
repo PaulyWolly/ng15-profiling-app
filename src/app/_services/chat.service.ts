@@ -78,6 +78,7 @@ export class ChatService {
         this.onlineUsers.next([]);
         this.chatRequests.clear();
         this.closeAllChats();  // Close all active chat dialogs
+        this.minimizedChatIds.next([]); // Clear minimized chats
         this.messageSubjects = {};  // Clear all message subjects
       }
     });
@@ -395,16 +396,16 @@ export class ChatService {
 
   private closeAllChats() {
     console.log('[closeAllChats] Closing all chat dialogs');
-    
     // Close all tracked dialogs
     this.openChatDialogs.forEach((dialogRef, userId) => {
       dialogRef.close();
     });
     this.openChatDialogs.clear();
-    
     // Clear active chats
     this.activeChats.next([]);
     this.activeChatId.next(null);
+    // Clear minimized chats
+    this.minimizedChatIds.next([]);
   }
 
   refreshMessages(userId1: string, userId2: string): Observable<ChatMessage[]> {

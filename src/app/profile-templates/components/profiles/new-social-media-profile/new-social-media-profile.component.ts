@@ -11,6 +11,8 @@ import { CurvedBorderComponent } from '@app/shared/curved-border/curved-border.c
 import { CustomTooltipDirective } from '@app/shared/custom-tooltip/custom-tooltip.directive';
 import { MatDialog } from '@angular/material/dialog';
 import { MapDialogComponent } from '@app/profile/components/map-dialog/map-dialog.component';
+import { ChatDockComponent } from '../../chat/chat-dock/chat-dock.component';
+import { ChatService, OnlineUser } from '@app/_services/chat.service';
 
 @Component({
   selector: 'app-new-social-media-profile',
@@ -22,98 +24,10 @@ import { MapDialogComponent } from '@app/profile/components/map-dialog/map-dialo
     MatCardModule,
     MatProgressSpinnerModule,
     CurvedBorderComponent,
-    CustomTooltipDirective
+    CustomTooltipDirective,
+    ChatDockComponent
   ],
-  template: `
-    <div class="social-card">
-      <app-curved-border
-        [top]="20"
-        [left]="24"
-        [right]="24"
-        [height]="265"
-        [borderColor]="'#eebbbb'"
-        [borderWidth]="4"
-        [borderRadius]="'var(--app-border-radius)'"
-      ></app-curved-border>
-
-      <div class="profile-card-top">
-        <!-- Profile Image -->
-        <div class="profile-image-wrapper">
-          <div class="profile-image-container" [class.loading]="loading">
-            <img *ngIf="profile?.profileImage" 
-                [src]="profile.profileImage" 
-                alt="Profile picture"
-                class="profile-img"
-                (load)="onImageLoaded()"
-                (error)="onImageError()">
-            <div *ngIf="!profile?.profileImage && !loading" class="default-avatar">
-              <mat-icon class="large-icon">account_circle</mat-icon>
-            </div>
-            <div *ngIf="loading" class="loading-spinner">
-              <mat-spinner diameter="40"></mat-spinner>
-            </div>
-          </div>
-        </div>
-
-        <!-- Profile Info -->
-        <h2>{{profile.firstName}} {{profile.lastName}}</h2>
-        <p class="text-muted">{{profile.position || 'Professional Title'}}</p>
-        
-        <!-- Location with Google Maps Link -->
-        <p class="location" *ngIf="profile?.address" (click)="openMapDialog()">
-          <mat-icon class="location-icon">location_on</mat-icon>
-          {{profile.address}}{{profile.city ? ', ' + profile.city : ''}}{{profile.state ? ', ' + profile.state : ''}}{{profile.zipCode ? ' ' + profile.zipCode : ''}}
-        </p>
-
-        <!-- Social Links -->
-        <div class="social-icons">
-          <a *ngIf="profile?.facebook" [href]="profile.facebook" target="_blank" class="social-icon" [appCustomTooltip]="'Visit my Facebook Profile'">
-            <i class="fab fa-facebook-f"></i>
-          </a>
-          <a *ngIf="profile?.linkedin" [href]="profile.linkedin" target="_blank" class="social-icon" [appCustomTooltip]="'Visit my LinkedIn Profile'">
-            <i class="fab fa-linkedin-in"></i>
-          </a>
-          <a *ngIf="profile?.website" [href]="profile.website" target="_blank" class="social-icon" [appCustomTooltip]="'Visit my Website'">
-            <i class="fa-solid fa-globe"></i>
-          </a>
-          <a *ngIf="profile?.github" [href]="profile.github" target="_blank" class="social-icon" [appCustomTooltip]="'Visit my GitHub Profile'">
-            <i class="fab fa-github"></i>
-          </a>
-        </div>
-      </div>
-
-      <div class="profile-card-bottom">
-        <div class="stats-section">
-          <!-- Stats -->
-          <div class="stats-row">
-            <div class="stat-block">
-              <div class="stat-number">{{profile.followersCount || 0}}</div>
-              <div class="stat-label">Followers</div>
-            </div>
-            <div class="stat-block">
-              <div class="stat-number">{{profile.followingCount || 0}}</div>
-              <div class="stat-label">Following</div>
-            </div>
-          </div>
-
-          <!-- Followers Preview -->
-          <div class="followers-preview" *ngIf="profile?.followerImages?.length">
-            <div class="follower-avatars">
-              <div class="follower-avatar" *ngFor="let follower of profile.followerImages">
-                <img [src]="getFollowerImageUrl(follower)" [alt]="follower.name" class="follower-image" [appCustomTooltip]="follower.title + ' - ' + follower.name"/>
-              </div>
-            </div>
-            <div class="followers-you-know-label">{{profile.followerImages?.length}} followers you know</div>
-          </div>
-
-          <!-- Action Button -->
-          <div class="action-buttons">
-            <button mat-raised-button color="primary" class="follow-me-btn">Follow Me</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  `,
+  templateUrl: './new-social-media-profile.component.html',
   styleUrls: ['./new-social-media-profile.component.scss']
 })
 export class NewSocialMediaProfileComponent implements OnInit {
@@ -122,10 +36,17 @@ export class NewSocialMediaProfileComponent implements OnInit {
 
   loading = false;
 
-  constructor(private router: Router, private dialog: MatDialog) {}
+  // Chat dock properties
+  showChatList = false;
+  onlineUsersCount = 0;
+
+  constructor(private router: Router, private dialog: MatDialog, private chatService: ChatService) {}
   
   ngOnInit() {
-    // No validations needed
+    // Subscribe to online users for chat dock
+    this.chatService.getOnlineUsers().subscribe((users: OnlineUser[]) => {
+      this.onlineUsersCount = users.length;
+    });
   }
   
   onImageLoaded() {
@@ -151,5 +72,9 @@ export class NewSocialMediaProfileComponent implements OnInit {
         zipCode: this.profile?.zipCode || ''
       }
     });
+  }
+
+  toggleChatList() {
+    this.showChatList = !this.showChatList;
   }
 } 

@@ -1,9 +1,10 @@
 .social-media-container {
-    padding: 2rem;
+    position: relative;
+    margin: 15px auto 30px;
+    width: 80%;
     max-width: 1200px;
-    margin: 0 auto;
-    min-height: 100vh;
-    background: #f5f5f5;
+    background: transparent;
+    padding: 0;
 
     .template-actions {
         display: flex;
@@ -18,16 +19,22 @@
     }
 }
 
+.social-card,
+.social-card > * {
+    background: unset !important;
+}
+
 .social-card {
     max-width: 800px;
+    width: 100%;
     margin: 40px auto;
-    background: #fff;
+    background: white !important;
     border-radius: var(--app-border-radius);
     box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 24px 24px;
+    padding: 24px;
     position: relative;
     overflow: visible;
     min-height: 70vh;
@@ -69,14 +76,12 @@
     text-align: center;
     position: relative;
     z-index: 1;
+    background: transparent;
 }
 
 .stats-section {
     background-color: #e3f2fd;
-    // padding: 16px;
     border-radius: 0 0 var(--app-border-radius) var(--app-border-radius);
-    // margin: 20px -24px -24px -24px;
-    // width: calc(100% + 48px);
     min-height: 30vh;
 }
 
@@ -375,5 +380,43 @@ h3 {
     p {
       color: #0d47a1;
     }
+  }
+}
+
+.floating-chat-icon {
+  position: fixed;
+  right: 50px;
+  bottom: 60px;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: #4656a1;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  z-index: 100;
+  
+  mat-icon {
+    font-size: 24px;
+    height: 24px;
+    width: 24px;
+  }
+  
+  .online-users-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background-color: #ff4081;
+    color: white;
+    font-size: 10px;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 } 

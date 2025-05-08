@@ -20,6 +20,10 @@ export class ProfileComponent implements OnInit {
   isEditingTemplate = false;
   userId: string = '';
 
+  // Chat dock properties
+  showChatList = false;
+  onlineUsersCount = 0;
+
   constructor(
     private accountService: AccountService,
     private route: ActivatedRoute,
@@ -96,5 +100,9 @@ export class ProfileComponent implements OnInit {
 
   toggleTemplateEditor() {
     this.isEditingTemplate = !this.isEditingTemplate;
+  }
+
+  toggleChatList() {
+    this.showChatList = !this.showChatList;
   }
 } 

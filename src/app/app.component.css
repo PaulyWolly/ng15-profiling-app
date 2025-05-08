@@ -18,7 +18,7 @@
 /* Make main content area fill space but NOT scroll */
 .main-content-wrapper {
     flex: 1; /* Allow it to take up remaining vertical space */
-    padding-top: 10px;
+    /* padding-top: 10px; */
     padding-bottom: 70px; /* Space for footer */
     min-height: calc(100vh - 120px); /* Still define min-height for structure */
     overflow: hidden; /* CHANGED: Prevent this wrapper from scrolling */
