@@ -22,5 +22,6 @@ module.exports = {
     Account,
     Chat,
     RefreshToken,
-    isValidId
+    isValidId,
+    CleanupHistory: require('../admin/cleanup-history.model')
 };

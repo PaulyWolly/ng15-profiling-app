@@ -50,4 +50,14 @@ export class DetailsComponent implements OnInit, OnDestroy {
     // Clean up subscriptions
     this.subscriptions.unsubscribe();
   }
+
+  // Add this method to refresh the account after saving in Edit Profile
+  public refreshAccount() {
+    const id = this.accountService.accountValue?.id;
+    if (id) {
+      this.accountService.getById(id).subscribe(account => {
+        this.account = account;
+      });
+    }
+  }
 } 

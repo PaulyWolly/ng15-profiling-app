@@ -20,9 +20,9 @@ let nextScheduledCleanup = null;
 async function getSettings(req, res, next) {
     try {
         // Get active session count
-        let activeSessions = [];
+        let activeSessions = { sessions: [] };
         try {
-            activeSessions = await accountService.getActiveSessions();
+            activeSessions = await accountService.getActiveSessions({ page: 1, pageSize: 1000 });
         } catch (error) {
             console.error('Error fetching active sessions:', error);
             // Continue execution even if this fails
@@ -40,7 +40,8 @@ async function getSettings(req, res, next) {
         res.json({
             lastSessionCleanup: lastCleanupTime ? lastCleanupTime.toISOString() : null,
             nextScheduledCleanup: nextScheduledCleanup ? nextScheduledCleanup.toISOString() : null,
-            activeSessionCount: activeSessions.length
+            activeSessionCount: activeSessions.sessions ? activeSessions.sessions.length : 0,
+            cleanupSchedule: '0 0 * * *' // Daily at midnight
         });
     } catch (error) {
         next(error);

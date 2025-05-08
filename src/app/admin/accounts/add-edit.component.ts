@@ -7,6 +7,7 @@ import { AccountService } from '../../_services/account.service';
 import { AlertService } from '../../_services/alert.service';
 import { MustMatch } from '../../_helpers/must-match.validator';
 import { Account } from '../../_models/account';
+import { Role } from '../../_models/role';
 import { environment } from '../../../environments/environment';
 import { PROFILE_TEMPLATES, ProfileTemplate, ProfileTemplateType } from '@app/_models/profile-template';
 import { EditMode } from '@app/shared/components/edit-content/edit-content.component';
@@ -35,6 +36,8 @@ export class AddEditComponent implements OnInit, OnDestroy {
     imageUrl: string | null = null;
     editMode = EditMode.ACCOUNT;
     private bodyOriginalStyle: { [key: string]: string } = {};
+    Role = Role; // Expose Role enum to the template
+    currentUserRole: Role = Role.User;
 
     constructor(
         private formBuilder: FormBuilder,
@@ -49,6 +52,12 @@ export class AddEditComponent implements OnInit, OnDestroy {
         this.id = this.route.snapshot.params['id'];
         this.isAddMode = !this.id;
         this.title = this.isAddMode ? 'Create Account' : 'Edit Account';
+
+        // Get the current user's role
+        const currentUser = this.accountService.accountValue;
+        if (currentUser && currentUser.role) {
+            this.currentUserRole = currentUser.role;
+        }
 
         // Disable page scrolling
         this.disablePageScrolling();
@@ -401,5 +410,26 @@ export class AddEditComponent implements OnInit, OnDestroy {
         }
         
         this.alertService.info('Image removed. Save to apply changes.');
+    }
+
+    // Method to get CSS class for role badge
+    getRoleBadgeClass(): string {
+        const role = this.form?.get('role')?.value;
+        
+        if (role === Role.Admin) {
+            return 'bg-danger'; // Red badge for Admin
+        } else if (role === Role.User) {
+            return 'bg-success'; // Green badge for User
+        }
+        
+        return 'bg-secondary'; // Default gray badge
+    }
+    
+    // Update the role value when the dropdown selection changes
+    updateRole(event: Event) {
+        const select = event.target as HTMLSelectElement;
+        if (select && this.form) {
+            this.form.get('role')?.setValue(select.value);
+        }
     }
 }

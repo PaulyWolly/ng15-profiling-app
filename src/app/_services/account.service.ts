@@ -504,9 +504,9 @@ export class AccountService {
             }
 
             // Validate role
-            if (![Role.User, Role.Admin].includes(userRole)) {
+            if (![Role.User, Role.Admin, Role.SuperAdmin].includes(userRole)) {
                 console.error('[DEBUG] Invalid role in token:', userRole);
-                throw new Error(`Invalid token: role must be ${Role.User} or ${Role.Admin}`);
+                throw new Error(`Invalid token: role must be ${Role.User}, ${Role.Admin}, or ${Role.SuperAdmin}`);
             }
 
             // Create account object with validated data
@@ -592,6 +592,14 @@ export class AccountService {
         return this.getHttp().get<SystemSettings>(`${environment.apiUrl}/admin/settings`);
     }
 
+    getCleanupHistory(page: number, pageSize: number) {
+        const params = {
+            limit: pageSize.toString(),
+            skip: ((page - 1) * pageSize).toString()
+        };
+        return this.getHttp().get<any>(`${environment.apiUrl}/admin/cleanup-history`, { params });
+    }
+
     cleanupSessions() {
         return this.getHttp().post<CleanupResult>(`${environment.apiUrl}/admin/cleanup-sessions`, {});
     }
@@ -618,16 +626,6 @@ export class AccountService {
                     return response;
                 })
             );
-    }
-
-    getCleanupHistory(page: number, pageSize: number) {
-        const skip = (page - 1) * pageSize;
-        return this.getHttp().get<CleanupHistoryResponse>(`${environment.apiUrl}/admin/cleanup-history`, {
-            params: {
-                limit: pageSize.toString(),
-                skip: skip.toString()
-            }
-        });
     }
 
     deleteCleanupRecord(id: string) {

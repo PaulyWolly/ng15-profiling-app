@@ -14,14 +14,14 @@
     </button>
 </div>
 
-<!-- Main Profile Container -->
+<!-- Main Profile Container - Always shows regardless of data completeness -->
 <div *ngIf="!loading && profile" class="new-standard-profile" [class.preview-mode]="isPreview">
   <mat-card class="profile-card">
     <app-curved-border
       [top]="20"
       [left]="24"
       [right]="24"
-      [height]="310"
+      [height]="275"
       [borderColor]="'#eebbbb'"
       [borderWidth]="4"
       [borderRadius]="'var(--app-border-radius)'"

@@ -9,6 +9,8 @@ import { Account } from '@app/_models';
 import { environment } from '@environments/environment';
 import { CurvedBorderComponent } from '@app/shared/curved-border/curved-border.component';
 import { CustomTooltipDirective } from '@app/shared/custom-tooltip/custom-tooltip.directive';
+import { MatDialog } from '@angular/material/dialog';
+import { MapDialogComponent } from '@app/profile/components/map-dialog/map-dialog.component';
 
 @Component({
   selector: 'app-new-social-media-profile',
@@ -58,7 +60,7 @@ import { CustomTooltipDirective } from '@app/shared/custom-tooltip/custom-toolti
         <p class="text-muted">{{profile.position || 'Professional Title'}}</p>
         
         <!-- Location with Google Maps Link -->
-        <p class="location" *ngIf="profile?.address" (click)="openGoogleMaps()">
+        <p class="location" *ngIf="profile?.address" (click)="openMapDialog()">
           <mat-icon class="location-icon">location_on</mat-icon>
           {{profile.address}}{{profile.city ? ', ' + profile.city : ''}}{{profile.state ? ', ' + profile.state : ''}}{{profile.zipCode ? ' ' + profile.zipCode : ''}}
         </p>
@@ -120,9 +122,11 @@ export class NewSocialMediaProfileComponent implements OnInit {
 
   loading = false;
 
-  constructor(private router: Router) {}
+  constructor(private router: Router, private dialog: MatDialog) {}
   
-  ngOnInit() {}
+  ngOnInit() {
+    // No validations needed
+  }
   
   onImageLoaded() {
     this.loading = false;
@@ -137,11 +141,15 @@ export class NewSocialMediaProfileComponent implements OnInit {
     return follower.imageUrl.startsWith('http') ? follower.imageUrl : environment.apiUrl + '/' + follower.imageUrl;
   }
 
-  openGoogleMaps() {
-    if (!this.profile.address) return;
-    const query = encodeURIComponent(
-      `${this.profile.address}${this.profile.city ? ', ' + this.profile.city : ''}${this.profile.state ? ', ' + this.profile.state : ''}${this.profile.zipCode ? ' ' + this.profile.zipCode : ''}`
-    );
-    window.open(`https://www.google.com/maps/search/?api=1&query=${query}`, '_blank');
+  openMapDialog() {
+    this.dialog.open(MapDialogComponent, {
+      width: '600px',
+      data: {
+        address: this.profile?.address || '',
+        city: this.profile?.city || '',
+        state: this.profile?.state || '',
+        zipCode: this.profile?.zipCode || ''
+      }
+    });
   }
 } 

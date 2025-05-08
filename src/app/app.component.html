@@ -18,7 +18,7 @@
                 <a class="nav-link" routerLink="/profile/account-settings" [class.active]="isActiveRoute('/profile/account-settings')">Account</a>
             </li>
             
-            <li class="nav-item" *ngIf="account?.role === Role.Admin">
+            <li class="nav-item" *ngIf="account?.role === Role.Admin || account?.role === Role.SuperAdmin">
                 <a class="nav-link clickable" (click)="navigateTo('/admin')" [class.active]="isActiveRoute('/admin')">Admin</a>
             </li>
             <!-- Admin users should have direct access to accounts management -->
@@ -39,7 +39,7 @@
     </nav>
 
     <!-- Subnav router outlet - only show for admin users when in admin section -->
-    <router-outlet name="subnav" *ngIf="account?.role === Role.Admin && isActiveRoute('/admin')"></router-outlet>
+    <router-outlet name="subnav" *ngIf="(account?.role === Role.Admin || account?.role === Role.SuperAdmin) && isActiveRoute('/admin')"></router-outlet>
 
     <!-- Main content area -->
     <div class="main-content-wrapper">

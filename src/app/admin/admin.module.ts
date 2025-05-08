@@ -33,14 +33,14 @@ import { AccountModule } from '../account/account.module';
         MatPaginatorModule,
         MatSortModule,
         MatProgressSpinnerModule,
-        AccountModule
+        AccountModule,
+        OverviewComponent,
+        MonitorComponent,
+        SettingsComponent
     ],
     declarations: [
         SubNavComponent,
         LayoutComponent
-        // Removed OverviewComponent,
-        // Removed MonitorComponent,
-        // Removed SettingsComponent
         // Removed ListComponent, AddEditComponent 
     ]
 })

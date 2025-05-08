@@ -228,14 +228,36 @@ async function update(id, params) {
         account.role = params.role;
     }
 
-    // Explicitly handle followerImages update
-    if (params.followerImages && Array.isArray(params.followerImages)) {
-        console.log('[AccountService] Updating followerImages:', params.followerImages);
-        account.followerImages = params.followerImages;
-    } else if (params.hasOwnProperty('followerImages') && params.followerImages === null) {
-        // Handle case where frontend explicitly sends null to clear followers
-        console.log('[AccountService] Clearing followerImages');
-        account.followerImages = [];
+    // Explicitly handle followerImages update with better error handling
+    try {
+        if (params.hasOwnProperty('followerImages')) {
+            if (params.followerImages === null) {
+                // Handle case where frontend explicitly sends null to clear followers
+                console.log('[AccountService] Clearing followerImages (null provided)');
+                account.followerImages = [];
+            } else if (Array.isArray(params.followerImages)) {
+                console.log('[AccountService] Updating followerImages:', JSON.stringify(params.followerImages));
+                
+                // Deep clone the array to avoid reference issues
+                account.followerImages = JSON.parse(JSON.stringify(params.followerImages));
+                
+                // Ensure each follower has required fields
+                account.followerImages = account.followerImages.map(follower => {
+                    // If id is missing, generate one
+                    if (!follower.id) {
+                        follower.id = crypto.randomBytes(16).toString('hex');
+                    }
+                    return follower;
+                });
+            } else {
+                // If it's not an array or null, set it to empty array for safety
+                console.log('[AccountService] Invalid followerImages format, defaulting to empty array');
+                account.followerImages = [];
+            }
+        }
+    } catch (error) {
+        console.error('[AccountService] Error processing followerImages:', error);
+        // Don't throw here, just log and continue with other updates
     }
 
     // copy remaining params to account and save
@@ -249,17 +271,27 @@ async function update(id, params) {
     account.updated = Date.now();
     
     // ADD LOGGING HERE to see the account object just before saving
-    console.log('[AccountService] Account object BEFORE save:', JSON.stringify(account, null, 2)); 
-
-    await account.save();
-
-    console.log('[AccountService] Account updated successfully:', {
+    console.log('[AccountService] Account object BEFORE save:', JSON.stringify({
         id: account.id,
         email: account.email,
-        role: account.role
-    });
+        role: account.role,
+        followerImagesCount: account.followerImages ? account.followerImages.length : 0
+    })); 
 
-    return basicDetails(account);
+    try {
+        await account.save();
+        
+        console.log('[AccountService] Account updated successfully:', {
+            id: account.id,
+            email: account.email,
+            role: account.role
+        });
+        
+        return basicDetails(account);
+    } catch (error) {
+        console.error('[AccountService] Error saving account:', error);
+        throw 'Failed to update account: ' + (error.message || error);
+    }
 }
 
 async function _delete(id) {

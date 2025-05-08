@@ -33,11 +33,11 @@ import { CurvedBorderComponent } from '@app/shared/curved-border/curved-border.c
 export class NewStandardProfileComponent implements OnInit, OnDestroy, AfterViewInit {
     @ViewChild('scrollContainer') private scrollContainer?: ElementRef<HTMLDivElement>;
 
+    @Input() profile!: Account;
     @Input() isPreview: boolean = false;
-    @Input() isOwnProfile: boolean = true;
-    @Input() profile?: Account;
+    @Input() isOwnProfile: boolean = false;
     
-    loading: boolean = true;
+    loading = true;
     private accountSubscription?: Subscription;
     private maxRetries = 3;
     private retryCount = 0;

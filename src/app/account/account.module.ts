@@ -11,6 +11,7 @@ import { ForgotPasswordComponent } from './components/forgot-password/forgot-pas
 import { LayoutComponent } from './components/layout/layout.component';
 import { WelcomeComponent } from './components/welcome/welcome.component';
 import { EditAccountComponent } from './components/edit-account/edit-account.component';
+import { SharedModule } from '@app/shared/shared.module';
 
 @NgModule({
     imports: [
@@ -18,7 +19,8 @@ import { EditAccountComponent } from './components/edit-account/edit-account.com
         FormsModule,
         ReactiveFormsModule,
         RouterModule,
-        AccountRoutingModule
+        AccountRoutingModule,
+        SharedModule
     ],
     declarations: [
         LoginComponent,
@@ -27,9 +29,6 @@ import { EditAccountComponent } from './components/edit-account/edit-account.com
         ForgotPasswordComponent,
         LayoutComponent,
         WelcomeComponent,
-        EditAccountComponent
-    ],
-    exports: [
         EditAccountComponent
     ]
 })
