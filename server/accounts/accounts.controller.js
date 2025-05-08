@@ -329,7 +329,7 @@ function getAll(req, res, next) {
 }
 
 function getById(req, res, next) {
-    if (req.params.id !== req.user.id && req.user.role !== Role.Admin) {
+    if (req.params.id !== req.user.id && req.user.role !== Role.Admin && req.user.role !== Role.SuperAdmin) {
         return res.status(401).json({ message: 'Unauthorized' });
     }
 
@@ -425,7 +425,7 @@ function update(req, res, next) {
     });
 
     // Check if user is authorized to update this account
-    if (req.params.id !== req.user.id && req.user.role !== Role.Admin) {
+    if (req.params.id !== req.user.id && req.user.role !== Role.Admin && req.user.role !== Role.SuperAdmin) {
         console.log('[AccountsController] Unauthorized update attempt:', {
             requesterId: req.user.id,
             targetId: req.params.id,
@@ -440,7 +440,7 @@ function update(req, res, next) {
     // Handle role updates
     if (req.body.role) {
         // Only admins can change roles
-        if (req.user.role !== Role.Admin) {
+        if (req.user.role !== Role.Admin && req.user.role !== Role.SuperAdmin) {
             console.log('[AccountsController] Attempted role escalation blocked:', {
                 userId: req.params.id,
                 requesterRole: req.user.role,
@@ -453,13 +453,13 @@ function update(req, res, next) {
         }
 
         // Validate role value
-        if (![Role.Admin, Role.User].includes(req.body.role)) {
+        if (![Role.Admin, Role.User, Role.SuperAdmin].includes(req.body.role)) {
             console.log('[AccountsController] Invalid role value:', {
                 userId: req.params.id,
                 invalidRole: req.body.role
             });
             return res.status(400).json({ 
-                message: 'Invalid role value. Must be either "Admin" or "User"',
+                message: 'Invalid role value. Must be either "Admin", "Super-Admin", or "User"',
                 error: 'INVALID_ROLE'
             });
         }
@@ -491,7 +491,7 @@ function update(req, res, next) {
 }
 
 function _delete(req, res, next) {
-    if (req.params.id !== req.user.id && req.user.role !== Role.Admin) {
+    if (req.params.id !== req.user.id && req.user.role !== Role.Admin && req.user.role !== Role.SuperAdmin) {
         return res.status(401).json({ message: 'Unauthorized' });
     }
 

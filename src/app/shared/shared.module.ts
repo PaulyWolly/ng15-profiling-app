@@ -5,6 +5,8 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { AlertComponent } from './components/alert/alert.component';
 import { TitleComponent } from './components/title/title.component';
 import { EditContentComponent } from './components/edit-content/edit-content.component';
+import { ScrollableDirective } from './directives/scrollable.directive';
+import { NewAccountEditModule } from './components/new-account-edit/new-account-edit.module';
 
 @NgModule({
   declarations: [
@@ -16,7 +18,9 @@ import { EditContentComponent } from './components/edit-content/edit-content.com
     RouterModule,
     FormsModule,
     ReactiveFormsModule,
-    TitleComponent
+    TitleComponent,
+    ScrollableDirective,
+    NewAccountEditModule
   ],
   exports: [
     CommonModule,
@@ -25,7 +29,9 @@ import { EditContentComponent } from './components/edit-content/edit-content.com
     ReactiveFormsModule,
     AlertComponent,
     TitleComponent,
-    EditContentComponent
+    EditContentComponent,
+    ScrollableDirective,
+    NewAccountEditModule
   ]
 })
 export class SharedModule { }

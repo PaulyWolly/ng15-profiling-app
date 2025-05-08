@@ -50,4 +50,42 @@
   .template-btn {
     width: 100%;
   }
+}
+
+// Error message styling
+.profile-error {
+  background-color: #f8d7da;
+  border: 1px solid #f5c6cb;
+  border-radius: 4px;
+  padding: 30px;
+  margin: 50px auto;
+  max-width: 500px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+
+  mat-icon {
+    font-size: 48px;
+    width: 48px;
+    height: 48px;
+    color: #721c24;
+  }
+
+  h3 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 500;
+    color: #721c24;
+  }
+
+  p {
+    margin: 0 0 20px;
+    color: #721c24;
+  }
+
+  button {
+    margin-top: 10px;
+  }
 } 

@@ -20,9 +20,32 @@
 
 /* Right-side form scrollable area */
 .scrolling-div {
-  max-height: calc(88vh - 120px);
-  overflow-y: auto;
   padding-right: 10px;
+  position: relative; /* Needed for proper event handling */
+  
+  /* Critical scrolling properties - as backup */
+  overflow-y: auto !important;
+  max-height: calc(88vh - 120px) !important;
+  scroll-behavior: smooth !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+
+/* Backup scrollbar styles */
+.scrolling-div::-webkit-scrollbar {
+  width: 8px !important;
+  height: 8px !important;
+  display: block !important;
+}
+
+.scrolling-div::-webkit-scrollbar-track {
+  background: #f5f5f5 !important;
+  border-radius: 4px !important;
+}
+
+.scrolling-div::-webkit-scrollbar-thumb {
+  background: #bbb !important;
+  border-radius: 4px !important;
+  min-height: 40px !important;
 }
 
 /* Optional: Make sure cards inside the form don't overflow horizontally */

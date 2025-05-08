@@ -14,7 +14,7 @@ const routes: Routes = [
     { path: 'account', loadChildren: accountModule },
     { path: 'profile', loadChildren: profileModule, canActivate: [AuthGuard] },
     { path: 'profile-templates', loadChildren: profileTemplatesModule, canActivate: [AuthGuard] },
-    { path: 'admin', loadChildren: adminModule, canActivate: [AuthGuard], data: { roles: [Role.Admin] } },
+    { path: 'admin', loadChildren: adminModule, canActivate: [AuthGuard], data: { roles: [Role.Admin, Role.SuperAdmin] } },
 
     // Only redirect for truly unknown routes, not page refreshes
     { path: '**', redirectTo: 'profile' }

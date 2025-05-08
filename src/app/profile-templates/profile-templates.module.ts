@@ -27,7 +27,7 @@ import { EditProfileComponent } from './components/edit-profile/edit-profile.com
 @NgModule({
     declarations: [
         ProfileTemplatesComponent,
-        EditProfileComponent
+        EditProfileComponent,
     ],
     imports: [
         CommonModule,

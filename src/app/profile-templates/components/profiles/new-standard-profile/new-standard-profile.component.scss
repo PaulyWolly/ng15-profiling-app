@@ -309,3 +309,60 @@
     position: relative;
     top: -20px;
 }
+
+// Empty profile notice styling
+.empty-profile-notice {
+  background-color: #fff3cd;
+  border: 1px solid #ffeeba;
+  border-radius: 4px;
+  padding: 20px;
+  margin: 20px auto;
+  max-width: 800px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+
+  mat-icon {
+    font-size: 36px;
+    width: 36px;
+    height: 36px;
+    margin-bottom: 10px;
+    color: #e65100;
+  }
+
+  h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 500;
+    color: #856404;
+  }
+
+  p {
+    margin: 0 0 15px;
+    color: #856404;
+  }
+
+  button {
+    margin-top: 10px;
+  }
+  
+  // Blue suggestion style variant
+  &.suggestion {
+    background-color: #e3f2fd;
+    border: 1px solid #bbdefb;
+    
+    mat-icon {
+      color: #1976d2;
+    }
+    
+    h3 {
+      color: #1976d2;
+    }
+    
+    p {
+      color: #0d47a1;
+    }
+  }
+}

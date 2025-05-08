@@ -83,9 +83,11 @@ export class NewBusinessProfileComponent implements OnInit, AfterViewInit, OnCha
   }
   
   ngOnChanges(changes: SimpleChanges) {
+    if (changes['profile']) {
+      this.ensureImagesHaveFullUrls();
+    }
     if (changes['profile'] && this.profile?.id) {
       this.loadPosts();
-      this.ensureImagesHaveFullUrls();
     }
   }
   

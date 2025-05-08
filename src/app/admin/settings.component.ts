@@ -49,7 +49,8 @@ export class SettingsComponent implements OnInit {
                     this.loading = false;
                 },
                 error: error => {
-                    this.loadError = error;
+                    console.error('Error loading settings:', error);
+                    this.loadError = error?.message || 'Failed to load settings';
                     this.loading = false;
                 }
             });
@@ -74,28 +75,35 @@ export class SettingsComponent implements OnInit {
 
     loadCleanupHistory() {
         this.historyLoading = true;
+        const params = {
+            limit: this.pageSize.toString(),
+            skip: ((this.currentPage - 1) * this.pageSize).toString()
+        };
+        
         this.accountService.getCleanupHistory(this.currentPage, this.pageSize)
             .pipe(first())
             .subscribe({
                 next: (response) => {
                     this.cleanupHistory = response.history || [];
-                    this.totalRecords = response.pagination.total;
-                    this.totalPages = Math.ceil(this.totalRecords / this.pageSize);
-                    
-                    // Adjust current page if needed
-                    if (this.currentPage > this.totalPages && this.totalPages > 0) {
-                        this.currentPage = this.totalPages;
-                        this.loadCleanupHistory();
-                    }
-                    if (this.totalRecords > 0 && this.currentPage < 1) {
+                    if (response.pagination) {
+                        this.totalRecords = response.pagination.total;
+                        this.totalPages = Math.ceil(this.totalRecords / this.pageSize);
+                        if (this.currentPage > this.totalPages && this.totalPages > 0) {
+                            this.currentPage = this.totalPages;
+                        }
+                        if (this.totalRecords > 0 && this.currentPage < 1) {
+                            this.currentPage = 1;
+                        }
+                    } else {
+                        this.totalRecords = this.cleanupHistory.length;
+                        this.totalPages = 1;
                         this.currentPage = 1;
-                        this.loadCleanupHistory();
                     }
-                    
                     this.historyLoading = false;
                 },
-                error: error => {
+                error: (error) => {
                     console.error('Error loading cleanup history:', error);
+                    this.loadError = error?.message || 'Failed to load cleanup history';
                     this.historyLoading = false;
                 }
             });

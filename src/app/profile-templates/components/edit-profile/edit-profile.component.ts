@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter, OnChanges, SimpleChanges, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { PROFILE_TEMPLATES, ProfileTemplateType } from '@app/_models/profile-template';
 import { FollowerImage, Account } from '@app/_models/account';
@@ -10,11 +10,12 @@ import { AlertService } from '@app/_services/alert.service';
   templateUrl: './edit-profile.component.html',
   styleUrls: ['./edit-profile.component.css']
 })
-export class EditProfileComponent implements OnInit, OnChanges {
+export class EditProfileComponent implements OnInit, OnChanges, AfterViewInit {
   @Input() account: Account | null = null;
   @Input() loading = false;
   @Output() save = new EventEmitter<any>();
   @Output() cancel = new EventEmitter<void>();
+  @ViewChild('scrollingDiv') scrollingDiv!: ElementRef;
 
   form!: FormGroup;
   submitted = false;
@@ -46,6 +47,12 @@ export class EditProfileComponent implements OnInit, OnChanges {
     }
   }
 
+  ngAfterViewInit() {
+    // No longer need to add event listeners manually as the directive handles it
+  }
+
+  // The wheel event handler is now in the directive
+  
   ngOnChanges(changes: SimpleChanges) {
     if (changes['account'] && this.form) {
       console.log('[EditProfileComponent] Account data changed:', this.account);

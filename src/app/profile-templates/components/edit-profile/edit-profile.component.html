@@ -58,7 +58,7 @@
           Cancel
         </button>
       </div>
-      <div class="scrolling-div">
+      <div class="scrolling-div" #scrollingDiv appScrollable>
         <form [formGroup]="form" (ngSubmit)="onSubmit()" id="profileForm">
           <!-- Basic Information Section -->
           <div class="card mb-3">
