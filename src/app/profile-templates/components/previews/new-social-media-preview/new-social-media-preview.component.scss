@@ -4,18 +4,27 @@
   margin: 0 auto;
 }
 
+.social-media-preview-container {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
 .template-preview {
   display: flex;
   justify-content: center;
   padding: 2rem;
-  background: #f8f9fa;
+  // background: #f8f9fa;
   border-radius: var(--app-border-radius);
 }
 
 .preview-card {
-  max-width: 800px;
-  width: 100%;
+  background: #fff;
+  border-radius: var(--app-border-radius);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 40px 32px;
+  max-width: 1200px;
+  margin: 0 auto 48px auto;
 }
 
 .preview-flex-row {

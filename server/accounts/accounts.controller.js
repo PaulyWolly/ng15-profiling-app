@@ -439,6 +439,18 @@ function update(req, res, next) {
 
     // Handle role updates
     if (req.body.role) {
+        // Only Super-Admin can change roles to Super-Admin
+        if (req.body.role === Role.SuperAdmin && req.user.role !== Role.SuperAdmin) {
+            console.log('[AccountsController] Attempted Super-Admin role assignment blocked:', {
+                userId: req.params.id,
+                requesterRole: req.user.role
+            });
+            return res.status(403).json({ 
+                message: 'Only Super-Admin can assign Super-Admin role',
+                error: 'SUPER_ADMIN_ROLE_ASSIGNMENT_BLOCKED'
+            });
+        }
+
         // Only admins can change roles
         if (req.user.role !== Role.Admin && req.user.role !== Role.SuperAdmin) {
             console.log('[AccountsController] Attempted role escalation blocked:', {
@@ -463,12 +475,6 @@ function update(req, res, next) {
                 error: 'INVALID_ROLE'
             });
         }
-
-        console.log('[AccountsController] Admin role update allowed:', {
-            userId: req.params.id,
-            currentRole: req.user.role,
-            newRole: req.body.role
-        });
     }
 
     // Proceed with update

@@ -164,4 +164,20 @@ export class NewAccountEditComponent implements OnInit, OnChanges {
       this.form.get('role')?.setValue(select.value);
     }
   }
+
+  // Add this method to check if form should be disabled
+  isFormDisabled(): boolean {
+    // If current user is Admin and viewing a Super-Admin account, disable the form
+    return this.currentUserRole === Role.Admin && this.account?.role === Role.SuperAdmin;
+  }
+
+  // Add method to check if save button should be disabled
+  isSaveDisabled(): boolean {
+    return this.isFormDisabled() || this.submitting;
+  }
+
+  // Add method to check if image controls should be disabled
+  isImageControlsDisabled(): boolean {
+    return this.isFormDisabled();
+  }
 } 
