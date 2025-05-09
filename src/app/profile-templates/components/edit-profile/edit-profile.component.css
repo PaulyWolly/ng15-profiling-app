@@ -25,7 +25,7 @@
   
   /* Critical scrolling properties - as backup */
   overflow-y: auto !important;
-  max-height: calc(88vh - 120px) !important;
+  max-height: calc(82vh - 120px) !important;
   scroll-behavior: smooth !important;
   -webkit-overflow-scrolling: touch !important;
 }
@@ -134,6 +134,13 @@
   width: 100%;
   max-width: 500px;
   margin: 1rem;
+}
+
+/* Highlighted section for profile type */
+.highlight-section {
+  border: 2px solid #2196f3 !important;
+  box-shadow: 0 0 8px #90caf9;
+  background: #f0f7ff;
 }
 
 
