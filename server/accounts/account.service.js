@@ -213,80 +213,61 @@ async function update(id, params) {
 
     // Handle role update explicitly
     if (params.role) {
-        // Validate role value
         if (![Role.Admin, Role.User].includes(params.role)) {
             console.error('[AccountService] Invalid role provided:', params.role);
             throw 'Role must be either "Admin" or "User"';
         }
-
-        console.log('[AccountService] Role update requested:', {
-            from: account.role,
-            to: params.role,
-            accountId: account.id,
-            email: account.email
-        });
         account.role = params.role;
     }
 
-    // Explicitly handle followerImages update with better error handling
+    // Handle followerImages update
     try {
         if (params.hasOwnProperty('followerImages')) {
             if (params.followerImages === null) {
-                // Handle case where frontend explicitly sends null to clear followers
-                console.log('[AccountService] Clearing followerImages (null provided)');
                 account.followerImages = [];
             } else if (Array.isArray(params.followerImages)) {
-                console.log('[AccountService] Updating followerImages:', JSON.stringify(params.followerImages));
-                
-                // Deep clone the array to avoid reference issues
                 account.followerImages = JSON.parse(JSON.stringify(params.followerImages));
-                
-                // Ensure each follower has required fields
                 account.followerImages = account.followerImages.map(follower => {
-                    // If id is missing, generate one
                     if (!follower.id) {
                         follower.id = crypto.randomBytes(16).toString('hex');
                     }
                     return follower;
                 });
             } else {
-                // If it's not an array or null, set it to empty array for safety
-                console.log('[AccountService] Invalid followerImages format, defaulting to empty array');
                 account.followerImages = [];
             }
         }
     } catch (error) {
         console.error('[AccountService] Error processing followerImages:', error);
-        // Don't throw here, just log and continue with other updates
     }
 
-    // copy remaining params to account and save
-    // Make sure NOT to overwrite followerImages again if it was handled above
-    const updateData = { ...params };
-    delete updateData.followerImages; // Remove followerImages from params before Object.assign
-    delete updateData.role; // Remove role as it was handled explicitly
-    delete updateData.password; // Remove password as hash is handled
-
-    Object.assign(account, updateData);
+    // Only allow updating these fields
+    const allowedFields = [
+        'firstName', 'lastName', 'company', 'position', 'address', 'city', 'state', 'zipCode',
+        'website', 'github', 'twitter', 'instagram', 'facebook', 'linkedin', 'bio', 'education',
+        'skills', 'followersCount', 'followingCount', 'profileTemplateType', 'profileImage', 'coverImage', 'mobile', 'phone'
+    ];
+    for (const key of allowedFields) {
+        if (params.hasOwnProperty(key)) {
+            account[key] = params[key];
+        }
+    }
     account.updated = Date.now();
-    
-    // ADD LOGGING HERE to see the account object just before saving
+
     console.log('[AccountService] Account object BEFORE save:', JSON.stringify({
         id: account.id,
         email: account.email,
         role: account.role,
         followerImagesCount: account.followerImages ? account.followerImages.length : 0
-    })); 
+    }));
 
     try {
         await account.save();
-        
         console.log('[AccountService] Account updated successfully:', {
             id: account.id,
             email: account.email,
             role: account.role
         });
-        
         return basicDetails(account);
     } catch (error) {
         console.error('[AccountService] Error saving account:', error);

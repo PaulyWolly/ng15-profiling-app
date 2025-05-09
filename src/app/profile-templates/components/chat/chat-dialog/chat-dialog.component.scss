@@ -618,3 +618,15 @@
 .new-message-badge:hover {
   background: #fb8c00;
 }
+
+::ng-deep emoji-picker {
+  --emoji-size: 2.5rem;
+}
+
+::ng-deep emoji-picker .emoji-picker__emoji {
+  font-size: 2.5rem !important;
+}
+
+.sent-text, .received-text {
+  font-size: 1.5rem;
+}
