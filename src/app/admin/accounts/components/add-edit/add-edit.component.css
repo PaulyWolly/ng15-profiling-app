@@ -643,4 +643,12 @@ small {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-} 
+}
+
+.location-icon {
+  color: #f44336 !important; /* Material Red 500 */
+}
+
+::ng-deep .location-icon {
+  color: #f44336 !important;
+}
