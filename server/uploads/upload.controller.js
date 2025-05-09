@@ -251,10 +251,58 @@ async function uploadProfileImage(req, res, next) {
     }
 }
 
+// Add a handler for pre-account profile image uploads (no userId/email required)
+async function uploadTempProfileImage(req, res, next) {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ message: 'No file uploaded' });
+        }
+        let email = req.body.email;
+        let extension = path.extname(req.file.originalname) || '.png';
+        let safeEmail = email ? email.replace(/[^a-zA-Z0-9@.]/g, '_') : null;
+        let finalFilename = safeEmail ? `tempProfileImage-${safeEmail}${extension}` : req.file.filename;
+        let finalPath = path.join(profilesDir, finalFilename);
+
+        // If the file isn't already named as desired, rename it
+        if (req.file.filename !== finalFilename) {
+            fs.renameSync(req.file.path, finalPath);
+        }
+
+        // Optionally, clean up any old temp files for this email
+        if (safeEmail) {
+            const files = fs.readdirSync(profilesDir);
+            files.forEach(f => {
+                if (
+                    f.startsWith('temp_') &&
+                    f.endsWith(extension) &&
+                    f !== finalFilename
+                ) {
+                    fs.unlinkSync(path.join(profilesDir, f));
+                }
+            });
+        }
+
+        const urlPath = `/uploads/profiles/${finalFilename}`;
+        const apiUrl = process.env.API_URL || 'http://localhost:5001';
+        return res.json({
+            message: 'Temp profile image uploaded successfully',
+            path: urlPath,
+            url: `${apiUrl}${urlPath}`,
+            filename: finalFilename
+        });
+    } catch (error) {
+        if (req.file && fs.existsSync(req.file.path)) {
+            try { fs.unlinkSync(req.file.path); } catch {}
+        }
+        next(error);
+    }
+}
+
 // Export the middleware and functions
 module.exports = {
     upload,
     uploadMiddleware,
     uploadFollowerImage,
-    uploadProfileImage
+    uploadProfileImage,
+    uploadTempProfileImage
 };

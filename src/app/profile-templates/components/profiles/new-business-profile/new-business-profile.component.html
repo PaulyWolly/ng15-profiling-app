@@ -192,12 +192,12 @@
                                 </td>
                               </tr>
                             </table>
-                            <h5>SKILLS</h5>
+                            <h5 *ngIf="getSkillsArray().length > 0">SKILLS</h5>
                             <div class="debug-skills">
                               <!-- Include for debugging only -->
                               <!-- <div>Debug: {{getDebugSkillsInfo()}}</div> -->
                             </div>
-                            <div class="skills-container">
+                            <div class="skills-container" *ngIf="getSkillsArray().length > 0">
                               <!-- Create a separate div for each skill -->
                               <div class="skill-badge" *ngFor="let skill of getSkillsArray()">{{skill}}</div>
                             </div>

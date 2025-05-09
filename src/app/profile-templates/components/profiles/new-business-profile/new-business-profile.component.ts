@@ -116,8 +116,8 @@ export class NewBusinessProfileComponent implements OnInit, AfterViewInit, OnCha
       
       // If no skills or empty array, set default skills
       if (!this.profile.skills || this.profile.skills.length === 0) {
-        this.profile.skills = ['Angular', 'TypeScript', 'CSS', 'UX Design', 'Project Management', 'Team Leadership'];
-        console.log('Default skills set:', this.profile.skills);
+        this.profile.skills = [];
+        console.log('No skills set for this user, leaving skills empty.');
       }
       
       // Ensure skills are always an array
@@ -438,45 +438,25 @@ export class NewBusinessProfileComponent implements OnInit, AfterViewInit, OnCha
    * This method forcefully splits skills to ensure individual bubbles
    */
   getSkillsArray(): string[] {
-    const defaultSkills = ['Angular', 'TypeScript', 'CSS', 'UX Design', 'Project Management', 'Team Leadership'];
-    
+    const defaultSkill = ['Enter a skill or skills to show here'];
     if (!this.profile || !this.profile.skills) {
-      console.log('No skills found, using defaults');
-      return defaultSkills;
+      return defaultSkill;
     }
-    
-    // Force convert to string and split no matter what
     let skillsString: string;
-    
-    // Handle various potential formats
     if (Array.isArray(this.profile.skills)) {
       if (this.profile.skills.length === 0) {
-        console.log('Empty skills array, using defaults');
-        return defaultSkills;
+        return defaultSkill;
       }
-      
-      // Join the array into a string with commas
       skillsString = this.profile.skills.join(',');
-      console.log('Skills converted from array to string:', skillsString);
     } else if (typeof this.profile.skills === 'string') {
-      // Already a string
       skillsString = this.profile.skills as string;
-      console.log('Skills already a string:', skillsString);
     } else {
-      // Convert whatever it is to a string
       skillsString = String(this.profile.skills);
-      console.log('Skills converted to string from unknown type:', skillsString);
     }
-    
-    // Split by comma, semicolon or pipe to handle different separator styles
     const processedSkills = skillsString
       .split(/[,;|]+/)
       .map(s => s.trim())
       .filter(s => s !== '');
-    
-    console.log('Final processed skills array:', processedSkills);
-    
-    // If processing resulted in empty array, return defaults
-    return processedSkills.length > 0 ? processedSkills : defaultSkills;
+    return processedSkills.length > 0 ? processedSkills : defaultSkill;
   }
 } 
