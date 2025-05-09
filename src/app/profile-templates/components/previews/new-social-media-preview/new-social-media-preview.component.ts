@@ -7,7 +7,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { Router, ActivatedRoute } from '@angular/router';
 import { ProfileTemplateService, AccountService } from '@app/_services';
 import { ProfileTemplateType } from '@app/_models/profile-template';
-import { TitleComponent } from '@app/shared/components/title/title.component';
+// import { TitleComponent } from '@app/shared/components/title/title.component';
 import { Account } from '@app/_models';
 import { first } from 'rxjs/operators';
 
@@ -19,65 +19,67 @@ import { first } from 'rxjs/operators';
     MatButtonModule,
     MatIconModule,
     MatCardModule,
-    MatProgressSpinnerModule,
-    TitleComponent
+    MatProgressSpinnerModule
+    // ,
+    // TitleComponent
   ],
-  template: `
-    <div class="new-social-media-container">
-      <!-- Loading State -->
-      <div *ngIf="loading" class="loading-container">
-        <mat-spinner diameter="40"></mat-spinner>
-        <p>Loading profile...</p>
-      </div>
+  // template: `
+  templateUrl: './new-social-media-preview.component.html',
+  //   <div class="new-social-media-container">
+  //     <!-- Loading State -->
+  //     <div *ngIf="loading" class="loading-container">
+  //       <mat-spinner diameter="40"></mat-spinner>
+  //       <p>Loading profile...</p>
+  //     </div>
 
-      <!-- Error State -->
-      <div *ngIf="error" class="alert alert-danger">
-        {{ error }}
-      </div>
+  //     <!-- Error State -->
+  //     <div *ngIf="error" class="alert alert-danger">
+  //       {{ error }}
+  //     </div>
 
-      <!-- Main Content -->
-      <div *ngIf="!loading && !error">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-          <app-title [text]="'Social Media Template'" [level]="1" [marginBottom]="'none'"></app-title>
-          <div>
-            <button mat-raised-button color="primary" (click)="useTemplate()" class="me-2">
-              <mat-icon>check_circle</mat-icon>
-              Use This Template
-            </button>
-            <button mat-button color="accent" (click)="previewTemplate()">
-              <mat-icon>preview</mat-icon>
-              Live Preview
-            </button>
-          </div>
-        </div>
+  //     <!-- Main Content -->
+  //     <div *ngIf="!loading && !error">
+  //       <div class="d-flex justify-content-between align-items-center mb-4">
+  //         <app-title [text]="'Social Media Template'" [level]="1" [marginBottom]="'none'"></app-title>
+  //         <div>
+  //           <button mat-raised-button color="primary" (click)="useTemplate()" class="me-2">
+  //             <mat-icon>check_circle</mat-icon>
+  //             Use This Template
+  //           </button>
+  //           <button mat-button color="accent" (click)="previewTemplate()">
+  //             <mat-icon>preview</mat-icon>
+  //             Live Preview
+  //           </button>
+  //         </div>
+  //       </div>
 
-        <div class="template-preview">
-          <mat-card class="preview-card">
-            <div class="preview-flex-row">
-              <img src="assets/images/profile-templates/social-media-template.png" 
-                   alt="Social Media Template Preview" 
-                   class="preview-image" />
-              <div class="preview-description">
-                <p>
-                  This is our new social media template, featuring a modern, social-inspired layout for your professional profile.
-                </p>
-                <div class="features-list">
-                  <h3>Features:</h3>
-                  <ul>
-                    <li>Large profile image and header</li>
-                    <li>Followers and following counts</li>
-                    <li>Social links and contact info</li>
-                    <li>Followers you know preview</li>
-                    <li>Modern, card-based design</li>
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </mat-card>
-        </div>
-      </div>
-    </div>
-  `,
+  //       <div class="template-preview">
+  //         <mat-card class="preview-card">
+  //           <div class="preview-flex-row">
+  //             <img src="assets/images/profile-templates/social-media-template.png" 
+  //                  alt="Social Media Template Preview" 
+  //                  class="preview-image" />
+  //             <div class="preview-description">
+  //               <p>
+  //                 This is our new social media template, featuring a modern, social-inspired layout for your professional profile.
+  //               </p>
+  //               <div class="features-list">
+  //                 <h3>Features:</h3>
+  //                 <ul>
+  //                   <li>Large profile image and header</li>
+  //                   <li>Followers and following counts</li>
+  //                   <li>Social links and contact info</li>
+  //                   <li>Followers you know preview</li>
+  //                   <li>Modern, card-based design</li>
+  //                 </ul>
+  //               </div>
+  //             </div>
+  //           </div>
+  //         </mat-card>
+  //       </div>
+  //     </div>
+  //   </div>
+  // `,
   styleUrls: ['./new-social-media-preview.component.scss']
 })
 export class NewSocialMediaPreviewComponent implements OnInit {

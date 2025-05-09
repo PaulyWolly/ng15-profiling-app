@@ -13,9 +13,11 @@
 <div *ngIf="!loading && !error" class="new-standard-container">
     <div class="centered-content" style="max-width: 1600px; width: 90%; margin: 0 auto;">
         <!-- Header with Title and Buttons -->
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <app-title [text]="'New Standard Template'" [level]="1" [marginBottom]="'none'"></app-title>
-            <div> <!-- Button group container -->
+        <div class="preview-header">
+            <div class="preview-title">
+                <h2>New Standard Template</h2>
+            </div>
+            <div class="preview-buttons">
                 <button mat-raised-button color="primary" (click)="useTemplate()" class="me-2">
                     <mat-icon>check_circle</mat-icon>
                     Use This Template
