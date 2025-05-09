@@ -55,7 +55,7 @@ interface ChatDialogData {
             <button class="icon-btn"
                     (click)="refreshMessages($event)"
                     [matBadge]="hasNewMessages ? '●' : ''"
-                    [matBadgeColor]="'accent'"
+                    [matBadgeColor]="'primary'"
                     [matBadgeSize]="'small'"
                     title="Refresh chat"
                   >

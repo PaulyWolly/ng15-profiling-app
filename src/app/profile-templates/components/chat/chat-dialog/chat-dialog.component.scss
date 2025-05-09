@@ -630,3 +630,8 @@
 .sent-text, .received-text {
   font-size: 1.5rem;
 }
+
+::ng-deep .mat-badge-content {
+  background-color: #4caf50 !important; /* Material Green 500 */
+  color: #fff !important;
+}
