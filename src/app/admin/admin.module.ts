@@ -11,11 +11,11 @@ import { MatSortModule } from '@angular/material/sort';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 import { AdminRoutingModule } from './admin-routing.module';
-import { SubNavComponent } from './subnav.component';
-import { LayoutComponent } from './layout.component';
-import { OverviewComponent } from './overview.component';
-import { MonitorComponent } from './monitor.component';
-import { SettingsComponent } from './settings.component';
+import { SubNavComponent } from './components/subnav/subnav.component';
+import { LayoutComponent } from './components/layout/layout.component';
+import { OverviewComponent } from './components/overview/overview.component';
+import { MonitorComponent } from './components/monitor/monitor.component';
+import { SettingsComponent } from './components/settings/settings.component';
 import { AccountModule } from '../account/account.module';
 // Removed ListComponent and AddEditComponent declarations here
 // They should be declared in AccountsModule if it exists, or here if not

@@ -3,12 +3,12 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, FormControl } from '@angular/forms';
 import { first } from 'rxjs/operators';
 
-import { AccountService } from '../../_services/account.service';
-import { AlertService } from '../../_services/alert.service';
-import { MustMatch } from '../../_helpers/must-match.validator';
-import { Account } from '../../_models/account';
-import { Role } from '../../_models/role';
-import { environment } from '../../../environments/environment';
+import { AccountService } from '../../../../_services/account.service';
+import { AlertService } from '../../../../_services/alert.service';
+import { MustMatch } from '../../../../_helpers/must-match.validator';
+import { Account } from '../../../../_models/account';
+import { Role } from '../../../../_models/role';
+import { environment } from '../../../../../environments/environment';
 import { PROFILE_TEMPLATES, ProfileTemplate, ProfileTemplateType } from '@app/_models/profile-template';
 import { EditMode } from '@app/shared/components/edit-content/edit-content.component';
 

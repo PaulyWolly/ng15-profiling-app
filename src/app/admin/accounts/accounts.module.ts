@@ -3,8 +3,8 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 
 import { AccountsRoutingModule } from './accounts-routing.module';
-import { ListComponent } from './list.component';
-import { AddEditComponent } from './add-edit.component';
+import { ListComponent } from './components/list/list.component';
+import { AddEditComponent } from './components/add-edit/add-edit.component';
 import { SharedModule } from '../../shared/shared.module';
 import { AccountModule } from '../../account/account.module';
 

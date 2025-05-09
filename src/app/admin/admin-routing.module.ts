@@ -1,11 +1,11 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 
-import { SubNavComponent } from './subnav.component';
-import { LayoutComponent } from './layout.component';
-import { OverviewComponent } from './overview.component';
-import { MonitorComponent } from './monitor.component';
-import { SettingsComponent } from './settings.component';
+import { SubNavComponent } from './components/subnav/subnav.component';
+import { LayoutComponent } from './components/layout/layout.component';
+import { OverviewComponent } from './components/overview/overview.component';
+import { MonitorComponent } from './components/monitor/monitor.component';
+import { SettingsComponent } from './components/settings/settings.component';
 
 // Lazy load accounts module
 const accountsModule = () => import('./accounts/accounts.module').then(x => x.AccountsModule);

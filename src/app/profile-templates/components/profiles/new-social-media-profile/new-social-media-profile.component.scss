@@ -244,6 +244,8 @@ h2 {
         font-size: 18px;
         height: 18px;
         width: 18px;
+        color: #f44336 !important; /* Material Red 500 */
+        fill: #f44336 !important; /* Ensure SVG fill is also red */
     }
 }
 
