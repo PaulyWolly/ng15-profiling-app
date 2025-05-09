@@ -41,7 +41,7 @@
         </div>
         <div class="profile-info-block">
           <h1>{{profile.firstName}} {{profile.lastName}}</h1>
-          <h2>{{profile.position || 'Owner/Developer/Designer'}}</h2>
+          <h2>{{profile.position || ''}}</h2>
           <p class="company" *ngIf="profile?.company">{{profile.company}}</p>
           <div class="about-section" *ngIf="profile?.bio">
             <h3>About</h3>

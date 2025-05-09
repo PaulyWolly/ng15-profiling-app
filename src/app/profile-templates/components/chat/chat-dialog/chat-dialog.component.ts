@@ -14,6 +14,7 @@ import { Subscription } from 'rxjs';
 import { environment } from '@environments/environment';
 import { CustomTooltipDirective } from '@app/shared/custom-tooltip/custom-tooltip.directive';
 import { ScrollingModule, CdkVirtualScrollViewport } from '@angular/cdk/scrolling';
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 
 interface ChatDialogData {
   user: OnlineUser;
@@ -34,6 +35,7 @@ interface ChatDialogData {
     MatBadgeModule,
     ScrollingModule,
   ],
+  schemas: [CUSTOM_ELEMENTS_SCHEMA],
   template: `
     <div class="chat-window" [class.minimized]="isMinimized" [style.height]="isMinimized ? '64px' : '600px'">
       <div class="chat-header" (click)="toggleMinimize()">
@@ -105,6 +107,10 @@ interface ChatDialogData {
                    placeholder="Type a message..."
                    (keyup.enter)="sendMessage()">
           </mat-form-field>
+          <button mat-icon-button type="button" (click)="showEmojiPicker = !showEmojiPicker" [attr.aria-label]="'Add emoji'">
+            <mat-icon>emoji_emotions</mat-icon>
+          </button>
+          <emoji-picker *ngIf="showEmojiPicker" (emoji-click)="addEmoji($event)" style="position: absolute; bottom: 60px; right: 20px; z-index: 1000;"></emoji-picker>
           <button mat-icon-button color="primary" (click)="sendMessage()" [disabled]="!newMessage.trim()">
             <mat-icon>send</mat-icon>
           </button>
@@ -131,6 +137,7 @@ export class ChatDialogComponent implements OnInit, OnDestroy, AfterViewInit, Af
   newMessageArrived: boolean = false;
   isAtBottom: boolean = true;
   shouldScrollToBottom: boolean = false;
+  showEmojiPicker = false;
 
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: ChatDialogData,
@@ -389,5 +396,10 @@ export class ChatDialogComponent implements OnInit, OnDestroy, AfterViewInit, Af
   scrollToBottomAndClear() {
     this.newMessageArrived = false;
     this.scrollToBottom();
+  }
+
+  addEmoji(event: any) {
+    this.newMessage += event.detail.unicode;
+    this.showEmojiPicker = false;
   }
 } 

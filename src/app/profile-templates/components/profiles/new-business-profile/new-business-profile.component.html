@@ -133,17 +133,15 @@
                               <mat-card class="compact-card">
                                 <mat-card-content class="compact-content">
                                   <div class="badge primary">Primary</div>
-                                  <h6>{{profile.company || 'PW Consulting'}}</h6>
+                                  <h6>{{profile.company || ''}}</h6>
                                   <p>
                                     <span *ngIf="profile.position">{{profile.position}}</span>
-                                    <span *ngIf="!profile.position">Angular Developer | UI Designer | AI Specialist</span>
                                   </p>
                                   <p>
                                     <span *ngIf="profile.address">{{profile.address}}</span>
                                     <span *ngIf="profile.city || profile.state || profile.zipCode">
                                       <span *ngIf="profile.address">, </span>{{profile.city || ''}}{{profile.city && profile.state ? ', ' : ''}}{{profile.state || ''}} {{profile.zipCode || ''}}
                                     </span>
-                                    <span *ngIf="!profile.address && !profile.city && !profile.state && !profile.zipCode">North Mission Road, Fallbrook, CA</span>
                                   </p>
                                 </mat-card-content>
                               </mat-card>
@@ -152,8 +150,8 @@
                               <h5>EDUCATION</h5>
                               <mat-card class="compact-card">
                                 <mat-card-content class="compact-content">
-                                  <h6>{{profile.education?.institution || 'University of Design'}}</h6>
-                                  <p>{{profile.education?.degree || 'Bachelor of Arts'}}, {{profile.education?.years || '2012-2016'}}</p>
+                                  <h6>{{profile.education?.institution || ''}}</h6>
+                                  <p>{{profile.education?.degree || ''}}, {{profile.education?.years || ''}}</p>
                                 </mat-card-content>
                               </mat-card>
                             </div>
@@ -163,7 +161,7 @@
                             <table class="info-table">
                               <tr>
                                 <td>Phone:</td>
-                                <td>{{profile.phone || '+1 123 456 7890'}}</td>
+                                <td>{{profile.phone || ''}}</td>
                               </tr>
                               <tr>
                                 <td>Address:</td>
@@ -174,23 +172,22 @@
                                     <span *ngIf="profile.city || profile.state || profile.zipCode">
                                       <span *ngIf="profile.address">, </span>{{profile.city || ''}}{{profile.city && profile.state ? ', ' : ''}}{{profile.state || ''}} {{profile.zipCode || ''}}
                                     </span>
-                                    <span *ngIf="!profile.address && !profile.city && !profile.state && !profile.zipCode">North Mission Road, Fallbrook, CA</span>
                                   </a>
                                 </td>
                               </tr>
                               <tr>
                                 <td>E-mail:</td>
                                 <td>
-                                  <a [href]="'mailto:' + (profile.email || 'pwelby@gmail.com')" class="email-link">
-                                    {{profile.email || 'pwelby@gmail.com'}}
+                                  <a [href]="'mailto:' + (profile.email || '')" class="email-link">
+                                    {{profile.email || ''}}
                                   </a>
                                 </td>
                               </tr>
                               <tr>
                                 <td>Site:</td>
                                 <td>
-                                  <a [href]="formatWebsiteUrl(profile.website || 'https://i-am-paul.netlify.app')" target="_blank" class="website-link">
-                                    {{profile.website || 'https://i-am-paul.netlify.app'}}
+                                  <a [href]="formatWebsiteUrl(profile.website || '')" target="_blank" class="website-link">
+                                    {{profile.website || ''}}
                                   </a>
                                 </td>
                               </tr>

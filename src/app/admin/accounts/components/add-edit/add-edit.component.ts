@@ -69,13 +69,27 @@ export class AddEditComponent implements OnInit, OnDestroy {
         }
 
         this.form = this.formBuilder.group({
-            title: ['', Validators.required],
-            firstName: ['', Validators.required],
-            lastName: ['', Validators.required],
-            email: ['', [Validators.required, Validators.email]],
-            role: ['', Validators.required],
-            password: ['', passwordValidators],
-            confirmPassword: ['']
+            firstName: [''],
+            lastName: [''],
+            email: ['', [Validators.email]],
+            role: [''],
+            password: [''],
+            confirmPassword: [''],
+            company: [''],
+            position: [''],
+            address: [''],
+            city: [''],
+            state: [''],
+            zipCode: [''],
+            website: [''],
+            github: [''],
+            twitter: [''],
+            instagram: [''],
+            facebook: [''],
+            linkedin: [''],
+            bio: [''],
+            education: [null],
+            followerImages: [[]]
         }, {
             validator: MustMatch('password', 'confirmPassword')
         });
@@ -88,7 +102,6 @@ export class AddEditComponent implements OnInit, OnDestroy {
                     next: (account) => {
                         console.log('Account data received:', account);
                         this.account = {...account}; // Create a copy of the account
-                        
                         // Format profile image URL if needed
                         if (account.profileImage) {
                             if (!account.profileImage.startsWith('http') && !account.profileImage.startsWith('data:')) {
@@ -96,9 +109,29 @@ export class AddEditComponent implements OnInit, OnDestroy {
                             }
                             console.log('Formatted image URL:', this.account.profileImage);
                         }
-                        
                         this.imageUrl = this.account.profileImage || null;
-                        this.form.patchValue(this.account);
+                        // Patch all fields, not just the original ones
+                        this.form.patchValue({
+                            firstName: account.firstName || '',
+                            lastName: account.lastName || '',
+                            email: account.email || '',
+                            role: account.role || '',
+                            company: account.company || '',
+                            position: account.position || '',
+                            address: account.address || '',
+                            city: account.city || '',
+                            state: account.state || '',
+                            zipCode: account.zipCode || '',
+                            website: account.website || '',
+                            github: account.github || '',
+                            twitter: account.twitter || '',
+                            instagram: account.instagram || '',
+                            facebook: account.facebook || '',
+                            linkedin: account.linkedin || '',
+                            bio: account.bio || '',
+                            education: account.education || null,
+                            followerImages: account.followerImages || []
+                        });
                         this.loading = false;
                     },
                     error: error => {
@@ -354,17 +387,39 @@ export class AddEditComponent implements OnInit, OnDestroy {
     }
 
     private saveAccount(formData: any) {
-        // Pass only the account-specific fields to the API
-        const accountData = {
-            title: formData.title,
+        // Only send editable fields
+        const accountData: any = {
             firstName: formData.firstName,
             lastName: formData.lastName,
             email: formData.email,
             role: formData.role,
             password: formData.password,
-            confirmPassword: formData.confirmPassword
+            confirmPassword: formData.confirmPassword,
+            company: formData.company,
+            position: formData.position,
+            address: formData.address,
+            city: formData.city,
+            state: formData.state,
+            zipCode: formData.zipCode,
+            website: formData.website,
+            github: formData.github,
+            twitter: formData.twitter,
+            instagram: formData.instagram,
+            facebook: formData.facebook,
+            linkedin: formData.linkedin,
+            bio: formData.bio,
+            education: formData.education,
+            followerImages: formData.followerImages,
+            // Add any other editable fields as needed
         };
-        
+
+        // Remove undefined fields
+        Object.keys(accountData).forEach(
+            key => accountData[key] === undefined && delete accountData[key]
+        );
+
+        console.log('Payload to update:', accountData);
+
         return this.isAddMode
             ? this.accountService.create(accountData)
             : this.accountService.update(this.id!, accountData);

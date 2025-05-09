@@ -379,7 +379,7 @@ function updateSchema(req, res, next) {
         bio: Joi.string().empty(''),
         
         // Social Media Links
-        website: Joi.string().uri().empty(''),
+        website: Joi.string().allow('', null),
         github: Joi.string().empty(''),
         twitter: Joi.string().empty(''),
         instagram: Joi.string().empty(''),
