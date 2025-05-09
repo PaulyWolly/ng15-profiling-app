@@ -178,6 +178,43 @@ async function create(params) {
         throw 'Email "' + params.email + '" is already registered';
     }
 
+    // Handle temp profile image renaming
+    if (params.profileImage && params.profileImage.includes('tempProfileImage-')) {
+        try {
+            const email = params.email;
+            const extension = path.extname(params.profileImage) || '.png';
+            const safeEmail = email.replace(/[^a-zA-Z0-9@.]/g, '_');
+            const tempFilename = `tempProfileImage-${safeEmail}${extension}`;
+            const finalFilename = `profileImage-${safeEmail}${extension}`;
+            const tempPath = path.join(__dirname, '..', 'uploads', 'profiles', tempFilename);
+            const finalPath = path.join(__dirname, '..', 'uploads', 'profiles', finalFilename);
+
+            // Rename tempProfileImage-<email>.<ext> to profileImage-<email>.<ext>
+            if (fsSync.existsSync(tempPath)) {
+                if (fsSync.existsSync(finalPath)) {
+                    await fs.unlink(finalPath);
+                }
+                await fs.rename(tempPath, finalPath);
+                params.profileImage = `/uploads/profiles/${finalFilename}`;
+            }
+
+            // Clean up any temp_<timestamp>.<ext> files for this extension
+            const files = fsSync.readdirSync(path.join(__dirname, '..', 'uploads', 'profiles'));
+            files.forEach(f => {
+                if (
+                    f.startsWith('temp_') &&
+                    f.endsWith(extension) &&
+                    f !== tempFilename
+                ) {
+                    fsSync.unlinkSync(path.join(__dirname, '..', 'uploads', 'profiles', f));
+                }
+            });
+        } catch (err) {
+            console.error('[AccountService] Error renaming temp profile image:', err);
+            params.profileImage = null;
+        }
+    }
+
     const account = new db.Account(params);
     account.verified = Date.now();
 
@@ -196,6 +233,32 @@ async function update(id, params) {
     // validate (if email is already taken throw error)
     if (params.email && account.email !== params.email && await db.Account.findOne({ email: params.email })) {
         throw 'Email "' + params.email + '" is already taken';
+    }
+
+    // If email is changing and there is a profile image, rename the image file
+    if (params.email && account.email !== params.email && account.profileImage && account.profileImage.startsWith('/uploads/profiles/profileImage-')) {
+        try {
+            const oldEmail = account.email;
+            const newEmail = params.email;
+            const extension = path.extname(account.profileImage) || '.png';
+            const safeOldEmail = oldEmail.replace(/[^a-zA-Z0-9@.]/g, '_');
+            const safeNewEmail = newEmail.replace(/[^a-zA-Z0-9@.]/g, '_');
+            const oldFilename = `profileImage-${safeOldEmail}${extension}`;
+            const newFilename = `profileImage-${safeNewEmail}${extension}`;
+            const oldPath = path.join(__dirname, '..', 'uploads', 'profiles', oldFilename);
+            const newPath = path.join(__dirname, '..', 'uploads', 'profiles', newFilename);
+            if (fsSync.existsSync(oldPath)) {
+                await fs.rename(oldPath, newPath);
+                // Update the profileImage path
+                params.profileImage = `/uploads/profiles/${newFilename}`;
+                // Optionally, delete the old file if it still exists (shouldn't after rename)
+                if (fsSync.existsSync(oldPath)) {
+                    await fs.unlink(oldPath);
+                }
+            }
+        } catch (err) {
+            console.error('[AccountService] Error renaming profile image after email change:', err);
+        }
     }
 
     console.log('[AccountService] Updating account:', {

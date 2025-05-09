@@ -35,4 +35,13 @@ export class UploadService {
             }
         );
     }
+
+    uploadTempProfileImage(file: File, email?: string) {
+        const formData = new FormData();
+        formData.append('file', file);
+        if (email) {
+            formData.append('email', email);
+        }
+        return this.http.post<any>(`${environment.apiUrl}/upload/temp-profile-image`, formData);
+    }
 } 

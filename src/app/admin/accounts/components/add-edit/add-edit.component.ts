@@ -11,6 +11,7 @@ import { Role } from '../../../../_models/role';
 import { environment } from '../../../../../environments/environment';
 import { PROFILE_TEMPLATES, ProfileTemplate, ProfileTemplateType } from '@app/_models/profile-template';
 import { EditMode } from '@app/shared/components/edit-content/edit-content.component';
+import { UploadService } from '@app/_services/upload.service';
 
 @Component({
     templateUrl: './add-edit.component.html',
@@ -38,6 +39,7 @@ export class AddEditComponent implements OnInit, OnDestroy {
     private bodyOriginalStyle: { [key: string]: string } = {};
     Role = Role; // Expose Role enum to the template
     currentUserRole: Role = Role.User;
+    pendingProfileImagePath: string | null = null;
 
     constructor(
         private formBuilder: FormBuilder,
@@ -45,7 +47,8 @@ export class AddEditComponent implements OnInit, OnDestroy {
         private router: Router,
         private accountService: AccountService,
         private alertService: AlertService,
-        private renderer: Renderer2
+        private renderer: Renderer2,
+        private uploadService: UploadService
     ) { }
 
     ngOnInit() {
@@ -257,47 +260,42 @@ export class AddEditComponent implements OnInit, OnDestroy {
                 this.alertService.error('Please select a valid image file (jpg, jpeg, png, or gif)');
                 return;
             }
-            
             // Validate file size (5MB max)
             if (event.file.size > 5 * 1024 * 1024) {
                 this.alertService.error('File size must be less than 5MB');
                 return;
             }
-            
-            // Create form data and upload
-            const profileName =
-              (this.account?.firstName && this.account.firstName.trim()) ||
-              (this.account?.email && this.account.email.trim()) ||
-              'profile';
-            console.log('Uploading profile image with profileName:', profileName);
-            const formData = new FormData();
-            formData.append('profileImage', event.file);
-            formData.append('userId', this.id!);
-            formData.append('userEmail', this.account?.email || '');
-            formData.append('confirmed', event.confirmed ? 'true' : 'false');
-            formData.append('profileName', profileName);
-
-        this.uploading = true;
-            this.accountService.uploadImage(this.id!, formData)
-                .pipe(first())
-                .subscribe({
-                    next: (response) => {
-                        if (response.profileImage) {
-                            this.account.profileImage = response.profileImage.startsWith('http') 
-                                ? response.profileImage 
-                                : `${environment.apiUrl}/${response.profileImage}`;
-                            this.imageUrl = this.account.profileImage;
-                        }
-                        // Show success alert with the response message
-                        this.alertService.success(response.message || 'Profile image uploaded successfully');
-                this.uploading = false;
+            this.uploading = true;
+            if (this.isAddMode) {
+                // New account: use temp profile image upload
+                const email = this.form.get('email')?.value || '';
+                this.uploadService.uploadTempProfileImage(event.file, email).subscribe({
+                    next: (res: any) => {
+                        this.pendingProfileImagePath = res.path || res.filename || res.url;
+                        this.uploading = false;
                     },
-                    error: (error) => {
-                this.error = error.message || 'Failed to upload image';
-                        this.alertService.error(this.error);
-                this.uploading = false;
+                    error: (err) => {
+                        this.alertService.error('Image upload failed');
+                        this.uploading = false;
                     }
                 });
+            } else {
+                // Existing account: use normal profile image upload
+                const formData = new FormData();
+                formData.append('profileImage', event.file);
+                formData.append('userId', this.id!);
+                formData.append('userEmail', this.account?.email || '');
+                this.uploadService.uploadProfileImage(event.file, formData).subscribe({
+                    next: (res: any) => {
+                        this.pendingProfileImagePath = res.path || res.filename || res.url;
+                        this.uploading = false;
+                    },
+                    error: (err) => {
+                        this.alertService.error('Image upload failed');
+                        this.uploading = false;
+                    }
+                });
+            }
         }
     }
 
@@ -373,7 +371,7 @@ export class AddEditComponent implements OnInit, OnDestroy {
             .subscribe({
                 next: () => {
                     this.alertService.success('Account saved', { keepAfterRouteChange: true });
-                    this.router.navigate(['../../'], { relativeTo: this.route });
+                    this.router.navigate(['/admin/accounts']);
                 },
                 error: error => {
                     this.alertService.error(error);
@@ -389,28 +387,8 @@ export class AddEditComponent implements OnInit, OnDestroy {
     private saveAccount(formData: any) {
         // Only send editable fields
         const accountData: any = {
-            firstName: formData.firstName,
-            lastName: formData.lastName,
-            email: formData.email,
-            role: formData.role,
-            password: formData.password,
-            confirmPassword: formData.confirmPassword,
-            company: formData.company,
-            position: formData.position,
-            address: formData.address,
-            city: formData.city,
-            state: formData.state,
-            zipCode: formData.zipCode,
-            website: formData.website,
-            github: formData.github,
-            twitter: formData.twitter,
-            instagram: formData.instagram,
-            facebook: formData.facebook,
-            linkedin: formData.linkedin,
-            bio: formData.bio,
-            education: formData.education,
-            followerImages: formData.followerImages,
-            // Add any other editable fields as needed
+            ...formData,
+            profileImage: this.pendingProfileImagePath || formData.profileImage
         };
 
         // Remove undefined fields

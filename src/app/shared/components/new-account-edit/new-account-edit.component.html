@@ -1,5 +1,11 @@
 <!-- Edit container -->
 <div class="edit-container" *ngIf="!loading">
+  <!-- Helper message for new accounts -->
+  <div class="alert alert-info mb-3" *ngIf="!account?.id">
+    <i class="material-icons small-icon align-middle">info</i>
+    Please enter an email address FIRST, before uploading a profile image. This ensures your image is properly linked to your account.
+  </div>
+
   <div class="row">
     <!-- Left column - profile image (always on the left) -->
     <div class="col-md-4 d-flex align-items-start">
@@ -114,9 +120,9 @@
                 <div class="col-md-6">
                   <label class="form-label">Confirm Password</label>
                   <input type="password" formControlName="confirmPassword" class="form-control" 
-                         [ngClass]="{ 'is-invalid': submitted && f.confirmPassword.errors }"
+                         [ngClass]="{ 'is-invalid': (f.confirmPassword.touched || submitted) && f.confirmPassword.errors }"
                          [disabled]="isFormDisabled()">
-                  <div *ngIf="submitted && f.confirmPassword.errors" class="invalid-feedback">
+                  <div *ngIf="(f.confirmPassword.touched || submitted) && f.confirmPassword.errors" class="invalid-feedback">
                     <div *ngIf="f.confirmPassword.errors.required">Confirm Password is required</div>
                     <div *ngIf="f.confirmPassword.errors.mustMatch">Passwords must match</div>
                   </div>

@@ -35,7 +35,21 @@ export class NewAccountEditComponent implements OnInit, OnChanges {
 
   ngOnInit(): void {
     this.initForm();
-    if (this.account) {
+    // If this is a new account (no id), reset all fields to default/empty
+    if (!this.account || !this.account.id) {
+      this.form.reset({
+        firstName: '',
+        lastName: '',
+        email: '',
+        role: Role.User,
+        password: '',
+        confirmPassword: ''
+        // Add any other fields here if needed (company, address, skills, etc.)
+      });
+      this.imageUrl = null;
+      this.profileImageFile = null;
+      this.error = '';
+    } else {
       this.patchForm(this.account);
     }
   }
@@ -178,6 +192,7 @@ export class NewAccountEditComponent implements OnInit, OnChanges {
 
   // Add method to check if image controls should be disabled
   isImageControlsDisabled(): boolean {
-    return this.isFormDisabled();
+    // Disable if form is disabled or email is invalid
+    return this.isFormDisabled() || !this.form?.get('email')?.valid;
   }
 } 

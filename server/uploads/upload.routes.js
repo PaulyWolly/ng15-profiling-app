@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { uploadMiddleware, uploadFollowerImage } = require('./upload.controller');
+const { uploadMiddleware, uploadFollowerImage, uploadTempProfileImage } = require('./upload.controller');
 const authorize = require('../_middleware/authenticate');
 
 // Follower image upload route
@@ -9,5 +9,8 @@ router.post('/follower-image',
     uploadMiddleware,
     uploadFollowerImage
 );
+
+// Temp profile image upload route (no auth, for new accounts)
+router.post('/temp-profile-image', uploadMiddleware, uploadTempProfileImage);
 
 module.exports = router;
