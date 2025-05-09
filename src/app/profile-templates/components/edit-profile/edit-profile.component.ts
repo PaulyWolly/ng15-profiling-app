@@ -4,6 +4,7 @@ import { PROFILE_TEMPLATES, ProfileTemplateType } from '@app/_models/profile-tem
 import { FollowerImage, Account } from '@app/_models/account';
 import { UploadService } from '@app/_services/upload.service';
 import { AlertService } from '@app/_services/alert.service';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-edit-profile',
@@ -30,15 +31,22 @@ export class EditProfileComponent implements OnInit, OnChanges, AfterViewInit {
   imageConflictMessage = '';
   selectedFile: File | null = null;
   pendingImage: string | null = null;
+  highlightSection: string = 'social-media'; // Default, can be set dynamically later
 
   constructor(
     private formBuilder: FormBuilder,
     private uploadService: UploadService,
-    private alertService: AlertService
+    private alertService: AlertService,
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit() {
     this.initForm();
+    // Listen for profileType query param
+    this.route.queryParams.subscribe(params => {
+      const profileType = params['profileType'] || 'standard';
+      this.highlightSection = profileType;
+    });
     if (this.account) {
       console.log('[EditProfileComponent] Account data received:', this.account);
       this.patchForm();

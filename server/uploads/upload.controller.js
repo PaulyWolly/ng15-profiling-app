@@ -22,12 +22,18 @@ const storage = multer.diskStorage({
         cb(null, uploadPath);
     },
     filename: function (req, file, cb) {
-        // Generate a unique filename using timestamp and random string
+        const extension = path.extname(file.originalname);
+        // If this is a temp profile image upload and email is present, use the new naming convention
+        if (req.originalUrl.includes('temp-profile-image') && req.body && req.body.email) {
+            const safeEmail = req.body.email.replace(/[^a-zA-Z0-9@.]/g, '_');
+            const filename = `tempProfileImage-${safeEmail}${extension}`;
+            return cb(null, filename);
+        }
+        // For follower images or other uploads, fallback to old logic
         const timestamp = Date.now();
         const randomString = crypto.randomBytes(8).toString('hex');
-        const extension = path.extname(file.originalname);
-        const filename = `temp_${timestamp}_${randomString}${extension}`;
-        cb(null, filename);
+        const fallbackFilename = `temp_${timestamp}_${randomString}${extension}`;
+        cb(null, fallbackFilename);
     }
 });
 

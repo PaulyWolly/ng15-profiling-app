@@ -93,4 +93,22 @@ export class LayoutComponent implements OnInit {
   isAccountSettingsRoute(): boolean {
     return this.router.url.includes('/profile/account-settings');
   }
+
+  goToEditProfile(): void {
+    // Get the current template type from the service
+    const currentTemplate = this.profileTemplateService.currentTemplateValue;
+    let profileType = 'standard';
+    switch (currentTemplate) {
+      case ProfileTemplateType.BUSINESS_CARD:
+        profileType = 'business';
+        break;
+      case ProfileTemplateType.SOCIAL_MEDIA:
+        profileType = 'social-media';
+        break;
+      case ProfileTemplateType.STANDARD:
+      default:
+        profileType = 'standard';
+    }
+    this.router.navigate(['/profile/edit-profile'], { queryParams: { profileType } });
+  }
 } 

@@ -1,4 +1,17 @@
 <div class="edit-container" *ngIf="!loading">
+  <!-- Dynamic helper message for profile type -->
+  <div class="alert alert-info mb-3" *ngIf="highlightSection">
+    <i class="material-icons small-icon align-middle">info</i>
+    <span *ngIf="highlightSection === 'social-media'">
+      You are editing your <strong>Social Media</strong> profile. The highlighted sections below are most important for this profile type.
+    </span>
+    <span *ngIf="highlightSection === 'business'">
+      You are editing your <strong>Business</strong> profile. The highlighted sections below are most important for this profile type.
+    </span>
+    <span *ngIf="highlightSection === 'standard'">
+      You are editing your <strong>Standard</strong> profile. The highlighted sections below are most important for this profile type.
+    </span>
+  </div>
   <div class="row">
     <!-- Left column - profile image -->
     <div class="col-md-4">
@@ -61,7 +74,7 @@
       <div class="scrolling-div" #scrollingDiv appScrollable>
         <form [formGroup]="form" (ngSubmit)="onSubmit()" id="profileForm">
           <!-- Basic Information Section -->
-          <div class="card mb-3">
+          <div class="card mb-3" [ngClass]="{'highlight-section': highlightSection === 'standard'}">
             <div class="card-header">
               <h5 class="mb-0">Basic Information</h5>
             </div>
@@ -129,7 +142,7 @@
           </div>
 
           <!-- Professional Information Section -->
-          <div class="card mb-3">
+          <div class="card mb-3" [ngClass]="{'highlight-section': highlightSection === 'business'}">
             <div class="card-header">
               <h5 class="mb-0">Professional Information</h5>
             </div>
@@ -156,7 +169,7 @@
           </div>
 
           <!-- Social Media Section -->
-          <div class="card mb-3">
+          <div class="card mb-3" [ngClass]="{'highlight-section': highlightSection === 'social-media'}">
             <div class="card-header">
               <h5 class="mb-0">Social Media</h5>
             </div>
@@ -191,7 +204,7 @@
           </div>
 
           <!-- Followers Section -->
-          <div class="card mb-3" *ngIf="isSocialMediaTemplate()">
+          <div class="card mb-3" [ngClass]="{'highlight-section': highlightSection === 'social-media'}">
             <div class="card-header d-flex justify-content-between align-items-center">
               <h5 class="mb-0">Followers</h5>
               <button type="button" class="btn btn-sm btn-primary" (click)="openFollowerDialog()">
