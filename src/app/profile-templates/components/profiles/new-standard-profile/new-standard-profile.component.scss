@@ -405,3 +405,16 @@
     justify-content: center;
   }
 }
+
+.yellow-led {
+    position: absolute;
+    top: -4px;
+    right: 36px;
+    width: 16px;
+    height: 16px;
+    background: orange;
+    border: 1px solid white;
+    border-radius: 50%;
+    /* box-shadow: 0 0 6px 2px #ff9800; */
+    z-index: 10;
+}

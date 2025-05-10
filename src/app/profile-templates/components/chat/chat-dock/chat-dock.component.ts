@@ -65,6 +65,7 @@ export class ChatDockComponent implements OnInit, OnDestroy {
       this.pendingChatRequests = set;
       this.cdr.detectChanges();
     });
+    
   }
 
   startChat(user: OnlineUser) {
@@ -97,5 +98,9 @@ export class ChatDockComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     if (this.minimizedChatIdsSub) this.minimizedChatIdsSub.unsubscribe();
     if (this.pendingChatRequestsSub) this.pendingChatRequestsSub.unsubscribe();
+  }
+
+  get hasPendingChats(): boolean {
+    return this.pendingChatRequests && this.pendingChatRequests.size > 0;
   }
 } 

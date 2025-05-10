@@ -227,6 +227,7 @@
     <div class="online-users-badge" *ngIf="onlineUsersCount > 0">
       {{ onlineUsersCount }}
     </div>
+    <span *ngIf="pendingChats" class="yellow-led"></span>
   </div>
 
   <!-- Chat Dock Component -->

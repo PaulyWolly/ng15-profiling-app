@@ -35,6 +35,7 @@ import { ChatService, OnlineUser } from '@app/_services/chat.service';
 })
 export class NewStandardProfileComponent implements OnInit, OnDestroy, AfterViewInit {
     @ViewChild('scrollContainer') private scrollContainer?: ElementRef<HTMLDivElement>;
+    @ViewChild(ChatDockComponent) chatDock?: ChatDockComponent;
 
     @Input() profile!: Account;
     @Input() isPreview: boolean = false;
@@ -48,6 +49,7 @@ export class NewStandardProfileComponent implements OnInit, OnDestroy, AfterView
     // Chat dock properties
     showChatList = false;
     onlineUsersCount = 0;
+    pendingChats = false;
 
     constructor(
         private route: ActivatedRoute,
@@ -70,6 +72,11 @@ export class NewStandardProfileComponent implements OnInit, OnDestroy, AfterView
         // Subscribe to online users for chat dock
         this.chatService.getOnlineUsers().subscribe((users: OnlineUser[]) => {
             this.onlineUsersCount = users.length;
+            this.cdRef.detectChanges();
+        });
+        // Subscribe to pending chat requests for yellow LED
+        this.chatService.getPendingChatRequests().subscribe(set => {
+            this.pendingChats = set && set.size > 0;
             this.cdRef.detectChanges();
         });
     }

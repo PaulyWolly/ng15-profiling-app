@@ -1,3 +1,7 @@
+<div style="position:fixed;top:0;left:0;z-index:9999;background:#fff;color:#000">
+  pendingChats: {{ pendingChats }} | showChatList: {{ showChatList }}
+</div>
+
 <!-- Loading State -->
 <div *ngIf="loading" class="loading-container">
     <mat-spinner diameter="50"></mat-spinner>
@@ -124,6 +128,7 @@
     <div class="online-users-badge" *ngIf="onlineUsersCount > 0">
       {{ onlineUsersCount }}
     </div>
+    <span *ngIf="pendingChats && !showChatList" class="yellow-led"></span>
   </div>
   <app-chat-dock 
     [dockOpen]="showChatList"
