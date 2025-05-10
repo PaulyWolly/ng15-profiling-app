@@ -64,18 +64,18 @@ async function authenticate({ email, password, ipAddress }) {
         }
 
         // Revoke any existing active sessions for this user
-        await db.RefreshToken.updateMany(
-            { 
-                account: account.id,
-                revoked: null,
-                expires: { $gt: new Date() }
-            },
-            {
-                revoked: new Date(),
-                revokedByIp: ipAddress,
-                revokedReason: 'New login detected'
-            }
-        );
+        // await db.RefreshToken.updateMany(
+        //     { 
+        //         account: account.id,
+        //         revoked: null,
+        //         expires: { $gt: new Date() }
+        //     },
+        //     {
+        //         revoked: new Date(),
+        //         revokedByIp: ipAddress,
+        //         revokedReason: 'New login detected'
+        //     }
+        // );
 
         // authentication successful so generate jwt and refresh tokens
         console.log('Authentication successful, generating tokens');
