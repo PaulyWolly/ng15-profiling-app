@@ -28,6 +28,85 @@ router.post('/reset-password', resetPasswordSchema, resetPassword);
 // account routes
 router.get('/active-sessions', getActiveSessions);
 router.get('/', authenticate(), getAll);
+
+// List all active sessions for the current user
+router.get('/my-sessions', authenticate(), async (req, res, next) => {
+    console.log('\n[MySessions] ===== Route handler entered =====');
+    console.log('[MySessions] Request details:', {
+        method: req.method,
+        path: req.path,
+        originalUrl: req.originalUrl,
+        headers: {
+            authorization: req.headers.authorization ? 'Bearer [REDACTED]' : 'none',
+            cookie: req.headers.cookie ? 'present' : 'none'
+        },
+        user: req.user ? {
+            id: req.user.id,
+            email: req.user.email,
+            role: req.user.role
+        } : 'none'
+    });
+
+    try {
+        console.log('[MySessions] Checking db and RefreshToken model...');
+        console.log('[MySessions] db:', db ? 'defined' : 'undefined');
+        console.log('[MySessions] db.RefreshToken:', db.RefreshToken ? 'defined' : 'undefined');
+
+        if (!req.user) {
+            console.error('[MySessions] Authentication failed - req.user is undefined');
+            return res.status(401).json({ message: 'Authentication required' });
+        }
+
+        const userId = req.user.id;
+        console.log('[MySessions] userId:', userId);
+
+        console.log('[MySessions] Querying RefreshToken collection...');
+        const sessions = await db.RefreshToken.find({
+            account: userId,
+            revoked: null,
+            expires: { $gt: new Date() }
+        }).sort({ created: -1 });
+
+        console.log('[MySessions] Query complete. Found sessions:', sessions.length);
+        
+        const response = sessions.map(session => ({
+            id: session.id,
+            ip: session.createdByIp,
+            created: session.created,
+            expires: session.expires,
+            lastActivity: session.updated,
+            status: session.revoked ? 'Revoked' : (session.expires > new Date() ? 'Active' : 'Expired'),
+            isCurrent: req.cookies.refreshToken === session.token
+        }));
+
+        console.log('[MySessions] Sending response with', response.length, 'sessions');
+        res.json(response);
+    } catch (error) {
+        console.error('[MySessions] Error:', error);
+        console.error('[MySessions] Error stack:', error.stack);
+        next(error);
+    }
+});
+
+// Revoke a specific session for the current user
+router.post('/my-sessions/:sessionId/revoke', authenticate(), async (req, res, next) => {
+    try {
+        const userId = req.user.id;
+        const sessionId = req.params.sessionId;
+        const session = await db.RefreshToken.findById(sessionId);
+        if (!session || String(session.account) !== String(userId)) {
+            return res.status(404).json({ message: 'Session not found' });
+        }
+        session.revoked = new Date();
+        session.revokedByIp = req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.ip;
+        session.revokedReason = 'User revoked from My Sessions';
+        await session.save();
+        res.json({ message: 'Session revoked successfully' });
+    } catch (error) {
+        next(error);
+    }
+});
+
 router.get('/:id', authenticate(), getById);
 router.post('/', authenticate(), createSchema, create);
 router.put('/:id', authenticate(), updateSchema, update);
@@ -185,6 +264,15 @@ router.get('/check-image-paths', authenticate(Role.Admin), async (req, res, next
         next(error);
     }
 });
+
+// Print all registered routes before export
+console.log('\n[ACCOUNTS CONTROLLER] Registered routes:');
+router.stack.forEach(r => {
+    if (r.route) {
+        console.log(`[ACCOUNTS ROUTE] ${r.route.stack[0].method.toUpperCase()} ${r.route.path}`);
+    }
+});
+console.log('\n');
 
 module.exports = router;
 

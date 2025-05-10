@@ -202,4 +202,10 @@ h1, h2, h3, h4, h5, h6 {
     height: 18px;
     width: 18px;
     margin-right: 4px;
+}
+
+.account-layout-container {
+  padding-left: 24px;
+  padding-right: 24px;
+  box-sizing: border-box;
 } 

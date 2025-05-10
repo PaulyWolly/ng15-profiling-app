@@ -1,42 +1,7 @@
 ﻿<!-- Main application container -->
 <div class="app-container" [ngClass]="{ 'bg-light': account && account.role === Role.Admin }">
     <!-- Header with navigation -->
-    <nav class="navbar navbar-expand navbar-dark bg-dark px-3" *ngIf="account">
-        <!-- <a class="navbar-brand" href="#">Angular App</a> -->
-        <div class="navbar-nav">
-            <!-- Regular Profile link instead of dropdown -->
-            <li class="nav-item" routerLinkActive="active">
-                <a class="nav-link" routerLink="/profile" [class.active]="isActiveRoute('/profile')">Profile</a>
-            </li>
-            
-            <!-- New Profile Templates link -->
-            <li class="nav-item" routerLinkActive="active">
-                <a class="nav-link" routerLink="/profile-templates" [class.active]="isActiveRoute('/profile-templates')">Profiles</a>
-            </li>
-            
-            <li class="nav-item" routerLinkActive="active">
-                <a class="nav-link" routerLink="/profile/account-settings" [class.active]="isActiveRoute('/profile/account-settings')">Account</a>
-            </li>
-            
-            <li class="nav-item" *ngIf="account?.role === Role.Admin || account?.role === Role.SuperAdmin">
-                <a class="nav-link clickable" (click)="navigateTo('/admin')" [class.active]="isActiveRoute('/admin')">Admin</a>
-            </li>
-            <!-- Admin users should have direct access to accounts management -->
-            <!-- <li class="nav-item" *ngIf="account?.role === Role.Admin">
-                <a class="nav-link clickable" (click)="navigateTo('/admin/accounts')" [class.active]="isActiveRoute('/admin/accounts')">Accounts</a>
-            </li> -->
-        </div>
-        <div class="navbar-nav ms-auto">
-            <li class="nav-item" *ngIf="account">
-                <div class="nav-link user-status-wrapper">
-                    Logged in as <span class="user-name">{{ account.firstName }} {{ account.lastName }}</span>
-                </div>
-            </li>
-            <li class="nav-item" *ngIf="account">
-                <a class="nav-link logout-link" (click)="logout()">Logout</a>
-            </li>
-        </div>
-    </nav>
+    <app-new-menu-bar [account]="account"></app-new-menu-bar>
 
     <!-- Subnav router outlet - only show for admin users when in admin section -->
     <router-outlet name="subnav" *ngIf="(account?.role === Role.Admin || account?.role === Role.SuperAdmin) && isActiveRoute('/admin')"></router-outlet>

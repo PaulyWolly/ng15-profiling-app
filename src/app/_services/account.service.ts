@@ -117,7 +117,8 @@ export class AccountService {
         return sessionStorage.getItem(this.REFRESH_TOKEN_KEY);
     }
 
-    public get accountValue(): Account | null {
+    get accountValue() {
+        console.log('[AccountService] Getting account value:', this.accountSubject.value);
         return this.accountSubject.value;
     }
 
@@ -154,10 +155,11 @@ export class AccountService {
 
     // Authentication endpoints
     login(email: string, password: string, rememberMe: boolean = false) {
+        console.log('[AccountService] Attempting login for:', email);
         return this.getHttp().post<Account>(`${baseUrl}/authenticate`, { email, password, rememberMe }, { withCredentials: true })
             .pipe(
                 map(account => {
-                    console.log('[AccountService] Login Response:', account);
+                    console.log('[AccountService] Login successful:', account);
                     
                     // Format profile image URL if needed
                     if (account.profileImage) {
@@ -176,10 +178,9 @@ export class AccountService {
     }
 
     logout() {
-        // Clear sessionStorage only
-        sessionStorage.removeItem('account');
-        sessionStorage.removeItem(this.JWT_TOKEN_KEY);
-        sessionStorage.removeItem(this.REFRESH_TOKEN_KEY);
+        console.log('[AccountService] Logging out');
+        this.http.post<any>(`${environment.apiUrl}/accounts/revoke-token`, {}, { withCredentials: true }).subscribe();
+        this.stopRefreshTokenTimer();
         this.accountSubject.next(null);
         this.router.navigate(['/account/login']);
     }
@@ -664,5 +665,17 @@ export class AccountService {
 
     cleanupOrphanedTokens() {
         return this.getHttp().post<void>(`${environment.apiUrl}/accounts/cleanup-orphaned-tokens`, {});
+    }
+
+    // Fetch all active sessions for the current user
+    getMySessions() {
+        console.log('[AccountService] Fetching my sessions');
+        return this.getHttp().get<any[]>(`${baseUrl}/my-sessions`, { withCredentials: true });
+    }
+
+    // Revoke a specific session for the current user
+    revokeSession(sessionId: string) {
+        console.log('[AccountService] Revoking session:', sessionId);
+        return this.getHttp().post<any>(`${baseUrl}/my-sessions/${sessionId}/revoke`, {}, { withCredentials: true });
     }
 }
