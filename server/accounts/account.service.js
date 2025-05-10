@@ -139,6 +139,43 @@ async function register(params, origin) {
         throw 'Email "' + params.email + '" is already registered';
     }
 
+    // Handle temp profile image renaming
+    if (params.profileImage && params.profileImage.includes('tempProfileImage-')) {
+        try {
+            const email = params.email;
+            const extension = path.extname(params.profileImage) || '.png';
+            const safeEmail = email.replace(/[^a-zA-Z0-9@.]/g, '_');
+            const tempFilename = `tempProfileImage-${safeEmail}${extension}`;
+            const finalFilename = `profileImage-${safeEmail}${extension}`;
+            const tempPath = path.join(__dirname, '..', 'uploads', 'profiles', tempFilename);
+            const finalPath = path.join(__dirname, '..', 'uploads', 'profiles', finalFilename);
+
+            // Rename tempProfileImage-<email>.<ext> to profileImage-<email>.<ext>
+            if (fsSync.existsSync(tempPath)) {
+                if (fsSync.existsSync(finalPath)) {
+                    await fs.unlink(finalPath);
+                }
+                await fs.rename(tempPath, finalPath);
+                params.profileImage = `/uploads/profiles/${finalFilename}`;
+            }
+
+            // Clean up any temp_<timestamp>.<ext> files for this extension
+            const files = fsSync.readdirSync(path.join(__dirname, '..', 'uploads', 'profiles'));
+            files.forEach(f => {
+                if (
+                    f.startsWith('temp_') &&
+                    f.endsWith(extension) &&
+                    f !== tempFilename
+                ) {
+                    fsSync.unlinkSync(path.join(__dirname, '..', 'uploads', 'profiles', f));
+                }
+            });
+        } catch (err) {
+            console.error('[AccountService] Error renaming temp profile image:', err);
+            params.profileImage = null;
+        }
+    }
+
     // create account object
     const account = new db.Account(params);
 
