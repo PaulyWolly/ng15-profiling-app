@@ -265,36 +265,14 @@ export class AddEditComponent implements OnInit, OnDestroy {
                 this.alertService.error('File size must be less than 5MB');
                 return;
             }
-            this.uploading = true;
-            if (this.isAddMode) {
-                // New account: use temp profile image upload
-                const email = this.form.get('email')?.value || '';
-                this.uploadService.uploadTempProfileImage(event.file, email).subscribe({
-                    next: (res: any) => {
-                        this.pendingProfileImagePath = res.path || res.filename || res.url;
-                        this.uploading = false;
-                    },
-                    error: (err) => {
-                        this.alertService.error('Image upload failed');
-                        this.uploading = false;
-                    }
-                });
-            } else {
-                // Existing account: use normal profile image upload
-                const formData = new FormData();
-                formData.append('profileImage', event.file);
-                formData.append('userId', this.id!);
-                formData.append('userEmail', this.account?.email || '');
-                this.uploadService.uploadProfileImage(event.file, formData).subscribe({
-                    next: (res: any) => {
-                        this.pendingProfileImagePath = res.path || res.filename || res.url;
-                        this.uploading = false;
-                    },
-                    error: (err) => {
-                        this.alertService.error('Image upload failed');
-                        this.uploading = false;
-                    }
-                });
+
+            // Store the file and preview URL
+            this.selectedFile = event.file;
+            this.imageUrl = event.dataUrl;
+            
+            // If we have a path from the child component's upload, store it
+            if (event.path) {
+                this.pendingProfileImagePath = event.path;
             }
         }
     }

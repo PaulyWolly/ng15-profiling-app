@@ -131,35 +131,49 @@ export class NewAccountEditComponent implements OnInit, OnChanges {
         event.target.value = '';
         return;
       }
+
       // Get the latest form values
       const email = this.form.get('email')?.value;
       const firstname = this.form.get('firstName')?.value;
       const lastname = this.form.get('lastName')?.value;
-      // Validate required fields
-      if (!email && (!firstname || !lastname)) {
-        this.error = 'Please enter either an email or both first and last name before uploading an image';
-        event.target.value = '';
-        return;
+
+      // For admin account creation, we don't require email/name first
+      if (!this.isAdminView) {
+        // Regular user registration - validate required fields
+        if (!email && (!firstname || !lastname)) {
+          this.error = 'Please enter either an email or both first and last name before uploading an image';
+          event.target.value = '';
+          return;
+        }
       }
+
       // Log the values we're sending
       console.log('[NewAccountEdit] Uploading image with:', {
         email,
         firstname,
         lastname,
         hasFile: !!file,
-        fileName: file.name
+        fileName: file.name,
+        isAdminView: this.isAdminView
       });
+
       this.profileImageFile = file;
       this.uploadService.uploadTempProfileImage(file, email, firstname, lastname).subscribe({
         next: (res: any) => {
           this.error = null;
           this.tempProfileImagePath = res.path || res.filename || null;
           console.log('[NewAccountEdit] Upload successful:', res);
-          // Create preview
+          
+          // Create preview and emit change event
           const reader = new FileReader();
           reader.onload = (e: any) => {
             this.imageUrl = e.target.result as string;
-            this.imageChange.emit({file, dataUrl: this.imageUrl});
+            // Only emit the change event with the file and data URL
+            this.imageChange.emit({
+              file,
+              dataUrl: this.imageUrl,
+              path: this.tempProfileImagePath
+            });
           };
           reader.readAsDataURL(file);
           event.target.value = '';
@@ -171,6 +185,7 @@ export class NewAccountEditComponent implements OnInit, OnChanges {
           event.target.value = '';
           this.profileImageFile = null;
           this.imageUrl = null;
+          this.tempProfileImagePath = null;
         }
       });
     }
