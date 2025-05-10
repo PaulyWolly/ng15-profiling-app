@@ -11,6 +11,7 @@ const db = require('../_helpers/db');
 const fs = require('fs').promises;
 const path = require('path');
 const Account = require('./account.model');
+const websocketService = require('../services/websocket.service');
 
 console.log('Setting up accounts routes...');
 
@@ -205,7 +206,7 @@ function setTokenCookie(res, token) {
 
 function handleAuthenticate(req, res, next) {
     const { email, password } = req.body;
-    const ipAddress = req.ip;
+    const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.ip;
     accountService.authenticate({ email, password, ipAddress })
         .then(({ jwtToken, refreshToken, ...account }) => {
             setTokenCookie(res, refreshToken);
@@ -219,7 +220,7 @@ function handleAuthenticate(req, res, next) {
 
 function refreshToken(req, res, next) {
     const token = req.cookies.refreshToken;
-    const ipAddress = req.ip;
+    const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.ip;
     accountService.refreshToken({ token, ipAddress })
         .then(({ jwtToken, refreshToken, ...account }) => {
             setTokenCookie(res, refreshToken);
@@ -237,7 +238,7 @@ function revokeTokenSchema(req, res, next) {
 
 function revokeToken(req, res, next) {
     const token = req.body.token;
-    const ipAddress = req.ip;
+    const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.ip;
 
     if (!token) return res.status(400).json({ message: 'Token is required' });
 
@@ -549,6 +550,19 @@ async function forceLogoutHandler(req, res, next) {
 
         if (!result) {
             return res.status(404).json({ message: 'Session not found' });
+        }
+
+        // Remove the session from WebSocketService and broadcast updated online users
+        if (websocketService && websocketService.connections && websocketService.connections.has(sessionId)) {
+            const connection = websocketService.connections.get(sessionId);
+            if (connection && connection.userId) {
+                websocketService.handleDisconnection(sessionId, connection.userId);
+            } else {
+                websocketService.connections.delete(sessionId);
+                websocketService.broadcastOnlineUsers();
+            }
+        } else {
+            websocketService.broadcastOnlineUsers();
         }
 
         res.json({ message: 'Session revoked successfully' });

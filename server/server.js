@@ -170,4 +170,6 @@ function startServer() {
 // Initial connection
 connectWithRetry();
 
+app.set('trust proxy', true); // Trust proxy for correct client IP
+
 
