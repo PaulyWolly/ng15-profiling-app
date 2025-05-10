@@ -70,6 +70,7 @@ export class NewBusinessProfileComponent implements OnInit, AfterViewInit, OnCha
   users: any[] = [];
   
   activeChats$: Observable<any[]>;
+  pendingChats = false;
 
   constructor(
     private dialog: MatDialog,
@@ -96,6 +97,11 @@ export class NewBusinessProfileComponent implements OnInit, AfterViewInit, OnCha
     this.companyLogoLoading = !!this.profile?.companyLogo;
     this.loadUsers();
     this.ensureImagesHaveFullUrls();
+    // Subscribe to pending chat requests for yellow LED
+    this.chatService.getPendingChatRequests().subscribe(set => {
+      this.pendingChats = set && set.size > 0;
+      this.cdr.detectChanges();
+    });
     
     // Properly parse and set skills
     if (this.profile) {

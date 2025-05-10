@@ -39,6 +39,7 @@ export class NewSocialMediaProfileComponent implements OnInit {
   // Chat dock properties
   showChatList = false;
   onlineUsersCount = 0;
+  pendingChats = false;
 
   constructor(private router: Router, private dialog: MatDialog, private chatService: ChatService) {}
   
@@ -46,6 +47,10 @@ export class NewSocialMediaProfileComponent implements OnInit {
     // Subscribe to online users for chat dock
     this.chatService.getOnlineUsers().subscribe((users: OnlineUser[]) => {
       this.onlineUsersCount = users.length;
+    });
+    // Subscribe to pending chat requests for yellow LED
+    this.chatService.getPendingChatRequests().subscribe(set => {
+      this.pendingChats = set && set.size > 0;
     });
   }
   
