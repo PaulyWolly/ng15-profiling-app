@@ -36,12 +36,22 @@ export class UploadService {
         );
     }
 
-    uploadTempProfileImage(file: File, email?: string) {
+    uploadTempProfileImage(file: File, email?: string, firstname?: string, lastname?: string) {
         const formData = new FormData();
         formData.append('file', file);
-        if (email) {
-            formData.append('email', email);
-        }
+        if (email) formData.append('email', email);
+        if (firstname) formData.append('firstname', firstname);
+        if (lastname) formData.append('lastname', lastname);
+        
+        // Log the FormData contents for debugging
+        console.log('[UploadService] Uploading temp profile image with:', {
+            hasFile: !!file,
+            email,
+            firstname,
+            lastname,
+            formDataKeys: ['file', 'email', 'firstname', 'lastname'].filter(key => formData.has(key))
+        });
+
         return this.http.post<any>(`${environment.apiUrl}/upload/temp-profile-image`, formData);
     }
 } 

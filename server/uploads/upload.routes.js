@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { uploadMiddleware, uploadFollowerImage, uploadTempProfileImage } = require('./upload.controller');
 const authorize = require('../_middleware/authenticate');
+const busboy = require('busboy');
 
 // Follower image upload route
 router.post('/follower-image', 

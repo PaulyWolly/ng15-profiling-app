@@ -22,18 +22,10 @@ const storage = multer.diskStorage({
         cb(null, uploadPath);
     },
     filename: function (req, file, cb) {
+        // Always use a generic temp name for all uploads
         const extension = path.extname(file.originalname);
-        // If this is a temp profile image upload and email is present, use the new naming convention
-        if (req.originalUrl.includes('temp-profile-image') && req.body && req.body.email) {
-            const safeEmail = req.body.email.replace(/[^a-zA-Z0-9@.]/g, '_');
-            const filename = `tempProfileImage-${safeEmail}${extension}`;
-            return cb(null, filename);
-        }
-        // For follower images or other uploads, fallback to old logic
-        const timestamp = Date.now();
-        const randomString = crypto.randomBytes(8).toString('hex');
-        const fallbackFilename = `temp_${timestamp}_${randomString}${extension}`;
-        cb(null, fallbackFilename);
+        const tempName = 'temp_upload_' + Date.now() + '_' + Math.round(Math.random() * 1E9) + extension;
+        cb(null, tempName);
     }
 });
 
@@ -260,13 +252,26 @@ async function uploadProfileImage(req, res, next) {
 // Add a handler for pre-account profile image uploads (no userId/email required)
 async function uploadTempProfileImage(req, res, next) {
     try {
+        console.log('[uploadTempProfileImage] req.body:', req.body);
         if (!req.file) {
             return res.status(400).json({ message: 'No file uploaded' });
         }
         let email = req.body.email;
         let extension = path.extname(req.file.originalname) || '.png';
-        let safeEmail = email ? email.replace(/[^a-zA-Z0-9@.]/g, '_') : null;
-        let finalFilename = safeEmail ? `tempProfileImage-${safeEmail}${extension}` : req.file.filename;
+        let finalFilename = null;
+        if (email) {
+            let safeEmail = email.replace(/[^a-zA-Z0-9@.]/g, '_');
+            finalFilename = `tempProfileImage-${safeEmail}${extension}`;
+        } else if (req.body.firstname && req.body.lastname) {
+            let safeName = `${req.body.firstname}_${req.body.lastname}`.replace(/[^a-zA-Z0-9_]/g, '_');
+            finalFilename = `tempProfileImage-${safeName}${extension}`;
+        } else {
+            // Clean up uploaded file if present
+            if (req.file && fs.existsSync(req.file.path)) {
+                fs.unlinkSync(req.file.path);
+            }
+            return res.status(400).json({ message: 'Email or firstname+lastname is required for temp profile image uploads' });
+        }
         let finalPath = path.join(profilesDir, finalFilename);
 
         // If the file isn't already named as desired, rename it
@@ -274,19 +279,17 @@ async function uploadTempProfileImage(req, res, next) {
             fs.renameSync(req.file.path, finalPath);
         }
 
-        // Optionally, clean up any old temp files for this email
-        if (safeEmail) {
-            const files = fs.readdirSync(profilesDir);
-            files.forEach(f => {
-                if (
-                    f.startsWith('temp_') &&
-                    f.endsWith(extension) &&
-                    f !== finalFilename
-                ) {
-                    fs.unlinkSync(path.join(profilesDir, f));
-                }
-            });
-        }
+        // Optionally, clean up any old temp files for this user
+        const files = fs.readdirSync(profilesDir);
+        files.forEach(f => {
+            if (
+                f.startsWith('temp_') &&
+                f.endsWith(extension) &&
+                f !== finalFilename
+            ) {
+                fs.unlinkSync(path.join(profilesDir, f));
+            }
+        });
 
         const urlPath = `/uploads/profiles/${finalFilename}`;
         const apiUrl = process.env.API_URL || 'http://localhost:5001';

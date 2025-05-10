@@ -2,6 +2,7 @@ import { Component, OnInit, Input, Output, EventEmitter, OnChanges, SimpleChange
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Role } from '@app/_models';
 import { MustMatch } from '@app/_helpers/must-match.validator';
+import { UploadService } from '@app/_services/upload.service';
 
 @Component({
   selector: 'app-new-account-edit',
@@ -19,18 +20,20 @@ export class NewAccountEditComponent implements OnInit, OnChanges {
 
   @Output() save = new EventEmitter<any>();
   @Output() cancel = new EventEmitter<void>();
-  @Output() imageChange = new EventEmitter<{file: File, dataUrl: string}>();
+  @Output() imageChange = new EventEmitter<any>();
   @Output() imageRemove = new EventEmitter<void>();
 
   form!: FormGroup;
   imageUrl: string | null = null;
   profileImageFile: File | null = null;
-  error = '';
+  error: string | null = null;
   Role = Role;
   availableRoles = [Role.Admin, Role.User]; // Only Admin and User can be assigned
+  tempProfileImagePath: string | null = null;
 
   constructor(
-    private formBuilder: FormBuilder
+    private formBuilder: FormBuilder,
+    private uploadService: UploadService
   ) {}
 
   ngOnInit(): void {
@@ -48,7 +51,7 @@ export class NewAccountEditComponent implements OnInit, OnChanges {
       });
       this.imageUrl = null;
       this.profileImageFile = null;
-      this.error = '';
+      this.error = null;
     } else {
       this.patchForm(this.account);
     }
@@ -123,15 +126,53 @@ export class NewAccountEditComponent implements OnInit, OnChanges {
   onImageChange(event: any): void {
     if (event.target.files && event.target.files[0]) {
       const file = event.target.files[0];
+      // Prevent duplicate upload if the same file is selected again
+      if (this.profileImageFile && this.profileImageFile.name === file.name && this.tempProfileImagePath) {
+        event.target.value = '';
+        return;
+      }
+      // Get the latest form values
+      const email = this.form.get('email')?.value;
+      const firstname = this.form.get('firstName')?.value;
+      const lastname = this.form.get('lastName')?.value;
+      // Validate required fields
+      if (!email && (!firstname || !lastname)) {
+        this.error = 'Please enter either an email or both first and last name before uploading an image';
+        event.target.value = '';
+        return;
+      }
+      // Log the values we're sending
+      console.log('[NewAccountEdit] Uploading image with:', {
+        email,
+        firstname,
+        lastname,
+        hasFile: !!file,
+        fileName: file.name
+      });
       this.profileImageFile = file;
-      const reader = new FileReader();
-      
-      reader.onload = (e: any) => {
-        this.imageUrl = e.target.result as string;
-        this.imageChange.emit({file, dataUrl: this.imageUrl});
-      };
-      
-      reader.readAsDataURL(file);
+      this.uploadService.uploadTempProfileImage(file, email, firstname, lastname).subscribe({
+        next: (res: any) => {
+          this.error = null;
+          this.tempProfileImagePath = res.path || res.filename || null;
+          console.log('[NewAccountEdit] Upload successful:', res);
+          // Create preview
+          const reader = new FileReader();
+          reader.onload = (e: any) => {
+            this.imageUrl = e.target.result as string;
+            this.imageChange.emit({file, dataUrl: this.imageUrl});
+          };
+          reader.readAsDataURL(file);
+          event.target.value = '';
+        },
+        error: (err) => {
+          console.error('[NewAccountEdit] Upload failed:', err);
+          this.error = err.error?.message || 'Image upload failed';
+          // Clear the file input
+          event.target.value = '';
+          this.profileImageFile = null;
+          this.imageUrl = null;
+        }
+      });
     }
   }
 
@@ -144,12 +185,14 @@ export class NewAccountEditComponent implements OnInit, OnChanges {
   onSubmit(): void {
     // Gather form data including possible profile image
     const formData = { ...this.form.getRawValue() };
-    
     // Remove role if not admin
     if (!this.isAdmin && !this.isAdminView) {
       delete formData.role;
     }
-    
+    // Include temp profile image path if present
+    if (this.tempProfileImagePath) {
+      formData.profileImage = this.tempProfileImagePath;
+    }
     // Emit save event with form data
     this.save.emit(formData);
   }

@@ -23,8 +23,8 @@
           </div>
           <div class="d-flex justify-content-center gap-2 mt-3">
             <input type="file" class="form-control" (change)="onImageChange($event)" #fileInput hidden accept="image/*" [disabled]="isImageControlsDisabled()">
-            <button type="button" class="btn btn-sm btn-outline-primary" (click)="fileInput.click()" [disabled]="isImageControlsDisabled()">
-              Choose Image
+            <button type="button" class="btn btn-primary" (click)="fileInput.click()" [disabled]="isImageControlsDisabled()">
+              <i class="material-icons">cloud_upload</i> Upload Image
             </button>
             <button type="button" *ngIf="imageUrl" class="btn btn-sm btn-outline-danger" (click)="onImageRemove()" [disabled]="isImageControlsDisabled()">
               Remove

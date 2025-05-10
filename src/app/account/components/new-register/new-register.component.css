@@ -1,5 +1,5 @@
 .register-card {
-    width: 650px;  /* Increased width */
+    width: 800px;  /* Increased width */
     margin: 15px auto;
     background: white;
     border-radius: 8px; /* Updated border-radius */
@@ -70,7 +70,7 @@ label {
 
 input, select {
     width: 100%;
-    padding: 10px;
+    padding: 6px;
     border: 1px solid #ced4da;
     border-radius: 4px;
     font-size: 14px;
@@ -125,4 +125,32 @@ input:focus, select:focus {
 .btn-cancel:hover {
     color: #5a6268;
     text-decoration: underline;
+}
+
+.register-columns {
+  display: flex;
+  gap: 32px;
+  align-items: flex-start;
+}
+
+.register-image-col {
+  flex: 0 0 180px;
+  max-width: 200px;
+  margin-top: 100px;
+}
+
+.register-form-col {
+  flex: 1;
+  min-width: 0;
+}
+@media (max-width: 700px) {
+  .register-columns {
+    flex-direction: column;
+    gap: 16px;
+  }
+  .register-image-col,
+  .register-form-col {
+    max-width: 100%;
+    flex: 1 1 100%;
+  }
 } 

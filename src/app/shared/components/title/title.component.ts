@@ -15,6 +15,7 @@ export class TitleComponent {
   @Input() subtitle?: string;
   @Input() alignment: 'left' | 'center' | 'right' = 'left';
   @Input() marginBottom: string = 'default';
+  @Input() appHeader: boolean = false;
 
   get titleClasses() {
     return {
