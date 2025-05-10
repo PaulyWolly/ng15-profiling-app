@@ -21,8 +21,7 @@ export class LayoutComponent implements OnInit {
                 .pipe(first())
                 .subscribe({
                     next: () => {
-                        // Only redirect if token refresh was successful
-                        this.router.navigate(['/']);
+                        // No redirect here; stay on the current page
                     },
                     error: () => {
                         // If token refresh fails, user should stay on login page

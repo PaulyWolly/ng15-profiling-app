@@ -1,0 +1,23 @@
+.navbar-nav .nav-link:hover {
+  color: #339cff !important; /* Lighter blue for hover */
+  background-color: transparent;
+}
+
+/* Only the active nav-link gets a bottom border (underline) */
+.navbar-nav .nav-link.active {
+  color: #0d6efd !important; /* Bootstrap blue */
+  background-color: transparent !important;
+  font-weight: 700;
+}
+
+.navbar-nav .nav-link.active::after {
+  content: none !important;
+}
+
+.dropdown-menu {
+  position: absolute !important;
+  z-index: 30000 !important;
+  margin-top: 0 !important;
+  transform: none !important;
+  font-size: 1rem !important;
+}

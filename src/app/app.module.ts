@@ -22,6 +22,8 @@ import { AdminModule } from './admin/admin.module';
 import { SharedModule } from './shared/shared.module';
 import { ProfileModule } from './profile/profile.module';
 import { ProfileTemplatesModule } from './profile-templates/profile-templates.module';
+import { SuperAdminComponent } from './super-admin/super-admin/super-admin.component';
+import { NewMenuBarComponent } from './new-menu-bar/new-menu-bar.component';
 
 // Add factory function to initialize ConfigService
 export function configInitializer(configService: ConfigService) {
@@ -31,7 +33,9 @@ export function configInitializer(configService: ConfigService) {
 @NgModule({
     declarations: [
         AppComponent,
-        FooterComponent
+        FooterComponent,
+        SuperAdminComponent,
+        NewMenuBarComponent
     ],
     imports: [
         BrowserModule,

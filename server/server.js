@@ -124,6 +124,13 @@ try {
 const green = chalk ? chalk.green : (s) => `\x1b[32m${s}\x1b[0m`;
 const blue = chalk ? chalk.blue : (s) => `\x1b[34m${s}\x1b[0m`;
 
+// Print all registered routes at startup
+app._router.stack
+  .filter(r => r.route)
+  .forEach(r => {
+    console.log('[ROUTE]', r.route.stack[0].method.toUpperCase(), r.route.path);
+  });
+
 // Connect to MongoDB with retry logic
 function connectWithRetry() {
   if (mongoose.connection.readyState === 0) { // Only connect if not already connected
