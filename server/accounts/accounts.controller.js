@@ -76,7 +76,8 @@ router.get('/my-sessions', authenticate(), async (req, res, next) => {
             expires: session.expires,
             lastActivity: session.updated,
             status: session.revoked ? 'Revoked' : (session.expires > new Date() ? 'Active' : 'Expired'),
-            isCurrent: req.cookies.refreshToken === session.token
+            isCurrent: req.cookies.refreshToken === session.token,
+            browser: session.browser || 'Unknown'
         }));
 
         console.log('[MySessions] Sending response with', response.length, 'sessions');
@@ -95,14 +96,17 @@ router.post('/my-sessions/:sessionId/revoke', authenticate(), async (req, res, n
         const sessionId = req.params.sessionId;
         const session = await db.RefreshToken.findById(sessionId);
         if (!session || String(session.account) !== String(userId)) {
+            console.log(`[Revoke] Session not found or does not belong to user. userId=${userId}, sessionId=${sessionId}`);
             return res.status(404).json({ message: 'Session not found' });
         }
         session.revoked = new Date();
         session.revokedByIp = req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.ip;
         session.revokedReason = 'User revoked from My Sessions';
         await session.save();
+        console.log(`[Revoke] Session revoked. sessionId=${sessionId}, userId=${userId}, revokedAt=${session.revoked}`);
         res.json({ message: 'Session revoked successfully' });
     } catch (error) {
+        console.error('[Revoke] Error revoking session:', error);
         next(error);
     }
 });
@@ -265,6 +269,22 @@ router.get('/check-image-paths', authenticate(Role.Admin), async (req, res, next
     }
 });
 
+// Add logout route to revoke current session
+router.post('/logout', authenticate(), async (req, res, next) => {
+    try {
+        const refreshToken = req.cookies.refreshToken;
+        const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.ip;
+        if (!refreshToken) {
+            return res.status(400).json({ message: 'No refresh token found in cookies.' });
+        }
+        await accountService.revokeToken({ token: refreshToken, ipAddress });
+        res.clearCookie('refreshToken');
+        res.json({ message: 'Logged out and session revoked.' });
+    } catch (error) {
+        next(error);
+    }
+});
+
 // Print all registered routes before export
 console.log('\n[ACCOUNTS CONTROLLER] Registered routes:');
 router.stack.forEach(r => {
@@ -295,7 +315,8 @@ function setTokenCookie(res, token) {
 function handleAuthenticate(req, res, next) {
     const { email, password } = req.body;
     const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.ip;
-    accountService.authenticate({ email, password, ipAddress })
+    const userAgent = req.headers['user-agent'] || 'Unknown';
+    accountService.authenticate({ email, password, ipAddress, userAgent })
         .then(({ jwtToken, refreshToken, ...account }) => {
             setTokenCookie(res, refreshToken);
             res.json({ jwtToken, refreshToken, ...account });

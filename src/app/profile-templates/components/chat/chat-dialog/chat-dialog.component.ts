@@ -184,6 +184,13 @@ export class ChatDialogComponent implements OnInit, OnDestroy, AfterViewInit, Af
     
     // Add window focus listener
     window.addEventListener('focus', this.onWindowFocus);
+
+    // Mark all messages as read and clear pending notification
+    if (this.currentUserId && this.data.user.id) {
+      this.chatService.markChatAsRead(this.data.user.id, this.currentUserId).subscribe(() => {
+        this.chatService['removePendingRequest'](this.data.user.id);
+      });
+    }
   }
 
   ngAfterViewInit() {

@@ -485,4 +485,8 @@ export class NewBusinessProfileComponent implements OnInit, AfterViewInit, OnCha
       }
     }
   }
+
+  get hasPendingChats(): boolean {
+    return this.pendingChats && !this.showChatList;
+  }
 } 

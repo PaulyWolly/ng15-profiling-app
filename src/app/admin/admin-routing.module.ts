@@ -6,38 +6,31 @@ import { LayoutComponent } from './components/layout/layout.component';
 import { OverviewComponent } from './components/overview/overview.component';
 import { MonitorComponent } from './components/monitor/monitor.component';
 import { SettingsComponent } from './components/settings/settings.component';
-
-// Lazy load accounts module
-const accountsModule = () => import('./accounts/accounts.module').then(x => x.AccountsModule);
+import { ScriptsComponent } from './scripts/scripts.component';
 
 const routes: Routes = [
-    // Named outlet for subnav with admin menu
-    { 
-        path: '', 
-        component: SubNavComponent, 
-        outlet: 'subnav'
-    },
-    // Main content routes
-    { 
-        path: '', 
-        component: LayoutComponent,
-        children: [
-            // Redirect empty path to overview
-            { path: '', redirectTo: 'overview', pathMatch: 'full' },
-            // Admin overview page with its own path
-            { path: 'overview', component: OverviewComponent, runGuardsAndResolvers: 'always' },
-            // User session monitoring
-            { path: 'monitor', component: MonitorComponent, runGuardsAndResolvers: 'always' },
-            // System settings
-            { path: 'settings', component: SettingsComponent, runGuardsAndResolvers: 'always' },
-            // Accounts management
-            { path: 'accounts', loadChildren: accountsModule }
-        ]
-    }
+  { 
+    path: '', 
+    component: SubNavComponent, 
+    outlet: 'subnav'
+  },
+  { 
+    path: '', 
+    component: LayoutComponent,
+    children: [
+      { path: '', redirectTo: 'overview', pathMatch: 'full' },
+      { path: 'overview', component: OverviewComponent },
+      { path: 'monitor', component: MonitorComponent },
+      { path: 'settings', component: SettingsComponent },
+      { path: 'scripts', component: ScriptsComponent },
+      // Add accounts route
+      { path: 'accounts', loadChildren: () => import('./accounts/accounts.module').then(m => m.AccountsModule) }
+    ]
+  }
 ];
 
 @NgModule({
-    imports: [RouterModule.forChild(routes)],
-    exports: [RouterModule]
+  imports: [RouterModule.forChild(routes)],
+  exports: [RouterModule]
 })
 export class AdminRoutingModule { }

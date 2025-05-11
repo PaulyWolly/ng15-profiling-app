@@ -7,6 +7,8 @@ const schema = new Schema({
     expires: Date,
     created: { type: Date, default: Date.now },
     createdByIp: String,
+    userAgent: String,
+    browser: String,
     revoked: Date,
     revokedByIp: String,
     replacedByToken: String

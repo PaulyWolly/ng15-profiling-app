@@ -1,3 +1,4 @@
+console.log('*** [adminService] - run ***');
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
@@ -16,8 +17,12 @@ function requireAdmin(req, res, next) {
 
 // GET /api/admin/scripts - List available scripts
 router.get('/', requireAdmin, (req, res) => {
+  console.log('[AdminScripts] Looking for scripts in:', SCRIPTS_DIR);
   fs.readdir(SCRIPTS_DIR, (err, files) => {
-    if (err) return res.status(500).json({ error: err.message });
+    if (err) {
+      console.error('[AdminScripts] Error reading scripts dir:', err);
+      return res.status(500).json({ error: err.message });
+    }
     const scripts = files.filter(f => f.endsWith('.js'));
     res.json(scripts);
   });
