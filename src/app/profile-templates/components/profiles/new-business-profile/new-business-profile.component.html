@@ -39,6 +39,26 @@
               <mat-icon matSuffix>search</mat-icon>
             </mat-form-field>
           </div>
+          <div class="social-icons">
+            <a *ngIf="profile.facebook" [href]="profile.facebook" target="_blank" class="social-icon" [appCustomTooltip]="'Visit my Facebook Profile'">
+              <i class="fab fa-facebook-f"></i>
+            </a>
+            <a *ngIf="profile.linkedin" [href]="profile.linkedin" target="_blank" class="social-icon" [appCustomTooltip]="'Visit my LinkedIn Profile'">
+              <i class="fab fa-linkedin-in"></i>
+            </a>
+            <a *ngIf="profile.website" [href]="profile.website" target="_blank" class="social-icon" [appCustomTooltip]="'Visit my Website'">
+              <i class="fa-solid fa-globe"></i>
+            </a>
+            <a *ngIf="profile.github" [href]="profile.github" target="_blank" class="social-icon" [appCustomTooltip]="'Visit my GitHub Profile'">
+              <i class="fab fa-github"></i>
+            </a>
+            <a *ngIf="profile.twitter" [href]="profile.twitter" target="_blank" class="social-icon" [appCustomTooltip]="'Visit my Twitter Profile'">
+              <i class="fab fa-twitter"></i>
+            </a>
+            <a *ngIf="profile.instagram" [href]="profile.instagram" target="_blank" class="social-icon" [appCustomTooltip]="'Visit my Instagram Profile'">
+              <i class="fab fa-instagram"></i>
+            </a>
+          </div>
           <div class="rating-container">
             <ul class="rating-list">
               <li>Rating:</li>
