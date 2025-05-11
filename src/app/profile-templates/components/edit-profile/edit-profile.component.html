@@ -191,6 +191,14 @@
                   <label class="form-label">Instagram</label>
                   <input type="text" formControlName="instagram" class="form-control">
                 </div>
+                <div class="col-md-6">
+                  <label class="form-label">LinkedIn</label>
+                  <input type="text" formControlName="linkedin" class="form-control">
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Github</label>
+                  <input type="text" formControlName="github" class="form-control">
+                </div>
                 <div class="col-md-3" *ngIf="showField('followersCount')">
                   <label class="form-label">Followers Count</label>
                   <input type="number" formControlName="followersCount" class="form-control">
@@ -230,21 +238,6 @@
               <div class="text-center text-muted" *ngIf="followers.length === 0">
                 No followers added yet. Click "Add Follower" to get started.
               </div>
-            </div>
-          </div>
-
-          <!-- Template Type Section -->
-          <div class="card mb-3">
-            <div class="card-header">
-              <h5 class="mb-0">Profile Template Type</h5>
-            </div>
-            <div class="card-body">
-              <label class="form-label">Profile Template Type</label>
-              <select formControlName="profileTemplateType" class="form-select" (change)="onTemplateChange()">
-                <option *ngFor="let template of profileTemplates" [value]="template.id">
-                  {{template.name}}
-                </option>
-              </select>
             </div>
           </div>
         </form>

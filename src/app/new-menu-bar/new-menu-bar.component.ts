@@ -1,6 +1,7 @@
 import { Component, Input, AfterViewInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { Role } from '../_models/role';
+import { AccountService } from '../_services/account.service';
 
 @Component({
   selector: 'app-new-menu-bar',
@@ -14,7 +15,7 @@ export class NewMenuBarComponent implements AfterViewInit {
   currentUrl: string = '';
   dropdownOpen = false;
 
-  constructor(private router: Router) {
+  constructor(private router: Router, private accountService: AccountService) {
     this.currentUrl = this.router.url;
     this.router.events.subscribe(() => {
       this.currentUrl = this.router.url;
@@ -50,7 +51,6 @@ export class NewMenuBarComponent implements AfterViewInit {
   }
 
   logout() {
-    // Emit an event or call a service to log out
-    window.location.href = '/logout'; // fallback, should be replaced with actual logout logic
+    this.accountService.logout();
   }
 }
