@@ -20,4 +20,8 @@ export class PostService {
   addReply(postId: string, reply: { sender: string; content: string }): Observable<any> {
     return this.http.post<any>(`${this.apiUrl}/${postId}/reply`, reply);
   }
+
+  deletePost(postId: string): Observable<any> {
+    return this.http.delete<any>(`${this.apiUrl}/${postId}`, { withCredentials: true });
+  }
 } 
