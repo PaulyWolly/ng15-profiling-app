@@ -147,4 +147,26 @@ mat-card-actions {
     background-color: #f5f5f5;
     border-color: #ccc;
   }
+}
+
+.delete-post-btn {
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  min-height: 48px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  .delete-post-icon {
+    color: #e53935 !important; /* Material red */
+    font-size: 1.2em !important; /* Even larger */
+    width: 1em;
+    height: 1em;
+    line-height: 1em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 } 

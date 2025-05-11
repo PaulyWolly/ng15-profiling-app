@@ -24,4 +24,12 @@ export class PostService {
   deletePost(postId: string): Observable<any> {
     return this.http.delete<any>(`${this.apiUrl}/${postId}`, { withCredentials: true });
   }
+
+  likePost(postId: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/${postId}/like`, {});
+  }
+
+  sharePost(postId: string): Observable<any> {
+    return this.http.post<any>(`${this.apiUrl}/${postId}/share`, {});
+  }
 } 

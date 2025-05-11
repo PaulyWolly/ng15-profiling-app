@@ -56,7 +56,16 @@ export class BusinessPostsComponent implements OnInit, OnChanges {
   }
 
   onLike(post: Post) {
-    post.likes++;
+    this.postService.likePost(post.id.toString()).subscribe({
+      next: (res) => {
+        post.likes = res.likes;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Failed to like post:', err);
+        this.snackBar.open('Failed to like post: ' + (err.error?.message || err.message), 'Close', { duration: 4000, panelClass: 'snackbar-error' });
+      }
+    });
   }
 
   onComment(post: Post) {
@@ -65,7 +74,16 @@ export class BusinessPostsComponent implements OnInit, OnChanges {
   }
 
   onShare(post: Post) {
-    post.shares++;
+    this.postService.sharePost(post.id.toString()).subscribe({
+      next: (res) => {
+        post.shares = res.shares;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Failed to share post:', err);
+        this.snackBar.open('Failed to share post: ' + (err.error?.message || err.message), 'Close', { duration: 4000, panelClass: 'snackbar-error' });
+      }
+    });
   }
 
   getTimeAgo(dateString: string): string {

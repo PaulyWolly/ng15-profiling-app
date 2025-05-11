@@ -12,7 +12,9 @@ const postSchema = new Schema({
   recipient: { type: Schema.Types.ObjectId, ref: 'Account', required: true },
   content: { type: String, required: true },
   createdAt: { type: Date, default: Date.now },
-  replies: [replySchema]
+  replies: [replySchema],
+  likes: { type: Number, default: 0 },
+  shares: { type: Number, default: 0 }
 });
 
 postSchema.set('toJSON', {

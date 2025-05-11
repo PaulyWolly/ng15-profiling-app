@@ -64,4 +64,34 @@ router.delete('/:id', isSuperAdmin, async (req, res) => {
   }
 });
 
+// Increment likes for a post
+router.post('/:id/like', async (req, res) => {
+  try {
+    const post = await Post.findByIdAndUpdate(
+      req.params.id,
+      { $inc: { likes: 1 } },
+      { new: true }
+    );
+    if (!post) return res.status(404).json({ error: 'Post not found' });
+    res.json({ likes: post.likes });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// Increment shares for a post
+router.post('/:id/share', async (req, res) => {
+  try {
+    const post = await Post.findByIdAndUpdate(
+      req.params.id,
+      { $inc: { shares: 1 } },
+      { new: true }
+    );
+    if (!post) return res.status(404).json({ error: 'Post not found' });
+    res.json({ shares: post.shares });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
 module.exports = router; 
