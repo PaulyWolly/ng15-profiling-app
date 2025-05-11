@@ -83,7 +83,6 @@
 /* Make active links more visible */
 .navbar-nav .nav-link.active {
     color: #fff !important;
-    font-weight: 700 !important;
     position: relative;
 }
 

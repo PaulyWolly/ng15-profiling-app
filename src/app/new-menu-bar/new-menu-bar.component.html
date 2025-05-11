@@ -3,10 +3,11 @@
     <div class="navbar-nav">
         <!-- Account Dropdown (All users) -->
         <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle"
+            <a class="nav-link dropdown-toggle custom-caret"
                href="#" id="accountDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false"
                [class.active]="dropdownOpen || isAccountSectionActive()">
                 Account
+                <span class="custom-caret-icon" [class.open]="dropdownOpen || isAccountSectionActive()">▼</span>
             </a>
             <ul class="dropdown-menu" aria-labelledby="accountDropdown">
                 <li><a class="dropdown-item" routerLink="/profile-templates" [class.active]="isActiveRoute('/profile-templates')">All Profiles</a></li>
