@@ -11,6 +11,7 @@ const http = require('http');
 const websocketService = require('./services/websocket.service');
 const chatApi = require('./services/chat.service.js').router;
 const cookieParser = require('cookie-parser');
+const adminScriptsRouter = require('./services/admin-scripts.service');
 require('./users/user.model');
 
 process.stdout.write('\n'); // Ensure spinner is on its own line
@@ -103,6 +104,7 @@ app.use('/accounts', require('./accounts/accounts.controller'));
 app.use('/admin', require('./controllers/admin.controller'));
 app.use('/api/posts', require('./controllers/posts.controller'));
 app.use('/api/chat', chatApi);
+app.use('/api/admin/scripts', adminScriptsRouter);
 
 // Add config route - use the specific function as middleware
 const configController = require('./config/config.controller');
