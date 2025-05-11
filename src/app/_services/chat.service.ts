@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BehaviorSubject, Observable, Subject } from 'rxjs';
+import { BehaviorSubject, Observable, Subject, tap } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { ChatDialogComponent } from '../profile-templates/components/chat/chat-dialog/chat-dialog.component';
@@ -83,6 +83,26 @@ export class ChatService {
         this.messageSubjects = {};  // Clear all message subjects
       }
     });
+
+    // On service init, fetch unread chats for the current user
+    const currentUserId = this.accountService.accountValue?.id;
+    console.log('[ChatService] Fetching unread chats for user:', currentUserId);
+    if (currentUserId) {
+      this.getUnreadChats(currentUserId)
+        .subscribe({
+            next: unreadChats => {
+              const newSet = new Set<string>();
+              if (unreadChats && unreadChats.length > 0) {
+                unreadChats.forEach(chat => newSet.add(chat.senderId));
+              }
+              this.pendingChatRequests.next(newSet);
+            },
+            error: err => {
+              console.error('[ChatService] Error fetching unread chats:', err);
+              this.pendingChatRequests.next(new Set());
+            }
+        });
+    }
   }
 
   private initializeWebSocket() {
@@ -560,5 +580,25 @@ export class ChatService {
 
   private handleNewPostNotification(post: any) {
     this.newPostSubject.next(post);
+  }
+
+  // Fetch unread chats for a user
+  public getUnreadChats(userId: string): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/unread/${userId}`);
+  }
+
+  // Mark all messages from sender to recipient as read
+  public markChatAsRead(senderId: string, recipientId: string): Observable<any> {
+    return this.http.post(`${this.apiUrl}/markAsRead`, { senderId, recipientId }).pipe(
+      tap(() => {
+        this.getUnreadChats(recipientId).subscribe(unreadChats => {
+          const newSet = new Set<string>();
+          if (unreadChats && unreadChats.length > 0) {
+            unreadChats.forEach(chat => newSet.add(chat.senderId));
+          }
+          this.pendingChatRequests.next(newSet);
+        });
+      })
+    );
   }
 } 

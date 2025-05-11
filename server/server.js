@@ -11,6 +11,9 @@ const http = require('http');
 const websocketService = require('./services/websocket.service');
 const chatApi = require('./services/chat.service.js').router;
 const cookieParser = require('cookie-parser');
+console.log('*** [server.js] - about to require admin-scripts.service.js ***');
+const adminScriptsRouter = require('./services/admin-scripts.service');
+console.log('*** [server.js] - successfully required admin-scripts.service.js ***');
 require('./users/user.model');
 
 process.stdout.write('\n'); // Ensure spinner is on its own line
@@ -100,6 +103,9 @@ app.use('/upload', require('./uploads/upload.routes'));
 
 // api routes
 app.use('/accounts', require('./accounts/accounts.controller'));
+
+app.use('/api/admin/scripts', adminScriptsRouter);
+
 app.use('/admin', require('./controllers/admin.controller'));
 app.use('/api/posts', require('./controllers/posts.controller'));
 app.use('/api/chat', chatApi);
@@ -178,5 +184,13 @@ function startServer() {
 connectWithRetry();
 
 app.set('trust proxy', true); // Trust proxy for correct client IP
+
+// Import routes
+const accountRoutes = require('./routes/accounts');
+const scriptsRoutes = require('./routes/scripts');
+
+// Register routes
+app.use('/api/account', accountRoutes);
+app.use('/api/admin/scripts', scriptsRoutes);
 
 

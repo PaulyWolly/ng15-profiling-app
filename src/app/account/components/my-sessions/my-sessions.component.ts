@@ -11,6 +11,17 @@ export class MySessionsComponent implements OnInit {
     loading = false;
     error = '';
 
+    // Pagination properties
+    currentPage = 1;
+    pageSize = 5;
+    get totalPages() {
+        return Math.ceil(this.sessions.length / this.pageSize) || 1;
+    }
+    get pagedSessions() {
+        const start = (this.currentPage - 1) * this.pageSize;
+        return this.sessions.slice(start, start + this.pageSize);
+    }
+
     constructor(private accountService: AccountService) {
         console.log('[MySessionsComponent] Constructor called');
     }
@@ -30,6 +41,7 @@ export class MySessionsComponent implements OnInit {
                 next: (sessions) => {
                     console.log('[MySessionsComponent] Sessions loaded:', sessions);
                     this.sessions = sessions;
+                    this.currentPage = 1; // Reset to first page on reload
                     this.loading = false;
                 },
                 error: (error) => {
@@ -54,4 +66,10 @@ export class MySessionsComponent implements OnInit {
                 }
             });
     }
+
+    // Pagination navigation methods
+    goToFirstPage() { this.currentPage = 1; }
+    goToPrevPage() { if (this.currentPage > 1) this.currentPage--; }
+    goToNextPage() { if (this.currentPage < this.totalPages) this.currentPage++; }
+    goToLastPage() { this.currentPage = this.totalPages; }
 } 

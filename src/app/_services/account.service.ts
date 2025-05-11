@@ -190,6 +190,7 @@ export class AccountService {
 
     logout() {
         console.log('[AccountService] Logging out');
+        this.clearAuthData(); // Ensure all tokens and session data are removed
         this.http.post<any>(`${environment.apiUrl}/accounts/revoke-token`, {}, { withCredentials: true }).subscribe();
         this.stopRefreshTokenTimer();
         this.accountSubject.next(null);

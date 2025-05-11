@@ -153,4 +153,26 @@ router.get('/messages/:chatId', async (req, res) => {
   }
 });
 
+// GET /api/chat/unread/:userId
+router.get('/unread/:userId', async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const unreadChats = await Chat.find({ recipientId: userId, read: false });
+    res.json(unreadChats);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// POST /api/chat/markAsRead
+router.post('/markAsRead', async (req, res) => {
+  try {
+    const { senderId, recipientId } = req.body;
+    await Chat.updateMany({ senderId, recipientId, read: false }, { $set: { read: true } });
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = { WebSocketService, router }; 

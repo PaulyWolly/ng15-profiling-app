@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve --open --port 5000",
+    "start": "ng serve --port 5000 --proxy-config proxy.conf.json",
     "start:server": "cd server && npm start",
     "start:all": "concurrently \"npm run start\" \"npm run start:server\"",
     "build": "ng build",

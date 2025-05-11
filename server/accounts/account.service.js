@@ -7,6 +7,7 @@ const Role = require('../_helpers/role');
 const path = require('path');
 const fs = require('fs').promises;
 const fsSync = require('fs');
+const UAParser = require('ua-parser-js');
 
 module.exports = {
     authenticate,
@@ -25,7 +26,7 @@ module.exports = {
     logAllImagePaths
 };
 
-async function authenticate({ email, password, ipAddress }) {
+async function authenticate({ email, password, ipAddress, userAgent }) {
     console.log('Authentication attempt:', { email, ipAddress });
     
     try {
@@ -77,10 +78,21 @@ async function authenticate({ email, password, ipAddress }) {
         //     }
         // );
 
+        // Parse user-agent for a friendly browser string
+        let friendlyBrowser = 'Unknown';
+        if (userAgent && typeof userAgent === 'string') {
+            const parser = new UAParser(userAgent);
+            const os = parser.getOS();
+            const browser = parser.getBrowser();
+            const osString = os.name && os.version ? `${os.name} ${os.version}` : os.name || '';
+            const browserString = browser.name && browser.version ? `${browser.name}/${browser.version}` : browser.name || '';
+            friendlyBrowser = [osString, browserString].filter(Boolean).join(' ');
+        }
+
         // authentication successful so generate jwt and refresh tokens
         console.log('Authentication successful, generating tokens');
         const jwtToken = generateJwtToken(account);
-        const refreshToken = generateRefreshToken(account, ipAddress);
+        const refreshToken = generateRefreshToken(account, ipAddress, userAgent, friendlyBrowser);
 
         // save refresh token
         await refreshToken.save();
@@ -637,13 +649,15 @@ function generateJwtToken(account) {
     return token;
 }
 
-function generateRefreshToken(account, ipAddress) {
+function generateRefreshToken(account, ipAddress, userAgent, browser) {
     // create a refresh token that expires in 7 days
     return new db.RefreshToken({
         account: account.id,
         token: randomTokenString(),
         expires: new Date(Date.now() + 7*24*60*60*1000),
-        createdByIp: ipAddress
+        createdByIp: ipAddress,
+        userAgent: userAgent || 'Unknown',
+        browser: browser || 'Unknown'
     });
 }
 
