@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Post = require('../users/post.model');
+const websocketService = require('../services/websocket.service');
 
 // Create a new post
 router.post('/', async (req, res) => {
@@ -8,7 +9,13 @@ router.post('/', async (req, res) => {
     const { sender, recipient, content } = req.body;
     const post = new Post({ sender, recipient, content });
     await post.save();
-    res.status(201).json(post);
+    // Populate sender and recipient for richer event data
+    const populatedPost = await Post.findById(post._id)
+      .populate('sender', 'firstName lastName profileImage')
+      .populate('recipient', 'firstName lastName profileImage');
+    // Emit new_post event to recipient
+    websocketService.emitNewPost(recipient, populatedPost);
+    res.status(201).json(populatedPost);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }

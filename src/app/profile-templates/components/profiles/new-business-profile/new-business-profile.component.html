@@ -111,7 +111,7 @@
 
           <!-- Tabs section -->
           <div class="profile-content-section">
-            <div class="tab-header-container">
+            <div class="tab-header-container" style="display: flex; align-items: center; position: relative;">
               <mat-tab-group class="profile-tabs" mat-stretch-tabs="false" mat-align-tabs="start" (selectedTabChange)="onTabChange($event)">
                 <mat-tab label="Timeline">
                   <ng-template mat-tab-label>
@@ -228,6 +228,14 @@
                   </div>
                 </mat-tab>
               </mat-tab-group>
+              <div style="position: absolute; left: 50%; transform: translateX(-50%); display: flex; align-items: center; z-index: 2;">
+                <div class="posts-refresh-bar" *ngIf="hasNewPosts">
+                  <span class="led-indicator"></span>
+                  <button mat-stroked-button color="primary" (click)="refreshPosts()">
+                    <mat-icon>refresh</mat-icon> Refresh Posts
+                  </button>
+                </div>
+              </div>
               <button mat-raised-button color="primary" class="create-post-btn" [class.hidden]="selectedTabIndex !== 0" (click)="openCreatePostDialog()">Create Post</button>
             </div>
           </div>

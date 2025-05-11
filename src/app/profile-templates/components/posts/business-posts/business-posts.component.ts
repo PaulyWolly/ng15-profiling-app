@@ -5,6 +5,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { Post } from '../../../models/post.interface';
 import samplePosts from '../../../data/sample-posts.json';
+import { AccountService } from '@app/_services/account.service';
 
 @Component({
   selector: 'app-business-posts',
@@ -25,7 +26,7 @@ export class BusinessPostsComponent implements OnInit, OnChanges {
   @Output() respondToPost = new EventEmitter<any>();
   defaultAvatar: string = 'assets/images/avatars/default-avatar.png';
 
-  constructor(private cdr: ChangeDetectorRef) {}
+  constructor(private cdr: ChangeDetectorRef, private accountService: AccountService) {}
 
   ngOnInit() {
     console.log('BusinessPostsComponent initialized with posts:', this.posts);
@@ -82,8 +83,6 @@ export class BusinessPostsComponent implements OnInit, OnChanges {
   }
 
   getProfileImageUrl(path: string): string {
-    if (!path) return this.defaultAvatar;
-    if (path.startsWith('http')) return path;
-    return 'http://localhost:5001/' + path;
+    return this.accountService.getProfileImageUrl(path);
   }
 } 

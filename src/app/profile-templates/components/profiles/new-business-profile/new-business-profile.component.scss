@@ -257,6 +257,7 @@
     background-color: #eaf4fb; 
     border-radius: 8px;
     padding: 12px;
+    position: relative;
     
     .tab-header-container {
       position: relative;
@@ -350,6 +351,16 @@
         }
       }
     }
+  }
+
+  .posts-header-controls-absolute {
+    position: absolute;
+    top: 12px;
+    right: 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    z-index: 10;
   }
 
   .floating-chat-icon {
@@ -712,4 +723,29 @@ mat-card-content.business-card-layout {
         color: #1976d2;
         transform: translateY(-2px);
     }
+}
+
+.posts-refresh-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.led-indicator {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  background: #ff9800;
+  border-radius: 50%;
+  margin-right: 8px;
+  vertical-align: middle;
 } 
+
+.posts-led-refresh {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
