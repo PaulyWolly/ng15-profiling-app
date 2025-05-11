@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Post = require('../users/post.model');
 const websocketService = require('../services/websocket.service');
+const { isSuperAdmin } = require('../middleware/auth');
 
 // Create a new post
 router.post('/', async (req, res) => {
@@ -47,6 +48,17 @@ router.post('/:id/reply', async (req, res) => {
     post.replies.push({ sender, content });
     await post.save();
     res.json(post);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// Delete a post (Super-Admin only)
+router.delete('/:id', isSuperAdmin, async (req, res) => {
+  try {
+    const post = await Post.findByIdAndDelete(req.params.id);
+    if (!post) return res.status(404).json({ error: 'Post not found' });
+    res.json({ message: 'Post deleted successfully' });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }

@@ -1,0 +1,29 @@
+.confirm-dialog {
+  min-width: 260px;
+  font-size: 1.1em;
+  padding:20px;
+}
+
+.confirm-dialog-title {
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+
+.confirm-dialog-message {
+  margin-bottom: 20px;
+}
+
+.confirm-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.confirm-dialog-cancel {
+  /* Style for cancel button if needed */
+}
+
+.confirm-dialog-confirm {
+  /* Style for confirm button if needed */
+} 

@@ -31,6 +31,9 @@
         <mat-icon>share</mat-icon>
         <span>{{ post.shares }}</span>
       </button>
+      <button *ngIf="isSuperAdmin" mat-icon-button color="warn" (click)="onDelete(post)" aria-label="Delete post">
+        <mat-icon>delete</mat-icon>
+      </button>
     </mat-card-actions>
   </mat-card>
 </div> 
