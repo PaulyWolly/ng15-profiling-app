@@ -48,6 +48,17 @@ export interface CleanupHistoryResponse {
     };
 }
 
+// Helper to join base URL and path without double slashes
+export function joinUrl(base: string, path: string): string {
+    if (base.endsWith('/') && path.startsWith('/')) {
+        return base + path.substring(1);
+    }
+    if (!base.endsWith('/') && !path.startsWith('/')) {
+        return base + '/' + path;
+    }
+    return base + path;
+}
+
 @Injectable({ providedIn: 'root' })
 export class AccountService {
     private accountSubject: BehaviorSubject<Account | null>;
@@ -677,5 +688,12 @@ export class AccountService {
     revokeSession(sessionId: string) {
         console.log('[AccountService] Revoking session:', sessionId);
         return this.getHttp().post<any>(`${baseUrl}/my-sessions/${sessionId}/revoke`, {}, { withCredentials: true });
+    }
+
+    // Add a method to get the correct profile image URL
+    getProfileImageUrl(profileImage: string): string {
+        if (!profileImage) return 'assets/images/avatars/default-avatar.png';
+        const baseUrl = environment.apiUrl || '';
+        return joinUrl(baseUrl, profileImage);
     }
 }

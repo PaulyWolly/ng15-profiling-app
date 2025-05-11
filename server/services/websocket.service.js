@@ -360,6 +360,22 @@ class WebSocketService {
     getOnlineUsers() {
         return Array.from(this.onlineUsers.values());
     }
+
+    // Emit a 'new_post' event to all sessions of a recipient user
+    emitNewPost(recipientId, post) {
+        const recipientSessions = this.userSessions.get(recipientId);
+        if (recipientSessions) {
+            recipientSessions.forEach(sessionId => {
+                const connection = this.connections.get(sessionId);
+                if (connection && connection.ws.readyState === WebSocket.OPEN) {
+                    connection.ws.send(JSON.stringify({
+                        type: 'new_post',
+                        post
+                    }));
+                }
+            });
+        }
+    }
 }
 
 module.exports = new WebSocketService(); 

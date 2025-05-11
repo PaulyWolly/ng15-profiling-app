@@ -73,6 +73,7 @@ export class NewBusinessProfileComponent implements OnInit, AfterViewInit, OnCha
   
   activeChats$: Observable<any[]>;
   pendingChats = false;
+  hasNewPosts: boolean = false;
 
   constructor(
     private dialog: MatDialog,
@@ -104,39 +105,16 @@ export class NewBusinessProfileComponent implements OnInit, AfterViewInit, OnCha
       this.pendingChats = set && set.size > 0;
       this.cdr.detectChanges();
     });
-    
+    // Subscribe to new post notifications
+    this.chatService.onNewPost().subscribe(post => {
+      // If the post is for this profile (recipient or sender), refresh posts immediately
+      if (post && (post.recipient?.id === this.profile?.id || post.sender?.id === this.profile?.id)) {
+        this.loadPosts();
+      }
+    });
     // Properly parse and set skills
-    if (this.profile) {
-      console.log('Original skills:', this.profile.skills);
-      
-      // Convert skill string to array if it's a single string
-      if (this.profile.skills && typeof this.profile.skills === 'string') {
-        this.profile.skills = (this.profile.skills as string).split(',').map(skill => skill.trim());
-        console.log('Skills after string conversion:', this.profile.skills);
-      }
-      
-      // If skills is a single string in an array, split it
-      if (this.profile.skills && Array.isArray(this.profile.skills) && this.profile.skills.length === 1 
-          && typeof this.profile.skills[0] === 'string' && this.profile.skills[0].includes(',')) {
-        this.profile.skills = this.profile.skills[0].split(',').map(skill => skill.trim());
-        console.log('Skills after splitting single array item:', this.profile.skills);
-      }
-      
-      // If no skills or empty array, set default skills
-      if (!this.profile.skills || this.profile.skills.length === 0) {
-        this.profile.skills = [];
-        console.log('No skills set for this user, leaving skills empty.');
-      }
-      
-      // Ensure skills are always an array
-      if (!Array.isArray(this.profile.skills)) {
-        const skillsValue = this.profile.skills;
-        this.profile.skills = typeof skillsValue === 'object' ? 
-          [JSON.stringify(skillsValue)] : 
-          [String(skillsValue)];
-        console.log('Skills converted to array:', this.profile.skills);
-      }
-    }
+    if (this.profile)
+      this.setSkillsArray();
     
     if (this.profile?.id) {
       this.loadPosts();
@@ -466,5 +444,45 @@ export class NewBusinessProfileComponent implements OnInit, AfterViewInit, OnCha
       .map(s => s.trim())
       .filter(s => s !== '');
     return processedSkills.length > 0 ? processedSkills : defaultSkill;
+  }
+
+  refreshPosts() {
+    this.loadPosts();
+    this.hasNewPosts = false;
+    this.cdr.detectChanges();
+  }
+
+  private setSkillsArray() {
+    if (this.profile) {
+      console.log('Original skills:', this.profile.skills);
+      
+      // Convert skill string to array if it's a single string
+      if (this.profile.skills && typeof this.profile.skills === 'string') {
+        this.profile.skills = (this.profile.skills as string).split(',').map(skill => skill.trim());
+        console.log('Skills after string conversion:', this.profile.skills);
+      }
+      
+      // If skills is a single string in an array, split it
+      if (this.profile.skills && Array.isArray(this.profile.skills) && this.profile.skills.length === 1 
+          && typeof this.profile.skills[0] === 'string' && this.profile.skills[0].includes(',')) {
+        this.profile.skills = this.profile.skills[0].split(',').map(skill => skill.trim());
+        console.log('Skills after splitting single array item:', this.profile.skills);
+      }
+      
+      // If no skills or empty array, set default skills
+      if (!this.profile.skills || this.profile.skills.length === 0) {
+        this.profile.skills = [];
+        console.log('No skills set for this user, leaving skills empty.');
+      }
+      
+      // Ensure skills are always an array
+      if (!Array.isArray(this.profile.skills)) {
+        const skillsValue = this.profile.skills;
+        this.profile.skills = typeof skillsValue === 'object' ? 
+          [JSON.stringify(skillsValue)] : 
+          [String(skillsValue)];
+        console.log('Skills converted to array:', this.profile.skills);
+      }
+    }
   }
 } 

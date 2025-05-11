@@ -51,6 +51,7 @@ export class ChatService {
   private minimizedChatIds = new BehaviorSubject<string[]>([]);
   private pendingChatRequests = new BehaviorSubject<Set<string>>(new Set());
   private currentOpenChatId: string | null = null;
+  private newPostSubject = new Subject<any>();
 
   constructor(
     private http: HttpClient,
@@ -164,6 +165,9 @@ export class ChatService {
           if (message.requests && Array.isArray(message.requests)) {
             message.requests.forEach((request: ChatRequest) => this.handleChatRequest(request));
           }
+          break;
+        case 'new_post':
+          this.handleNewPostNotification(message.post);
           break;
       }
     } catch (error) {
@@ -548,5 +552,13 @@ export class ChatService {
   // Returns true if the chat dialog is open and visible (not minimized)
   public isChatDialogOpen(userId: string): boolean {
     return this.currentOpenChatId === userId;
+  }
+
+  public onNewPost(): Observable<any> {
+    return this.newPostSubject.asObservable();
+  }
+
+  private handleNewPostNotification(post: any) {
+    this.newPostSubject.next(post);
   }
 } 
