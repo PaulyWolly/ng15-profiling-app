@@ -9,6 +9,10 @@ import { MatTableModule } from '@angular/material/table';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatSortModule } from '@angular/material/sort';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatTabsModule } from '@angular/material/tabs';
+import { MatDialogModule } from '@angular/material/dialog';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
 
 import { AdminRoutingModule } from './admin-routing.module';
 import { SubNavComponent } from './components/subnav/subnav.component';
@@ -17,7 +21,8 @@ import { OverviewComponent } from './components/overview/overview.component';
 import { MonitorComponent } from './components/monitor/monitor.component';
 import { SettingsComponent } from './components/settings/settings.component';
 import { ScriptsComponent } from './scripts/scripts.component';
-
+import { AdminComponent } from './admin.component';
+import { CommandModalComponent } from './scripts/command-modal.component';
 @NgModule({
     imports: [
         CommonModule,
@@ -31,6 +36,10 @@ import { ScriptsComponent } from './scripts/scripts.component';
         MatPaginatorModule,
         MatSortModule,
         MatProgressSpinnerModule,
+        MatTabsModule,
+        MatDialogModule,
+        MatFormFieldModule,
+        MatInputModule,
         OverviewComponent,
         MonitorComponent,
         SettingsComponent
@@ -38,7 +47,9 @@ import { ScriptsComponent } from './scripts/scripts.component';
     declarations: [
         SubNavComponent,
         LayoutComponent,
-        ScriptsComponent
+        ScriptsComponent,
+        AdminComponent,
+        CommandModalComponent
     ]
 })
 export class AdminModule { }

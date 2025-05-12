@@ -157,4 +157,68 @@
       }
     }
   }
-} 
+}
+
+.scrollable-list,
+.scrollable-history {
+  max-height: 350px;
+  overflow-y: scroll;
+  overflow-x: hidden;
+  padding-right: 8px;
+  border: 1px solid #d0d0d0;
+  background: #fafbfc;
+  border-radius: 6px;
+  scrollbar-width: auto !important;        // For Firefox
+  -ms-overflow-style: auto !important;     // For IE/Edge
+}
+
+.script-cards,
+.history-list {
+  width: 100%;
+  max-width: 100%;
+}
+
+pre {
+  word-break: break-all;
+  overflow-wrap: anywhere;
+  max-width: 100%;
+}
+
+/* Optional: Modern scrollbar styling */
+.scrollable-list::-webkit-scrollbar,
+.scrollable-history::-webkit-scrollbar {
+  width: 10px;
+  background: #f0f0f0;
+}
+.scrollable-list::-webkit-scrollbar-thumb,
+.scrollable-history::-webkit-scrollbar-thumb {
+  background: #bdbdbd;
+  border-radius: 5px;
+}
+
+/* Close button for script output window */
+.close-btn {
+  background: none;
+  border: none;
+  color: #888;
+  font-size: 1.5rem;
+  cursor: pointer;
+  margin-left: 1rem;
+  transition: color 0.2s;
+  align-self: flex-start;
+}
+.close-btn:hover {
+  color: #f44336;
+}
+
+.go-btn-inside {
+  margin-left: 0.5rem;
+  min-width: 48px;
+  font-family: inherit;
+  height: 36px;
+  line-height: 1;
+  box-shadow: none;
+}
+.input-field .mat-form-field-suffix {
+  margin-right: 0;
+}

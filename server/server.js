@@ -103,7 +103,6 @@ app.use('/upload', require('./uploads/upload.routes'));
 
 // api routes
 app.use('/accounts', require('./accounts/accounts.controller'));
-
 app.use('/api/admin/scripts', adminScriptsRouter);
 
 app.use('/admin', require('./controllers/admin.controller'));
@@ -187,10 +186,8 @@ app.set('trust proxy', true); // Trust proxy for correct client IP
 
 // Import routes
 const accountRoutes = require('./routes/accounts');
-const scriptsRoutes = require('./routes/scripts');
 
 // Register routes
 app.use('/api/account', accountRoutes);
-app.use('/api/admin/scripts', scriptsRoutes);
 
 
