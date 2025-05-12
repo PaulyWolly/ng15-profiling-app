@@ -72,6 +72,8 @@ router.post('/run', requireAdmin, (req, res) => {
   child.stdout.on('data', data => { stdout += data.toString(); });
   child.stderr.on('data', data => { stderr += data.toString(); });
   child.on('close', async (code) => {
+    console.log('[AdminScripts] Script stdout:', stdout);
+    console.log('[AdminScripts] Script stderr:', stderr);
     // Log the run
     await ScriptRun.create({
       script: scriptName,
