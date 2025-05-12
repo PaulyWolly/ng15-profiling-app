@@ -7,11 +7,13 @@ import { TitleComponent } from './components/title/title.component';
 import { EditContentComponent } from './components/edit-content/edit-content.component';
 import { ScrollableDirective } from './directives/scrollable.directive';
 import { NewAccountEditModule } from './components/new-account-edit/new-account-edit.module';
+import { ConfirmDialogComponent } from './components/confirm-dialog/confirm-dialog.component';
 
 @NgModule({
   declarations: [
     AlertComponent,
-    EditContentComponent
+    EditContentComponent,
+    ConfirmDialogComponent
   ],
   imports: [
     CommonModule,
@@ -31,7 +33,8 @@ import { NewAccountEditModule } from './components/new-account-edit/new-account-
     TitleComponent,
     EditContentComponent,
     ScrollableDirective,
-    NewAccountEditModule
+    NewAccountEditModule,
+    ConfirmDialogComponent
   ]
 })
 export class SharedModule { }

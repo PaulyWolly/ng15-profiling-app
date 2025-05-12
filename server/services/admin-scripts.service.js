@@ -78,7 +78,7 @@ router.post('/run', requireAdmin, (req, res) => {
     await ScriptRun.create({
       script: scriptName,
       executedBy: req.user.email,
-      date: new Date(),
+      timestamp: new Date(),
       status: code === 0 ? 'success' : 'error',
       output: stdout,
       error: stderr
@@ -89,8 +89,22 @@ router.post('/run', requireAdmin, (req, res) => {
 
 // GET /api/admin/scripts/history - List script run history
 router.get('/history', requireAdmin, async (req, res) => {
-  const history = await ScriptRun.find().sort({ date: -1 }).limit(50);
+  const history = await ScriptRun.find().sort({ timestamp: -1 }).limit(50);
   res.json(history);
+});
+
+// DELETE /api/admin/scripts/history/:id - Delete a script history item
+router.delete('/history/:id', requireAdmin, async (req, res) => {
+  try {
+    const result = await ScriptRun.findByIdAndDelete(req.params.id);
+    if (!result) {
+      return res.status(404).json({ error: 'Script history item not found' });
+    }
+    res.json({ message: 'Script history item deleted successfully' });
+  } catch (error) {
+    console.error('[AdminScripts] Error deleting script history:', error);
+    res.status(500).json({ error: 'Failed to delete script history item' });
+  }
 });
 
 // POST /api/admin/scripts/interactive-run/start
