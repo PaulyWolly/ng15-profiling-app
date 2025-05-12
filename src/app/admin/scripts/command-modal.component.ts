@@ -4,27 +4,27 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 @Component({
   selector: 'app-command-modal',
   template: `
-    <div class="noninput-title-bar">
+    <div class="input-title-bar">
       <span>Command Window</span>
-      <button class="noninput-close" (click)="close()" aria-label="Close">&times;</button>
+      <button class="input-close" (click)="close()" aria-label="Close">&times;</button>
     </div>
-    <div class="noninput-command-window">
-      <div class="noninput-script-name">Running: {{ scriptName }}</div>
-      <div class="noninput-output-area" #outputArea>{{ output }}</div>
-      <div *ngIf="error" class="noninput-error-area">{{ error }}</div>
+    <div class="input-command-window">
+      <div class="input-script-name">Running: {{ scriptName }}</div>
+      <div class="input-output-area" #outputArea>{{ output }}</div>
+      <div *ngIf="error" class="input-error-area">{{ error }}</div>
     </div>
   `,
   styles: [`
     :host ::ng-deep .mat-dialog-container,
-    .noninput-title-bar,
-    .noninput-command-window {
+    .input-title-bar,
+    .input-command-window {
       border-radius: 0 !important;
       border-top-left-radius: 0 !important;
       border-top-right-radius: 0 !important;
       border-bottom-left-radius: 0 !important;
       border-bottom-right-radius: 0 !important;
     }
-    .noninput-title-bar {
+    .input-title-bar {
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -34,7 +34,7 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
       font-size: 1.1rem;
       padding: 0.5rem 1rem;
     }
-    .noninput-close {
+    .input-close {
       background: none;
       border: none;
       color: #fff;
@@ -44,10 +44,10 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
       padding: 0 0.5rem;
       transition: color 0.2s;
     }
-    .noninput-close:hover {
+    .input-close:hover {
       color: #f44336;
     }
-    .noninput-command-window {
+    .input-command-window {
       background: #111;
       color: #e0e0e0;
       padding: 0;
@@ -58,13 +58,13 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
       font-family: Consolas, 'Courier New', monospace;
       height: 100%;
     }
-    .noninput-script-name {
+    .input-script-name {
       color: #42a5f5;
       font-family: Consolas, 'Courier New', monospace;
       font-size: 1.1rem;
       padding: 0.5rem 1rem 0.25rem 1rem;
     }
-    .noninput-output-area {
+    .input-output-area {
       background: #111;
       color: #90ee90;
       padding: 1rem;
@@ -79,7 +79,7 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
       scrollbar-width: thin;
       scrollbar-color: #888 #222;
     }
-    .noninput-error-area {
+    .input-error-area {
       color: #f44336;
       background: #111;
       padding: 1rem;
@@ -87,11 +87,11 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
       font-size: 1rem;
       white-space: pre-wrap;
     }
-    .noninput-output-area::-webkit-scrollbar {
+    .input-output-area::-webkit-scrollbar {
       width: 12px;
       background: #222;
     }
-    .noninput-output-area::-webkit-scrollbar-thumb {
+    .input-output-area::-webkit-scrollbar-thumb {
       background: #888;
       border-radius: 6px;
     }
