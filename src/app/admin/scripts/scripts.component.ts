@@ -4,6 +4,7 @@ import { environment } from '../../../environments/environment';
 import { Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { CommandModalComponent } from './command-modal.component';
+import { CommandModalInputComponent } from './command-modal-input.component';
 
 interface ScriptExecution {
   script: string;
@@ -12,13 +13,18 @@ interface ScriptExecution {
   error: string;
 }
 
+interface ScriptMeta {
+  name: string;
+  input: boolean;
+}
+
 @Component({
   selector: 'app-scripts',
   templateUrl: './scripts.component.html',
   styleUrls: ['./scripts.component.scss']
 })
 export class ScriptsComponent implements OnInit {
-  scripts: string[] = [];
+  scripts: ScriptMeta[] = [];
   history: ScriptExecution[] = [];
   selectedScript: string | null = null;
   isRunning = false;
@@ -37,7 +43,7 @@ export class ScriptsComponent implements OnInit {
   }
 
   loadScripts() {
-    this.http.get<string[]>(`${environment.apiUrl}/api/admin/scripts`, { withCredentials: true })
+    this.http.get<ScriptMeta[]>(`${environment.apiUrl}/api/admin/scripts`, { withCredentials: true })
       .subscribe({
         next: (scripts) => {
           this.scripts = scripts;
@@ -70,15 +76,15 @@ export class ScriptsComponent implements OnInit {
       });
   }
 
-  runScript(script: string) {
-    if (script === 'hello-user.js') {
-      // Start interactive session
-      this.http.post<any>(`${environment.apiUrl}/api/admin/scripts/interactive-run/start`, { scriptName: script }, { withCredentials: true })
+  runScript(script: ScriptMeta) {
+    if (script.input) {
+      // Open CommandModalInputComponent (input required)
+      this.http.post<any>(`${environment.apiUrl}/api/admin/scripts/interactive-run/start`, { scriptName: script.name }, { withCredentials: true })
         .subscribe({
           next: (res) => {
-            const dialogRef = this.dialog.open(CommandModalComponent, {
-              data: { output: res.output, sessionId: res.sessionId },
-              width: '500px',
+            const dialogRef = this.dialog.open(CommandModalInputComponent, {
+              data: { output: res.output, sessionId: res.sessionId, scriptName: script.name },
+              width: '800px',
               disableClose: true
             });
             const dialogComponent = dialogRef.componentInstance;
@@ -99,34 +105,35 @@ export class ScriptsComponent implements OnInit {
             alert('Error starting interactive script: ' + (err.error?.error || err.message));
           }
         });
-      return;
-    }
-    this.selectedScript = script;
-    this.isRunning = true;
-    this.output = '';
-    this.error = '';
-
-    this.http.post<{ code: number; stdout: string; stderr: string }>(
-      `${environment.apiUrl}/api/admin/scripts/run`,
-      { scriptName: script },
-      { withCredentials: true }
-    ).subscribe({
-      next: (response) => {
-        this.output = response.stdout;
-        this.error = response.stderr;
-        this.isRunning = false;
-        this.loadHistory();
-      },
-      error: (error) => {
-        console.error('Error running script:', error);
-        if (error.status === 401 || error.status === 403) {
-          this.router.navigate(['/login']);
-        } else {
-          this.error = 'Failed to run script';
+    } else {
+      // Open CommandModalComponent (no input required)
+      this.http.post<{ code: number; stdout: string; stderr: string }>(
+        `${environment.apiUrl}/api/admin/scripts/run`,
+        { scriptName: script.name },
+        { withCredentials: true }
+      ).subscribe({
+        next: (response) => {
+          this.dialog.open(CommandModalComponent, {
+            data: { output: response.stdout, sessionId: '' },
+            width: '500px',
+            disableClose: false
+          });
+          this.output = response.stdout;
+          this.error = response.stderr;
+          this.isRunning = false;
+          this.loadHistory();
+        },
+        error: (error) => {
+          console.error('Error running script:', error);
+          if (error.status === 401 || error.status === 403) {
+            this.router.navigate(['/login']);
+          } else {
+            this.error = 'Failed to run script';
+          }
+          this.isRunning = false;
         }
-        this.isRunning = false;
-      }
-    });
+      });
+    }
   }
 
   deleteHistoryItem(entry: ScriptExecution) {

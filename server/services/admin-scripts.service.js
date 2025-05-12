@@ -39,16 +39,21 @@ function requireAdmin(req, res, next) {
     }
 }
 
-// GET /api/admin/scripts - List available scripts
+// GET /api/admin/scripts - List available scripts with metadata
 router.get('/', requireAdmin, (req, res) => {
-  console.log('[AdminScripts] Looking for scripts in:', SCRIPTS_DIR);
-  fs.readdir(SCRIPTS_DIR, (err, files) => {
+  const metadataPath = path.join(SCRIPTS_DIR, 'scripts-metadata.json');
+  fs.readFile(metadataPath, 'utf8', (err, data) => {
     if (err) {
-      console.error('[AdminScripts] Error reading scripts dir:', err);
+      console.error('[AdminScripts] Error reading scripts-metadata.json:', err);
       return res.status(500).json({ error: err.message });
     }
-    const scripts = files.filter(f => f.endsWith('.js'));
-    res.json(scripts);
+    try {
+      const scripts = JSON.parse(data);
+      res.json(scripts);
+    } catch (parseErr) {
+      console.error('[AdminScripts] Error parsing scripts-metadata.json:', parseErr);
+      return res.status(500).json({ error: parseErr.message });
+    }
   });
 });
 
