@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, Renderer2, AfterViewInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, Renderer2, AfterViewInit, ViewChild, ElementRef, ChangeDetectorRef } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { first } from 'rxjs/operators';
 
@@ -25,7 +25,8 @@ export class EditComponent implements OnInit, OnDestroy, AfterViewInit {
     private route: ActivatedRoute,
     private accountService: AccountService,
     private alertService: AlertService,
-    private renderer: Renderer2
+    private renderer: Renderer2,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
@@ -41,6 +42,7 @@ export class EditComponent implements OnInit, OnDestroy, AfterViewInit {
             console.log('[EditComponent] Received account details from getById:', account);
             this.account = account;
             this.loading = false;
+            this.cdr.detectChanges();
           },
           error: (error) => {
             this.alertService.error(error);

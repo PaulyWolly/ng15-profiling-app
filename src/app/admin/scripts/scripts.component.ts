@@ -5,8 +5,10 @@ import { Router } from '@angular/router';
 import { MatDialog } from '@angular/material/dialog';
 import { CommandModalComponent } from './command-modal.component';
 import { CommandModalInputComponent } from './command-modal-input.component';
+import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/confirm-dialog.component';
 
 interface ScriptExecution {
+  _id: string;
   script: string;
   timestamp: Date;
   output: string;
@@ -137,9 +139,26 @@ export class ScriptsComponent implements OnInit {
   }
 
   deleteHistoryItem(entry: ScriptExecution) {
-    if (confirm('Are you sure you want to delete this history entry?')) {
-      this.history = this.history.filter(e => e !== entry);
-      // TODO: Optionally, send a request to the backend to delete the entry from the database
-    }
+    const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+      data: { title: 'Are you <b>sure</b> you want to delete this item?', message: '' },
+      width: '480px'
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result === true) {
+        // Send DELETE request to backend
+        this.http.delete(`${environment.apiUrl}/api/admin/scripts/history/${entry._id}`, { withCredentials: true })
+          .subscribe({
+            next: () => {
+              // Remove from UI after successful delete
+              this.history = this.history.filter(e => e !== entry);
+            },
+            error: (error) => {
+              // Optionally show an error message
+              console.error('Failed to delete history item:', error);
+            }
+          });
+      }
+    });
   }
 } 

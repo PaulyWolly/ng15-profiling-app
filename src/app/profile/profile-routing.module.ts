@@ -9,6 +9,7 @@ import { EditProfileComponent } from '../profile-templates/components/edit-profi
 import { AccountSettingsComponent } from './containers/account-settings/account-settings.component';
 import { NewStandardProfileComponent } from '../profile-templates/components/profiles/new-standard-profile/new-standard-profile.component';
 import { NewSocialMediaProfileComponent } from '../profile-templates/components/profiles/new-social-media-profile/new-social-media-profile.component';
+import { AuthGuard } from '../_guards/auth.guard';
 
 const routes: Routes = [
     {
@@ -21,7 +22,11 @@ const routes: Routes = [
                 pathMatch: 'full'
             },
             { path: 'edit-profile', component: EditComponent },
-            { path: 'account-settings', component: AccountSettingsComponent },
+            { 
+                path: 'account-settings', 
+                component: AccountSettingsComponent, 
+                canActivate: [AuthGuard] 
+            },
             { path: ':id', component: ProfileComponent }
         ]
     }

@@ -1,4 +1,4 @@
-import { Component, OnInit, Input, Output, EventEmitter, OnChanges, SimpleChanges, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
+import { Component, OnInit, Input, Output, EventEmitter, OnChanges, SimpleChanges, ViewChild, ElementRef, AfterViewInit, ChangeDetectorRef } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { PROFILE_TEMPLATES, ProfileTemplateType } from '@app/_models/profile-template';
 import { FollowerImage, Account } from '@app/_models/account';
@@ -37,7 +37,8 @@ export class EditProfileComponent implements OnInit, OnChanges, AfterViewInit {
     private formBuilder: FormBuilder,
     private uploadService: UploadService,
     private alertService: AlertService,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit() {
@@ -46,12 +47,14 @@ export class EditProfileComponent implements OnInit, OnChanges, AfterViewInit {
     this.route.queryParams.subscribe(params => {
       const profileType = params['profileType'] || 'standard';
       this.highlightSection = profileType;
+      this.cdr.detectChanges();
     });
     if (this.account) {
       console.log('[EditProfileComponent] Account data received:', this.account);
       this.patchForm();
       this.followers = this.account.followerImages || [];
       console.log('[EditProfileComponent] Followers loaded:', this.followers);
+      this.cdr.detectChanges();
     }
   }
 
@@ -67,6 +70,7 @@ export class EditProfileComponent implements OnInit, OnChanges, AfterViewInit {
       this.patchForm();
       this.followers = this.account?.followerImages || [];
       console.log('[EditProfileComponent] Followers updated:', this.followers);
+      this.cdr.detectChanges();
     }
   }
 
@@ -120,6 +124,7 @@ export class EditProfileComponent implements OnInit, OnChanges, AfterViewInit {
         profileTemplateType: this.account.profileTemplateType || ProfileTemplateType.STANDARD
       });
       this.templateType = this.account.profileTemplateType || ProfileTemplateType.STANDARD;
+      this.cdr.detectChanges();
     }
   }
 
