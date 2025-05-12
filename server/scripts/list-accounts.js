@@ -1,10 +1,8 @@
+const chalk = require('chalk');
 const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '../.env') });
 const mongoose = require('mongoose');
 const config = require('../config.json');
-
-// Use chalk for cross-platform color support
-const chalk = require('chalk');
 
 // Default pagination settings
 const DEFAULT_PAGE_SIZE = 10;

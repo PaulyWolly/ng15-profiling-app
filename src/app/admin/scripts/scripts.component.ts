@@ -114,9 +114,9 @@ export class ScriptsComponent implements OnInit {
       ).subscribe({
         next: (response) => {
           this.dialog.open(CommandModalComponent, {
-            data: { output: response.stdout, sessionId: '' },
-            width: '500px',
-            disableClose: false
+            data: { output: response.stdout, scriptName: script.name, sessionId: '' },
+            width: '800px',
+            disableClose: true
           });
           this.output = response.stdout;
           this.error = response.stderr;
