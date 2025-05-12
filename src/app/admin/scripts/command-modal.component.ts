@@ -4,46 +4,27 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 @Component({
   selector: 'app-command-modal',
   template: `
-    <div class="cmd-title-bar">
+    <div class="noninput-title-bar">
       <span>Command Window</span>
-      <button class="cmd-close" (click)="close()" aria-label="Close">&times;</button>
+      <button class="noninput-close" (click)="close()" aria-label="Close">&times;</button>
     </div>
-    <div class="command-window">
-      <div class="output-area" #outputArea>{{ output }}</div>
-      <form (ngSubmit)="submitInput()" *ngIf="!done" class="input-form">
-        <div class="cmd-prompt-row">
-          <span class="cmd-prompt">C:\Users\pwelb&gt;</span>
-          <div class="cmd-input-row">
-            <input
-              #cmdInput
-              class="cmd-input"
-              [(ngModel)]="userInput"
-              name="userInput"
-              autocomplete="off"
-              required
-              autofocus
-              (keydown.enter)="submitInput()"
-              type="text"
-            />
-            <button class="go-btn" type="submit">Go</button>
-          </div>
-        </div>
-      </form>
-      <div *ngIf="done" class="done-msg">Session complete.</div>
+    <div class="noninput-command-window">
+      <div class="noninput-script-name">Running: {{ scriptName }}</div>
+      <div class="noninput-output-area" #outputArea>{{ output }}</div>
+      <div *ngIf="error" class="noninput-error-area">{{ error }}</div>
     </div>
   `,
   styles: [`
     :host ::ng-deep .mat-dialog-container,
-    .cmd-title-bar,
-    .command-window,
-    .input-form {
+    .noninput-title-bar,
+    .noninput-command-window {
       border-radius: 0 !important;
       border-top-left-radius: 0 !important;
       border-top-right-radius: 0 !important;
       border-bottom-left-radius: 0 !important;
       border-bottom-right-radius: 0 !important;
     }
-    .cmd-title-bar {
+    .noninput-title-bar {
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -53,7 +34,7 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
       font-size: 1.1rem;
       padding: 0.5rem 1rem;
     }
-    .cmd-close {
+    .noninput-close {
       background: none;
       border: none;
       color: #fff;
@@ -63,96 +44,64 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
       padding: 0 0.5rem;
       transition: color 0.2s;
     }
-    .cmd-close:hover {
+    .noninput-close:hover {
       color: #f44336;
     }
-    .command-window {
+    .noninput-command-window {
       background: #111;
       color: #e0e0e0;
       padding: 0;
-      min-width: 400px;
-      min-height: 220px;
-      max-width: 600px;
-      max-height: 400px;
+      min-width: 800px;
+      min-height: 440px;
+      max-width: 1200px;
+      max-height: 800px;
       font-family: Consolas, 'Courier New', monospace;
-      display: flex;
-      flex-direction: column;
       height: 100%;
     }
-    .output-area {
+    .noninput-script-name {
+      color: #42a5f5;
+      font-family: Consolas, 'Courier New', monospace;
+      font-size: 1.1rem;
+      padding: 0.5rem 1rem 0.25rem 1rem;
+    }
+    .noninput-output-area {
       background: #111;
       color: #90ee90;
       padding: 1rem;
       min-height: 60px;
-      flex: 1 1 auto;
       margin-bottom: 0;
       white-space: pre-wrap;
       font-family: Consolas, 'Courier New', monospace;
       font-size: 1rem;
-      overflow-y: auto;
+      overflow-y: scroll;
       border-bottom: 1px solid #222;
+      max-height: 410px;
+      scrollbar-width: thin;
+      scrollbar-color: #888 #222;
     }
-    .input-form {
-      width: 100%;
-      margin: 0;
-      padding: 1rem;
-      box-sizing: border-box;
+    .noninput-error-area {
+      color: #f44336;
       background: #111;
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-    }
-    .cmd-prompt-row {
-      display: flex;
-      align-items: center;
-      width: 100%;
-    }
-    .cmd-prompt {
-      color: #fff;
+      padding: 1rem;
       font-family: Consolas, 'Courier New', monospace;
       font-size: 1rem;
-      margin-right: 0.5rem;
-      user-select: none;
+      white-space: pre-wrap;
     }
-    .cmd-input-row {
-      display: flex;
-      align-items: center;
-      width: 100%;
+    .noninput-output-area::-webkit-scrollbar {
+      width: 12px;
+      background: #222;
     }
-    .cmd-input {
-      background: #000;
-      color: #fff;
-      border: 1px solid #fff;
-      border-radius: 0;
-      font-family: Consolas, 'Courier New', monospace;
-      font-size: 1rem;
-      padding: 0.25rem 0.5rem;
-      flex: 1;
-      height: 36px;
-      outline: none;
-      margin: 0;
+    .noninput-output-area::-webkit-scrollbar-thumb {
+      background: #888;
+      border-radius: 6px;
     }
-    .go-btn {
-      margin-left: 0.5rem;
-      min-width: 48px;
-      height: 36px;
-      background: #3f51b5;
-      color: #fff;
-      border: none;
-      font-family: inherit;
-      font-size: 1rem;
-      cursor: pointer;
-      border-radius: 0;
-    }
-    .go-btn:hover {
-      background: #283593;
-    }
-    .done-msg { color: #90ee90; margin: 1rem 0 0 1rem; }
   `],
-  encapsulation: ViewEncapsulation.None
+  encapsulation: ViewEncapsulation.Emulated
 })
 export class CommandModalComponent {
   @Input() output: string = '';
+  @Input() scriptName: string = '';
+  @Input() error: string = '';
   @Input() sessionId: string = '';
   userInput: string = '';
   done: boolean = false;
@@ -167,6 +116,7 @@ export class CommandModalComponent {
   ) {
     this.output = data.output;
     this.sessionId = data.sessionId;
+    this.scriptName = data.scriptName;
   }
 
   submitInput() {
@@ -186,5 +136,11 @@ export class CommandModalComponent {
 
   close() {
     this.dialogRef.close();
+  }
+
+  focusInput() {
+    setTimeout(() => {
+      this.cmdInputRef?.nativeElement.focus();
+    }, 0);
   }
 } 

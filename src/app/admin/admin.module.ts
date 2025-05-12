@@ -23,6 +23,8 @@ import { SettingsComponent } from './components/settings/settings.component';
 import { ScriptsComponent } from './scripts/scripts.component';
 import { AdminComponent } from './admin.component';
 import { CommandModalComponent } from './scripts/command-modal.component';
+import { CommandModalInputComponent } from './scripts/command-modal-input.component';
+
 @NgModule({
     imports: [
         CommonModule,
@@ -49,7 +51,8 @@ import { CommandModalComponent } from './scripts/command-modal.component';
         LayoutComponent,
         ScriptsComponent,
         AdminComponent,
-        CommandModalComponent
+        CommandModalComponent,
+        CommandModalInputComponent
     ]
 })
 export class AdminModule { }
