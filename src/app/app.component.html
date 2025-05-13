@@ -3,8 +3,10 @@
     <!-- Header with navigation -->
     <app-new-menu-bar [account]="account"></app-new-menu-bar>
 
-    <!-- Subnav router outlet - only show for admin users when in admin section -->
-    <router-outlet name="subnav" *ngIf="(account?.role === Role.Admin || account?.role === Role.SuperAdmin) && isActiveRoute('/admin')"></router-outlet>
+    <!-- Conditional subnav -->
+    <ng-container [ngSwitch]="getSubnavType()">
+      <app-admin-subnav *ngSwitchCase="'admin'"></app-admin-subnav>
+    </ng-container>
 
     <!-- Main content area -->
     <div class="main-content-wrapper">
@@ -12,7 +14,7 @@
         <alert></alert>
         <router-outlet></router-outlet>
     </div>
-    
+
     <!-- Footer component -->
     <app-footer class="app-footer"></app-footer>
 

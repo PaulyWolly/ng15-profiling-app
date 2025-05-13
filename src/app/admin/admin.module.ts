@@ -16,7 +16,7 @@ import { MatInputModule } from '@angular/material/input';
 
 import { AdminRoutingModule } from './admin-routing.module';
 import { SubNavComponent } from './components/subnav/subnav.component';
-import { LayoutComponent } from './components/layout/layout.component';
+import { AdminLayoutComponent } from './components/admin-layout/admin-layout.component';
 import { OverviewComponent } from './components/overview/overview.component';
 import { MonitorComponent } from './components/monitor/monitor.component';
 import { SettingsComponent } from './components/settings/settings.component';
@@ -24,6 +24,7 @@ import { ScriptsComponent } from './scripts/scripts.component';
 import { AdminComponent } from './admin.component';
 import { CommandModalComponent } from './scripts/command-modal.component';
 import { CommandModalInputComponent } from './scripts/command-modal-input.component';
+import { LogsComponent } from './components/logs/logs.component';
 
 @NgModule({
     imports: [
@@ -44,11 +45,12 @@ import { CommandModalInputComponent } from './scripts/command-modal-input.compon
         MatInputModule,
         OverviewComponent,
         MonitorComponent,
-        SettingsComponent
+        SettingsComponent,
+        LogsComponent,
+        SubNavComponent
     ],
     declarations: [
-        SubNavComponent,
-        LayoutComponent,
+        AdminLayoutComponent,
         ScriptsComponent,
         AdminComponent,
         CommandModalComponent,

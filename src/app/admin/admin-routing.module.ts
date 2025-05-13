@@ -2,21 +2,21 @@ import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 
 import { SubNavComponent } from './components/subnav/subnav.component';
-import { LayoutComponent } from './components/layout/layout.component';
+import { AdminLayoutComponent } from './components/admin-layout/admin-layout.component';
 import { OverviewComponent } from './components/overview/overview.component';
 import { MonitorComponent } from './components/monitor/monitor.component';
 import { SettingsComponent } from './components/settings/settings.component';
 import { ScriptsComponent } from './scripts/scripts.component';
 
 const routes: Routes = [
-  { 
-    path: '', 
-    component: SubNavComponent, 
+  {
+    path: '',
+    component: SubNavComponent,
     outlet: 'subnav'
   },
-  { 
-    path: '', 
-    component: LayoutComponent,
+  {
+    path: '',
+    component: AdminLayoutComponent,
     children: [
       { path: '', redirectTo: 'overview', pathMatch: 'full' },
       { path: 'overview', component: OverviewComponent },

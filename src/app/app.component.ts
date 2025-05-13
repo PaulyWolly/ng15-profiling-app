@@ -28,15 +28,15 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     ) {
         this.accountService.account.subscribe(x => {
             this.account = x;
-            
+
             // Get the current URL
             const currentUrl = window.location.pathname || '/';
             console.log('[AppComponent] Account state changed. Current URL:', currentUrl);
-            
+
             // Only redirect on initial navigation
             if (this.initialNavigation) {
                 this.initialNavigation = false;
-                
+
                 // If we're on the root path and logged in as admin, redirect to admin page
                 if (x?.role === Role.Admin && (currentUrl === '/' || currentUrl === '')) {
                     console.log('[AppComponent] Redirecting admin to default page');
@@ -48,14 +48,14 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
                 }
             }
         });
-        
+
         // Track navigation for active link highlighting and page-specific handling
         this.router.events.pipe(
             filter((event): event is NavigationEnd => event instanceof NavigationEnd)
         ).subscribe(event => {
             this.currentUrl = event.url;
             console.log('[AppComponent] Navigation to:', this.currentUrl);
-            
+
             // Handle account pages scrolling and classes
             this.handleAccountPagesScrolling(this.currentUrl);
         });
@@ -63,12 +63,12 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
 
     // Handle specific pages that need special scroll handling
     private handleAccountPagesScrolling(url: string) {
-        const isAccountPage = url.includes('/account/') || 
-                             url.includes('/login') || 
-                             url.includes('/register') || 
+        const isAccountPage = url.includes('/account/') ||
+                             url.includes('/login') ||
+                             url.includes('/register') ||
                              url.includes('/forgot-password') ||
                              url.includes('/reset-password');
-                             
+
         if (isAccountPage) {
             // Add classes for account pages
             this.renderer.addClass(document.documentElement, 'no-scroll');
@@ -118,7 +118,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     ngOnDestroy() {
         // Clean up subscriptions
         this.subscriptions.unsubscribe();
-        
+
         // Remove any remaining classes
         this.renderer.removeClass(document.documentElement, 'no-scroll');
         this.renderer.removeClass(document.body, 'no-scroll');
@@ -128,31 +128,31 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     logout() {
         this.accountService.logout();
     }
-    
+
     // Force navigation to a URL to overcome potential router issues
     navigateTo(route: string): void {
         console.log(`Forcing navigation to ${route}`);
-        
+
         // If we're already on this route's page, don't navigate again
         if (this.isActiveRoute(route)) {
             console.log('Already on this route, not navigating');
             return;
         }
-        
+
         // Force navigation by first going to root (skipLocationChange means URL doesn't change in browser)
         this.router.navigateByUrl('/', {skipLocationChange: true}).then(() => {
             // Then navigate to the intended route
             this.router.navigateByUrl(route);
         });
     }
-    
+
     // Improved active route detection with path-based logic
     isActiveRoute(route: string): boolean {
         // Home is active only when URL is exactly '/'
         if (route === '/' && this.currentUrl === '/') {
             return true;
         }
-        
+
         // For non-home routes, check if the URL starts with the route path
         // but make sure we're not matching partial paths (e.g. '/profile' shouldn't match '/prof')
         if (route !== '/') {
@@ -160,7 +160,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
             if (route === '/admin' && this.currentUrl.startsWith('/admin')) {
                 return true;
             }
-            
+
             // Profile routes should highlight Profile link
             if (route === '/profile' && this.currentUrl.startsWith('/profile')) {
                 // Don't highlight profile for account settings
@@ -169,20 +169,20 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
                 }
                 return true;
             }
-            
+
             // Account settings route
             if (route === '/profile/account-settings' && this.currentUrl.includes('/profile/account-settings')) {
                 return true;
             }
         }
-        
+
         return false;
     }
 
     ngAfterViewInit() {
         // Initialize all dropdowns
         this.initializeDropdowns();
-        
+
         // Re-initialize dropdowns after route changes
         this.router.events.pipe(
             filter((event): event is NavigationEnd => event instanceof NavigationEnd)
@@ -192,7 +192,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
             }, 100);
         });
     }
-    
+
     // Initialize Bootstrap dropdowns
     private initializeDropdowns() {
         try {
@@ -208,7 +208,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
                         autoClose: 'outside'
                     });
                 });
-                
+
                 // Add click handlers to ensure dropdown links work properly
                 document.querySelectorAll('.dropdown-menu a.dropdown-item').forEach(item => {
                     item.addEventListener('click', function() {
@@ -221,7 +221,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
                         });
                     });
                 });
-                
+
                 console.log('Dropdowns initialized with click behavior');
             }
         } catch (error) {
@@ -232,8 +232,22 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     toggleDropdown() {
         this.isDropdownOpen = !this.isDropdownOpen;
     }
-    
+
     closeDropdown() {
         this.isDropdownOpen = false;
+    }
+
+    isAdminSectionActive(): boolean {
+        return this.router.url.startsWith('/admin') || this.router.url.startsWith('/super-admin');
+    }
+
+    getSubnavType(): 'admin' | 'super-admin' | null {
+        if (this.router.url.startsWith('/admin')) {
+            return 'admin';
+        }
+        if (this.router.url.startsWith('/super-admin')) {
+            return 'super-admin';
+        }
+        return null;
     }
 }

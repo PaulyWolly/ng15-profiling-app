@@ -8,6 +8,8 @@
     overflow: visible !important;
     overflow-y: hidden !important;
     scrollbar-width: none !important;
+    position: relative;
+    margin-bottom: 24px;
 }
 
 .register-card::-webkit-scrollbar {
@@ -153,4 +155,20 @@ input:focus, select:focus {
     max-width: 100%;
     flex: 1 1 100%;
   }
-} 
+}
+
+.centered-form-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: #f8f9fa;
+}
+
+.register-disclaimer {
+  text-align: center;
+  margin-top: 1.5rem;
+  color: #888;
+  font-size: 0.95em;
+}
