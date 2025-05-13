@@ -23,6 +23,12 @@ const routes: Routes = [
       canActivate: [AuthGuard],
       data: { roles: [Role.Admin, Role.SuperAdmin] }
     },
+    {
+      path: 'admin-clone',
+      loadChildren: () => import('./admin-clone/admin-clone.module').then(m => m.AdminCloneModule),
+      canActivate: [AuthGuard],
+      data: { roles: [Role.Admin, Role.SuperAdmin] }
+    },
     { path:
       'super-admin',
       loadChildren: () => import('./super-admin/super-admin.module').then(m => m.SuperAdminModule),

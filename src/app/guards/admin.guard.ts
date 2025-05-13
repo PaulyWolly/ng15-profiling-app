@@ -1,6 +1,6 @@
 import { Injectable, Inject } from '@angular/core';
 import { CanActivate, Router } from '@angular/router';
-import { AccountService } from '../services/account.service';
+import { AccountService } from '@app/_services/account.service';
 
 @Injectable({
   providedIn: 'root'
@@ -12,7 +12,7 @@ export class AdminGuard implements CanActivate {
   ) {}
 
   canActivate(): boolean {
-    const user = this.accountService.userValue;
+    const user = this.accountService.accountValue;
     if (user && (user.role === 'Admin' || user.role === 'Super-Admin')) {
       return true;
     }
@@ -21,4 +21,4 @@ export class AdminGuard implements CanActivate {
     this.router.navigate(['/']);
     return false;
   }
-} 
+}

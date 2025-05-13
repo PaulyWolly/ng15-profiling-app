@@ -6,6 +6,7 @@ import { SuperAdminSubnavComponent } from './components/super-admin-subnav/super
 import { SuperAdminRoutingModule } from './super-admin-routing.module';
 import { LogsComponent } from '../admin/components/logs/logs.component';
 import { SuperAdminLayoutComponent } from './components/super-admin-layout.component';
+import { SuperAdminOverviewComponent } from './components/super-admin-overview.component';
 
 @NgModule({
   imports: [
@@ -14,7 +15,8 @@ import { SuperAdminLayoutComponent } from './components/super-admin-layout.compo
     SuperAdminRoutingModule,
     SuperAdminSubnavComponent,
     LogsComponent,
-    SuperAdminLayoutComponent
+    SuperAdminLayoutComponent,
+    SuperAdminOverviewComponent
   ],
   declarations: [
     SuperAdminComponent

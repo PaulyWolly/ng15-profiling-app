@@ -5,13 +5,21 @@ import { SuperAdminSubnavComponent } from './components/super-admin-subnav/super
 import { LogsComponent } from '../admin/components/logs/logs.component'; // Adjust path if needed
 import { SuperAdminLayoutComponent } from './components/super-admin-layout.component';
 import { superAdminGuard } from '../guards/super-admin.guard';
+import { SuperAdminOverviewComponent } from './components/super-admin-overview.component';
 
 const routes: Routes = [
+  {
+    path: '',
+    component: SuperAdminSubnavComponent,
+    outlet: 'subnav'
+  },
   {
     path: '',
     component: SuperAdminLayoutComponent,
     canActivateChild: [superAdminGuard],
     children: [
+      { path: '', redirectTo: 'overview', pathMatch: 'full' },
+      { path: 'overview', component: SuperAdminOverviewComponent },
       { path: 'logs', component: LogsComponent }
       // Add more sub-nav links here as needed
     ]

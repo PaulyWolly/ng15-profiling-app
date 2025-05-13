@@ -3,7 +3,8 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { first } from 'rxjs/operators';
 
-import { AccountService, AlertService } from '@app/_services';
+import { AlertService } from '@app/_services';
+import { AccountService } from '@app/_services/account.service';
 
 @Component({
     templateUrl: './login.component.html',
@@ -21,7 +22,7 @@ export class LoginComponent implements OnInit, OnDestroy {
         private router: Router,
         private accountService: AccountService,
         private alertService: AlertService
-    ) { 
+    ) {
         // redirect to home if already logged in
         if (this.accountService.accountValue) {
             this.router.navigate(['/']);
@@ -31,7 +32,7 @@ export class LoginComponent implements OnInit, OnDestroy {
     ngOnInit() {
         // Add login-page class to body for special styling
         document.body.classList.add('login-page');
-        
+
         // Check for stored rememberMe data to pre-fill email
         let savedEmail = '';
         try {
@@ -45,7 +46,7 @@ export class LoginComponent implements OnInit, OnDestroy {
         } catch (error) {
             console.error('Error reading remembered user:', error);
         }
-        
+
         this.form = this.formBuilder.group({
             email: [savedEmail, [Validators.required, Validators.email]],
             password: ['', Validators.required],
@@ -77,7 +78,7 @@ export class LoginComponent implements OnInit, OnDestroy {
 
         this.loading = true;
         this.accountService.login(
-            this.f.email.value, 
+            this.f.email.value,
             this.f.password.value,
             this.f.rememberMe.value // Pass the remember me checkbox value
         )
@@ -94,4 +95,4 @@ export class LoginComponent implements OnInit, OnDestroy {
                 }
             });
     }
-} 
+}

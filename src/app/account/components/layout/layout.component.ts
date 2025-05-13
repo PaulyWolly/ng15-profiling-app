@@ -2,9 +2,9 @@
 import { Router } from '@angular/router';
 import { first } from 'rxjs/operators';
 
-import { AccountService } from '@app/_services';
+import { AccountService } from '@app/_services/account.service';
 
-@Component({ 
+@Component({
     templateUrl: 'layout.component.html',
     styleUrls: ['./layout.component.css']
 })
