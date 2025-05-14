@@ -1,5 +1,5 @@
 :host {
-    display: block; 
+    display: block;
     width: 100%;
 }
 
@@ -8,7 +8,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: 300px; 
+    min-height: 300px;
     gap: 1rem;
     color: #666;
 }
@@ -28,7 +28,7 @@
     }
 
     .profile-card {
-        margin: 0 auto; 
+        margin: 0 auto;
         margin-bottom: 1rem;
         width: 100%;
         max-width: 1100px;
@@ -157,7 +157,7 @@
 
 .social-grid {
     display: grid;
-    grid-template-columns: 1fr; 
+    grid-template-columns: 1fr;
     gap: 0.75rem;
 }
 
@@ -175,7 +175,7 @@
     mat-icon {
         color: #6c757d;
     }
-    
+
     i.fab {
         color: #6c757d;
         font-size: 1.2rem;
@@ -190,7 +190,7 @@
 }
 
 .about-section {
-    width: 44vw;
+    width: 45vw;
 }
 
 .edit-button {
@@ -299,7 +299,7 @@
     border-bottom-left-radius: var(--app-border-radius) !important;
     border-bottom-right-radius: var(--app-border-radius) !important;
     padding: 32px 24px 32px 24px;
-} 
+}
 
 .profile-info-block h2 {
     font-size: 16px !important;
@@ -347,20 +347,20 @@
   button {
     margin-top: 10px;
   }
-  
+
   // Blue suggestion style variant
   &.suggestion {
     background-color: #e3f2fd;
     border: 1px solid #bbdefb;
-    
+
     mat-icon {
       color: #1976d2;
     }
-    
+
     h3 {
       color: #1976d2;
     }
-    
+
     p {
       color: #0d47a1;
     }
@@ -382,13 +382,13 @@
   cursor: pointer;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   z-index: 100;
-  
+
   mat-icon {
     font-size: 24px;
     height: 24px;
     width: 24px;
   }
-  
+
   .online-users-badge {
     position: absolute;
     top: -5px;
@@ -403,5 +403,19 @@
     display: flex;
     align-items: center;
     justify-content: center;
+  }
+}
+
+@media (min-width: 1800px) {
+  .upper-section {
+    padding-left: 60px; /* (existing rule) */
+  }
+  .profile-image-container {
+    min-width: 200px;
+    min-height: 250px;
+    left: 0;
+  }
+  .about-section {
+    width: 40vw; /* Set to 40vw for large screens/80% zoom */
   }
 }
