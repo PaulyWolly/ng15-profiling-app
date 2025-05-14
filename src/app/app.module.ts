@@ -6,6 +6,8 @@ import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { RouterModule } from '@angular/router';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { JwtHelperService, JWT_OPTIONS } from '@auth0/angular-jwt';
+import { CommonModule } from '@angular/common';
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 
 // Material Modules (Keep essential ones needed globally)
 import { MatIconModule } from '@angular/material/icon';
@@ -25,7 +27,6 @@ import { ProfileTemplatesModule } from './profile-templates/profile-templates.mo
 import { SuperAdminModule } from './super-admin/super-admin.module';
 import { NewMenuBarComponent } from './new-menu-bar/new-menu-bar.component';
 import { SubNavComponent as AdminSubNavComponent } from './admin/components/subnav/subnav.component';
-import { SubNavComponent } from './super-admin-old/subnav/subnav.component';
 
 // Add factory function to initialize ConfigService
 export function configInitializer(configService: ConfigService) {
@@ -55,7 +56,7 @@ export function configInitializer(configService: ConfigService) {
         ProfileTemplatesModule,
         SuperAdminModule,
         AdminSubNavComponent,
-        SubNavComponent
+        CommonModule
     ],
     providers: [
         { provide: APP_INITIALIZER, useFactory: appInitializer, multi: true, deps: [AccountService] },
@@ -65,6 +66,7 @@ export function configInitializer(configService: ConfigService) {
         { provide: JWT_OPTIONS, useValue: JWT_OPTIONS },
         JwtHelperService
     ],
+    schemas: [CUSTOM_ELEMENTS_SCHEMA],
     bootstrap: [AppComponent]
 })
 export class AppModule { }
