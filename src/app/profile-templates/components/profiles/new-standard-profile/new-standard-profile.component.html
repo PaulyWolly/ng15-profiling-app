@@ -33,23 +33,25 @@
 
     <div class="main-profile-container">
       <!-- Upper Section -->
-      <div class="upper-section">
-        <div class="profile-image-container">
-          <img *ngIf="profile?.profileImage"
-               [src]="profile.profileImage"
-               alt="Profile picture"
-               class="profile-img">
-          <div *ngIf="!profile?.profileImage" class="default-avatar">
-            <mat-icon>account_circle</mat-icon>
+      <div class="upper-section-scaler">
+        <div class="upper-section">
+          <div class="profile-image-container">
+            <img *ngIf="profile?.profileImage"
+                 [src]="profile.profileImage"
+                 alt="Profile picture"
+                 class="profile-img">
+            <div *ngIf="!profile?.profileImage" class="default-avatar">
+              <mat-icon>account_circle</mat-icon>
+            </div>
           </div>
-        </div>
-        <div class="profile-info-block">
-          <h1>{{profile.firstName}} {{profile.lastName}}</h1>
-          <h2>{{profile.position || ''}}</h2>
-          <p class="company" *ngIf="profile?.company">{{profile.company}}</p>
-          <div class="about-section" *ngIf="profile?.bio">
-            <h3>About</h3>
-            <p [innerHTML]="profile.bio"></p>
+          <div class="profile-info-block">
+            <h1>{{profile.firstName}} {{profile.lastName}}</h1>
+            <h2>{{profile.position || ''}}</h2>
+            <p class="company" *ngIf="profile?.company">{{profile.company}}</p>
+            <div class="about-section" *ngIf="profile?.bio">
+              <h3>About</h3>
+              <p [innerHTML]="profile.bio"></p>
+            </div>
           </div>
         </div>
       </div>
@@ -130,8 +132,8 @@
     </div>
     <span *ngIf="pendingChats && !showChatList" class="yellow-led"></span>
   </div>
-  <app-chat-dock 
+  <app-chat-dock
     [dockOpen]="showChatList"
     (closeDock)="toggleChatList()">
   </app-chat-dock>
-</div> 
+</div>
