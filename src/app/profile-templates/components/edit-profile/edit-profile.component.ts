@@ -63,7 +63,7 @@ export class EditProfileComponent implements OnInit, OnChanges, AfterViewInit {
   }
 
   // The wheel event handler is now in the directive
-  
+
   ngOnChanges(changes: SimpleChanges) {
     if (changes['account'] && this.form) {
       console.log('[EditProfileComponent] Account data changed:', this.account);
@@ -93,6 +93,8 @@ export class EditProfileComponent implements OnInit, OnChanges, AfterViewInit {
       twitter: [''],
       facebook: [''],
       instagram: [''],
+      github: [''],
+      linkedin: [''],
       followersCount: [0],
       followingCount: [0],
       profileTemplateType: [ProfileTemplateType.STANDARD]
@@ -119,6 +121,8 @@ export class EditProfileComponent implements OnInit, OnChanges, AfterViewInit {
         twitter: this.account.twitter,
         facebook: this.account.facebook,
         instagram: this.account.instagram,
+        github: this.account.github,
+        linkedin: this.account.linkedin,
         followersCount: this.account.followersCount,
         followingCount: this.account.followingCount,
         profileTemplateType: this.account.profileTemplateType || ProfileTemplateType.STANDARD
@@ -214,7 +218,7 @@ export class EditProfileComponent implements OnInit, OnChanges, AfterViewInit {
           this.currentFollower.name,
           this.currentFollower.title
         ).toPromise();
-        
+
         if (result) {
           this.currentFollower.imageUrl = result.imageUrl;
           this.currentFollower.path = result.path;
