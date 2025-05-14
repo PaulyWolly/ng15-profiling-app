@@ -25,7 +25,7 @@ import { ProfileTemplatesModule } from './profile-templates/profile-templates.mo
 import { SuperAdminModule } from './super-admin/super-admin.module';
 import { NewMenuBarComponent } from './new-menu-bar/new-menu-bar.component';
 import { SubNavComponent as AdminSubNavComponent } from './admin/components/subnav/subnav.component';
-import { SubNavComponent } from './super-admin/components/subnav/subnav.component';
+import { SubNavComponent } from './super-admin-old/subnav/subnav.component';
 
 // Add factory function to initialize ConfigService
 export function configInitializer(configService: ConfigService) {

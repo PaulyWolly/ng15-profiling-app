@@ -4,7 +4,6 @@ import { Routes, RouterModule, PreloadAllModules } from '@angular/router';
 
 import { AuthGuard } from './_helpers';
 import { Role } from './_models';
-import { SuperAdminComponent } from './super-admin/super-admin/super-admin.component';
 import { SuperAdminModule } from './super-admin/super-admin.module';
 
 const accountModule = () => import('./account/account.module').then(x => x.AccountModule);
