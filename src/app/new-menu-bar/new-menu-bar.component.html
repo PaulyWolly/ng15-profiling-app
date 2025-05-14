@@ -26,15 +26,6 @@
             </a>
         </li>
 
-        <!-- Admin-Clone Link -->
-        <li class="nav-item" *ngIf="account?.role === Role.Admin || account?.role === Role.SuperAdmin">
-            <a class="nav-link"
-               routerLink="/admin-clone"
-               [class.active]="!dropdownOpen && isActiveRoute('/admin-clone')">
-                Admin-Clone
-            </a>
-        </li>
-
         <!-- Super-Admin Link -->
         <li class="nav-item" *ngIf="account?.role === Role.SuperAdmin">
             <a class="nav-link"

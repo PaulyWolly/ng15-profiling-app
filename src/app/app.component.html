@@ -6,6 +6,7 @@
     <!-- Conditional subnav -->
     <ng-container [ngSwitch]="getSubnavType()">
       <app-admin-subnav *ngSwitchCase="'admin'"></app-admin-subnav>
+      <app-super-admin-subnav *ngSwitchCase="'super-admin'"></app-super-admin-subnav>
     </ng-container>
 
     <!-- Main content area -->

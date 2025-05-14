@@ -22,11 +22,10 @@ import { AdminModule } from './admin/admin.module';
 import { SharedModule } from './shared/shared.module';
 import { ProfileModule } from './profile/profile.module';
 import { ProfileTemplatesModule } from './profile-templates/profile-templates.module';
-import { SuperAdminComponent } from './super-admin/super-admin/super-admin.component';
-import { NewMenuBarComponent } from './new-menu-bar/new-menu-bar.component';
 import { SuperAdminModule } from './super-admin/super-admin.module';
-import { SuperAdminSubnavComponent } from './super-admin/components/super-admin-subnav/super-admin-subnav.component';
-import { SubNavComponent } from './admin/components/subnav/subnav.component';
+import { NewMenuBarComponent } from './new-menu-bar/new-menu-bar.component';
+import { SubNavComponent as AdminSubNavComponent } from './admin/components/subnav/subnav.component';
+import { SubNavComponent } from './super-admin/components/subnav/subnav.component';
 
 // Add factory function to initialize ConfigService
 export function configInitializer(configService: ConfigService) {
@@ -37,7 +36,7 @@ export function configInitializer(configService: ConfigService) {
     declarations: [
         AppComponent,
         FooterComponent,
-        NewMenuBarComponent,
+        NewMenuBarComponent
     ],
     imports: [
         BrowserModule,
@@ -54,8 +53,8 @@ export function configInitializer(configService: ConfigService) {
         SharedModule,
         ProfileModule,
         ProfileTemplatesModule,
-        // SuperAdminModule,
-        SuperAdminSubnavComponent,
+        SuperAdminModule,
+        AdminSubNavComponent,
         SubNavComponent
     ],
     providers: [
