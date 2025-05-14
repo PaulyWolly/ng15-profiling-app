@@ -118,4 +118,4 @@ export class NewRegisterComponent implements OnInit {
         }
       });
   }
-} 
+}
