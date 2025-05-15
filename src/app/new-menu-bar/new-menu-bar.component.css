@@ -7,6 +7,9 @@
 .navbar-nav .nav-link.active {
   color: #0d6efd !important; /* Bootstrap blue */
   background-color: transparent !important;
+  font-weight: bold;
+  background: #e7f1ff;
+  border-radius: 4px;
 }
 
 .navbar-nav .nav-link.active::after {
@@ -43,4 +46,12 @@
 .navbar .nav-item.dropdown.show .dropdown-toggle::after,
 .navbar .nav-item.dropdown .dropdown-toggle[aria-expanded="true"]::after {
   transform: rotate(180deg);
+}
+
+.nav-item.active > .nav-link,
+.nav-link.active {
+  color: #0d6efd !important;
+  font-weight: bold;
+  background: transparent !important;
+  border-radius: 4px;
 }

@@ -2,6 +2,7 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
+const logger = require('../logs/logger.service');
 
 // Get the absolute path to the uploads directories
 const uploadsDir = path.join(__dirname, '..', 'uploads');
@@ -13,12 +14,12 @@ const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         // Use different directories based on the endpoint
         const uploadPath = req.originalUrl.includes('follower-image') ? followersDir : profilesDir;
-        
+
         // Ensure directory exists
         if (!fs.existsSync(uploadPath)) {
             fs.mkdirSync(uploadPath, { recursive: true });
         }
-        
+
         cb(null, uploadPath);
     },
     filename: function (req, file, cb) {
@@ -106,7 +107,7 @@ async function uploadFollowerImage(req, res, next) {
                 console.error('[UploadController:uploadFollowerImage] Error cleaning up temp file:', cleanupError);
             }
         }
-        
+
         next(error);
     }
 }
@@ -157,7 +158,7 @@ async function uploadProfileImage(req, res, next) {
         // Always use .png extension regardless of input file type
         const finalFilename = `profileImage-${req.body.userEmail}.png`;
         const finalPath = path.join(profilesDir, finalFilename);
-        
+
         console.log('[UploadController:uploadProfileImage] File paths:', {
             tempPath: req.file.path,
             finalPath,
@@ -203,7 +204,7 @@ async function uploadProfileImage(req, res, next) {
 
         // Create URL-friendly path that matches the static file serving configuration
         const urlPath = `/uploads/profiles/${finalFilename}`;
-        
+
         console.log('[UploadController:uploadProfileImage] Updating database:', {
             userId: req.body.userId || req.user.id,
             urlPath
@@ -220,7 +221,7 @@ async function uploadProfileImage(req, res, next) {
             account,
             urlPath
         });
-        
+
         const response = {
             message: 'Profile image uploaded successfully',
             imagePath: urlPath,
@@ -228,6 +229,24 @@ async function uploadProfileImage(req, res, next) {
         };
 
         console.log('[UploadController:uploadProfileImage] Sending response:', response);
+
+        // Log successful image upload
+        const userId = req.body.userId || req.user.id;
+        const user = req.body.userEmail || req.user.email;
+        const ipAddress = req.ip || req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+
+        logger.createUserLog(
+            user,
+            'Profile Image Upload',
+            `Successfully uploaded profile image: ${urlPath}`,
+            'Success',
+            ipAddress,
+            '',
+            req.headers['user-agent']
+        ).catch(logErr => {
+            console.error('[UploadController] Failed to create log:', logErr);
+        });
+
         res.json(response);
     } catch (error) {
         console.error('[UploadController:uploadProfileImage] Error in upload process:', {
@@ -236,6 +255,27 @@ async function uploadProfileImage(req, res, next) {
             stack: error.stack,
             code: error.code
         });
+
+        // Log failed image upload
+        try {
+            const userId = req.body.userId || (req.user && req.user.id);
+            const user = req.body.userEmail || (req.user && req.user.email) || 'Unknown';
+            const ipAddress = req.ip || req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+
+            logger.createErrorLog(
+                'Profile Image Upload',
+                `Failed to upload profile image: ${error.message}`,
+                user,
+                ipAddress,
+                '',
+                req.headers['user-agent']
+            ).catch(logErr => {
+                console.error('[UploadController] Failed to create error log:', logErr);
+            });
+        } catch (logError) {
+            console.error('[UploadController] Error creating error log:', logError);
+        }
+
         // Clean up temp file if it exists
         if (req.file && fs.existsSync(req.file.path)) {
             try {

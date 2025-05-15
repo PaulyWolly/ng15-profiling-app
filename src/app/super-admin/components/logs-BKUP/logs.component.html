@@ -51,7 +51,7 @@
                         <tr *ngFor="let log of logs">
                             <td>
                                 <div class="form-check">
-                                    <input type="checkbox" class="form-check-input" [checked]="selectedLogs.has(log.id)" (change)="onLogSelect($event, log.id)">
+                                    <input type="checkbox" class="form-check-input" [checked]="selectedLogs.has(log._id!)" (change)="onLogSelect($event, log._id!)">
                                 </div>
                             </td>
                             <td>{{log.type}}</td>

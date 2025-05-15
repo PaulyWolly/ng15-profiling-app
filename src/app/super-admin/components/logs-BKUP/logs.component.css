@@ -30,6 +30,16 @@
     z-index: 2;
 }
 
+.nav-tabs .nav-link.active:hover {
+  background: #fff;
+  color: #2563eb !important;
+  font-weight: 700;
+  border-top: 3px solid #2563eb;
+  border-left: 1px solid #dee2e6;
+  border-right: 1px solid #dee2e6;
+  border-bottom: none;
+}
+
 ul.nav-tabs > li > a.nav-link:hover:not(.active),
 ul.nav-tabs > li > a.nav-link:focus:not(.active) {
     background: #e9ecef !important;

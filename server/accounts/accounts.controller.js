@@ -12,6 +12,7 @@ const fs = require('fs').promises;
 const path = require('path');
 const Account = require('./account.model');
 const websocketService = require('../services/websocket.service');
+const logger = require('../logs/logger.service');
 
 console.log('Setting up accounts routes...');
 
@@ -68,7 +69,7 @@ router.get('/my-sessions', authenticate(), async (req, res, next) => {
         }).sort({ created: -1 });
 
         console.log('[MySessions] Query complete. Found sessions:', sessions.length);
-        
+
         const response = sessions.map(session => ({
             id: session.id,
             ip: session.createdByIp,
@@ -117,7 +118,7 @@ router.put('/:id', authenticate(), updateSchema, update);
 router.delete('/:id', authenticate(), _delete);
 
 // Configure upload route with proper error handling
-router.post('/upload-profile-image', 
+router.post('/upload-profile-image',
     authenticate(),
     (req, res, next) => {
         upload.single('profileImage')(req, res, (err) => {
@@ -143,7 +144,7 @@ router.post('/upload-profile-image',
 );
 
 // Add follower image upload route
-router.post('/upload-follower-image', 
+router.post('/upload-follower-image',
     authenticate(),
     upload.single('file'),  // Use multer middleware directly
     async (req, res, next) => {
@@ -156,7 +157,7 @@ router.post('/upload-follower-image',
             user: req.user?.id,
             followerName: req.body.followerName
         });
-        
+
         try {
             await uploadFollowerImage(req, res, next);
         } catch (error) {
@@ -319,11 +320,38 @@ function handleAuthenticate(req, res, next) {
     accountService.authenticate({ email, password, ipAddress, userAgent })
         .then(({ jwtToken, refreshToken, ...account }) => {
             setTokenCookie(res, refreshToken);
+
+            // Log successful login
+            logger.createUserLog(
+                email,
+                'Login',
+                `User logged in successfully`,
+                'Success',
+                ipAddress,
+                '',
+                userAgent
+            ).catch(logErr => {
+                console.error('[AccountsController] Failed to create login log:', logErr);
+            });
+
             res.json({ jwtToken, refreshToken, ...account });
         })
-        .catch(error => {
-            console.error('Login error:', error);
-            next(error);
+        .catch(err => {
+            // Log failed login attempt
+            const ipAddress = req.ip || req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+            const email = req.body.email || 'Unknown';
+            logger.createErrorLog(
+                'Login Attempt',
+                `Failed login attempt for ${email}: ${err.message || 'Unknown error'}`,
+                email,
+                ipAddress,
+                '',
+                req.headers['user-agent']
+            ).catch(logErr => {
+                console.error('[AccountsController] Failed to create failed login log:', logErr);
+            });
+
+            next(err);
         });
 }
 
@@ -356,8 +384,26 @@ function revokeToken(req, res, next) {
     }
 
     accountService.revokeToken({ token, ipAddress })
-        .then(() => res.json({ message: 'Token revoked' }))
-        .catch(next);
+        .then(() => {
+            // Log successful logout
+            if (req.user) {
+                const ipAddress = req.ip || req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+                logger.createUserLog(
+                    req.user.email,
+                    'Logout',
+                    `User logged out successfully`,
+                    'Success',
+                    ipAddress,
+                    '',
+                    req.headers['user-agent']
+                ).catch(logErr => {
+                    console.error('[AccountsController] Failed to create logout log:', logErr);
+                });
+            }
+
+            res.json({ message: 'Token revoked' })
+        })
+        .catch(err => next(err));
 }
 
 function registerSchema(req, res, next) {
@@ -374,8 +420,24 @@ function registerSchema(req, res, next) {
 
 function register(req, res, next) {
     accountService.register(req.body, req.get('origin'))
-        .then(() => res.json({ message: 'Registration successful, please check your email for verification instructions' }))
-        .catch(next);
+        .then(() => {
+            // Log successful registration
+            const ipAddress = req.ip || req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+            logger.createAuditLog(
+                req.body.email,
+                'Registration',
+                `New user registered: ${req.body.email}`,
+                'Success',
+                ipAddress,
+                '',
+                req.headers['user-agent']
+            ).catch(logErr => {
+                console.error('[AccountsController] Failed to create registration log:', logErr);
+            });
+
+            res.json({ message: 'Registration successful, please check your email for verification instructions' });
+        })
+        .catch(err => next(err));
 }
 
 function verifyEmailSchema(req, res, next) {
@@ -474,10 +536,10 @@ function updateSchema(req, res, next) {
         email: Joi.string().email().empty(''),
         password: Joi.string().min(6).empty(''),
         confirmPassword: Joi.string().valid(Joi.ref('password')).empty(''),
-        
+
         // Profile template
         profileTemplateType: Joi.string().valid('STANDARD', 'BUSINESS_CARD', 'SOCIAL_MEDIA').empty(''),
-        
+
         // Personal & Professional Details
         position: Joi.string().empty(''),
         company: Joi.string().empty(''),
@@ -488,7 +550,7 @@ function updateSchema(req, res, next) {
         phone: Joi.string().empty(''),
         mobile: Joi.string().empty(''),
         bio: Joi.string().empty(''),
-        
+
         // Social Media Links
         website: Joi.string().allow('', null),
         github: Joi.string().empty(''),
@@ -496,17 +558,17 @@ function updateSchema(req, res, next) {
         instagram: Joi.string().empty(''),
         facebook: Joi.string().empty(''),
         linkedin: Joi.string().uri().empty(''),
-        
+
         // Social Media Stats
         followersCount: Joi.number().integer().min(0).empty(''),
         followingCount: Joi.number().integer().min(0).empty(''),
-        
+
         // Professional Skills - allow array of strings
         skills: Joi.alternatives().try(
             Joi.array().items(Joi.string()),
             Joi.string()
         ).empty(''),
-        
+
         // Follower images
         followerImages: Joi.array().items(
             Joi.object({
@@ -542,7 +604,7 @@ function update(req, res, next) {
             targetId: req.params.id,
             requesterRole: req.user.role
         });
-        return res.status(401).json({ 
+        return res.status(401).json({
             message: 'Unauthorized: Only admins can update other accounts',
             error: 'UNAUTHORIZED_UPDATE'
         });
@@ -556,7 +618,7 @@ function update(req, res, next) {
                 userId: req.params.id,
                 requesterRole: req.user.role
             });
-            return res.status(403).json({ 
+            return res.status(403).json({
                 message: 'Only Super-Admin can assign Super-Admin role',
                 error: 'SUPER_ADMIN_ROLE_ASSIGNMENT_BLOCKED'
             });
@@ -569,7 +631,7 @@ function update(req, res, next) {
                 requesterRole: req.user.role,
                 attemptedRole: req.body.role
             });
-            return res.status(403).json({ 
+            return res.status(403).json({
                 message: 'Attempted role escalation blocked: Non-admin user tried to set role to ' + req.body.role,
                 error: 'ROLE_ESCALATION_BLOCKED'
             });
@@ -581,7 +643,7 @@ function update(req, res, next) {
                 userId: req.params.id,
                 invalidRole: req.body.role
             });
-            return res.status(400).json({ 
+            return res.status(400).json({
                 message: 'Invalid role value. Must be either "Admin", "Super-Admin", or "User"',
                 error: 'INVALID_ROLE'
             });
@@ -624,7 +686,7 @@ async function getActiveSessions(req, res, next) {
     // Extract pagination params from query string, provide defaults
     const page = parseInt(req.query.page, 10) || 1;
     const pageSize = parseInt(req.query.pageSize, 10) || 10;
-    
+
     try {
         console.log(`[AccountsController] Request received for active sessions - Page: ${page}, Size: ${pageSize}`);
         // Call the updated service function with pagination params
@@ -650,7 +712,7 @@ async function forceLogoutHandler(req, res, next) {
     try {
         const sessionId = req.params.id;
         const now = new Date();
-        
+
         const result = await db.RefreshToken.findByIdAndUpdate(sessionId, {
             revoked: now,
             revokedByIp: req.ip,
@@ -698,7 +760,7 @@ async function forceLogoutBulkHandler(req, res, next) {
             }
         );
 
-        res.json({ 
+        res.json({
             message: `Successfully revoked ${result.modifiedCount} sessions`,
             modifiedCount: result.modifiedCount
         });
@@ -718,11 +780,11 @@ async function cleanupAllSessionsHandler(req, res, next) {
                 { revoked: { $ne: null } }
             ]
         });
-        res.json({ 
+        res.json({
             message: `Successfully cleaned up ${result.deletedCount} sessions`,
             deletedCount: result.deletedCount
         });
     } catch (error) {
         next(error);
     }
-} 
+}

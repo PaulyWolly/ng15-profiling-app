@@ -1,0 +1,152 @@
+.log-dialog-container {
+  /* width: 1100px; */
+  max-width: 99vw;
+  border-radius: 8px;
+  background: transparent;
+  display: flex;
+  flex-direction: column;
+  overflow: visible !important;
+}
+
+.log-dialog-header {
+  background: #fff;
+  border-radius: 8px 8px 0 0;
+  padding: 24px;
+  margin-bottom: 0;
+  position: relative;
+}
+
+.log-dialog-content {
+  background: #e3f2fd;
+  border-radius: 0 0 8px 8px;
+  padding: 20px;
+  margin: 20px;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  overflow: visible !important;
+}
+
+.log-entries-list {
+  max-height: 350px;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.details-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px 32px;
+  margin-bottom: 0;
+}
+
+.details-message {
+  margin-top: 0;
+}
+
+.message-box {
+  background: #fff;
+  border-radius: 4px;
+  padding: 12px;
+  margin-top: 4px;
+  border: 1px solid #bbdefb;
+  font-family: monospace;
+  white-space: pre-wrap;
+  height: auto;
+  width: 72vw;
+}
+
+.message-pagination {
+  margin-top: 8px;
+  text-align: right;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.details-meta {
+  margin-top: 20px;
+}
+
+.meta-box {
+  background: #fff;
+  border-radius: 4px;
+  padding: 12px;
+  margin-top: 4px;
+  border: 1px solid #bbdefb;
+  font-family: monospace;
+  white-space: pre-wrap;
+  max-height: 200px;
+  overflow: auto;
+}
+
+.log-dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding: 24px 32px 24px 0;
+  background: transparent;
+}
+
+.cdk-overlay-pane {
+  position: absolute;
+  pointer-events: auto;
+  box-sizing: border-box;
+  z-index: 1000;
+  display: flex;
+  width: 70vw !important;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+.close-x {
+  position: absolute;
+  top: 18px;
+  right: 24px;
+  font-size: 2rem;
+  font-weight: bold;
+  color: #333;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  z-index: 10;
+  line-height: 1;
+  padding: 0 8px;
+  transition: color 0.2s;
+}
+.close-x:hover, .close-x:focus {
+  color: #ed0b2e;
+  outline: none;
+}
+
+.log-entries-controls-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+.controls-left, .controls-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.log-entry-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.entry-checkbox-label {
+  display: flex;
+  align-items: center;
+  margin-top: 28px;
+  margin-right: 8px;
+}
+
+.message-flex-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  height: 100%;
+}

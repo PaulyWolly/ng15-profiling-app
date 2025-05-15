@@ -97,3 +97,217 @@ ul.nav-tabs > li > a.nav-link:focus:not(.active) {
 .container-fluid {
     padding: 20px;
 }
+
+/* Folder Structure Styles */
+.folder-header {
+    transition: background-color 0.2s;
+    cursor: pointer;
+    user-select: none;
+}
+
+.folder-header:hover {
+    background-color: rgba(0,0,0,0.05);
+}
+
+.folder-header.active {
+    background-color: rgba(13, 110, 253, 0.1);
+    border-bottom: 1px solid #dee2e6;
+}
+
+.folder-content {
+    border-top: 1px solid #f0f0f0;
+}
+
+/* Fix table headers alignment */
+.table th {
+    font-weight: 600;
+    color: #495057;
+}
+
+/* Checkbox styling */
+.form-check-input:checked {
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+/* Badge styling */
+.badge {
+    font-weight: 500;
+    padding: 0.35em 0.65em;
+}
+
+/* System folder styling */
+.system-folder {
+    color: #ffc107;
+}
+
+/* User folder styling */
+.user-folder {
+    color: #0d6efd;
+}
+
+/* Make tables more compact for log entries */
+.table-sm td, .table-sm th {
+    padding: 0.4rem 0.5rem;
+}
+
+/* Cursor pointer for clickable elements */
+.cursor-pointer {
+    cursor: pointer;
+}
+
+/* Animation for folder toggle */
+.fas.fa-folder, .fas.fa-folder-open {
+    transition: transform 0.2s;
+}
+
+.folder-header:hover .fas {
+    transform: translateX(2px);
+}
+
+/* Material Tree Custom Styles */
+.mat-tree {
+  background: #fff;
+  border-radius: 8px;
+  padding: 16px 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.mat-tree-node {
+  font-size: 1.08rem;
+  padding: 4px 0 4px 8px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.mat-tree-node:hover {
+  background: #f0f4ff;
+}
+
+.mat-tree .mat-icon {
+  vertical-align: middle;
+  margin-right: 8px;
+  color: #1976d2;
+}
+
+.log-entry-details {
+  background: #f8f9fa;
+  border-radius: 4px;
+  margin: 8px 0 8px 32px;
+  padding: 10px 16px;
+  font-size: 0.98rem;
+  color: #333;
+  border-left: 3px solid #1976d2;
+}
+
+.mat-tree-node .log-entry-icon {
+  color: #607d8b;
+  margin-right: 6px;
+}
+
+/* Remove default bullets from mat-tree lists */
+.mat-tree,
+.mat-tree ul,
+.mat-tree li {
+  list-style: none !important;
+  margin: 0;
+  padding: 0;
+}
+
+/* Indent tree nodes based on their level */
+.mat-tree-node,
+.mat-nested-tree-node {
+  display: flex;
+  align-items: center;
+}
+
+.mat-tree-node,
+.mat-nested-tree-node {
+  /* Default, will be overridden by inline style or ngStyle */
+  padding-left: 0 !important;
+}
+
+.tree-node-level-0 { padding-left: 0 !important; }
+.tree-node-level-1 { padding-left: 24px !important; }
+.tree-node-level-2 { padding-left: 48px !important; }
+.tree-node-level-3 { padding-left: 72px !important; }
+/* Add more if you have deeper nesting */
+
+/* Colored PrimeNG Tree Icons */
+.user-icon .pi-user {
+  color: #1976d2;
+}
+.category-icon .pi-folder {
+  color: #ff9800;
+}
+.log-entry-icon .pi-file {
+  color: #43a047;
+}
+
+::ng-deep .user-icon .pi-user {
+  color: #1976d2 !important;
+}
+::ng-deep .category-icon .pi-folder {
+  color: #ff9800 !important;
+}
+::ng-deep .log-entry-icon .pi-file {
+  color: #43a047 !important;
+}
+
+::ng-deep .user-icon i.pi-user {
+  color: #1976d2 !important;
+}
+::ng-deep .category-icon i.pi-folder {
+  color: #ff9800 !important;
+}
+::ng-deep .log-entry-icon i.pi-file {
+  color: #43a047 !important;
+}
+
+/* Example: Color all tree toggler icons (arrows) blue */
+::ng-deep .p-tree-toggler-icon {
+  fill: #1976d2 !important;
+}
+
+/* Example: Color all folder/user/file icons in the tree */
+::ng-deep .p-tree-icon {
+  fill: #ff9800 !important; /* orange for folders, change as needed */
+}
+
+/* For user nodes */
+::ng-deep .user-icon .p-tree-icon {
+  fill: #1976d2 !important;
+}
+/* For category/folder nodes */
+::ng-deep .category-icon .p-tree-icon {
+  fill: #ff9800 !important;
+}
+/* For log entry/file nodes */
+::ng-deep .log-entry-icon .p-tree-icon {
+  fill: #43a047 !important;
+}
+
+::ng-deep .p-tree-icon {
+  fill: red !important;
+}
+
+/* Highlight log entry label on hover */
+::ng-deep .p-tree .log-entry-label {
+  color: #999;
+  transition: color 0.15s, text-shadow 0.15s;
+}
+::ng-deep .p-tree .log-entry-label:hover {
+  color: #0d47a1;
+  font-weight: normal;
+  text-shadow: 0 1px 4px rgba(13, 71, 161, 0.15);
+}
+
+/* Remove grey bubble on log entry label hover */
+::ng-deep .p-tree .p-treenode-content:hover .log-entry-label,
+::ng-deep .p-tree .p-treenode-content:focus .log-entry-label {
+  background: transparent !important;
+}
+::ng-deep .p-tree .p-treenode-content:hover,
+::ng-deep .p-tree .p-treenode-content:focus {
+  background: transparent !important;
+}
