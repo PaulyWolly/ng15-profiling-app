@@ -2,10 +2,12 @@
     <!-- <a class="navbar-brand" href="#">Angular App</a> -->
     <div class="navbar-nav">
         <!-- Account Dropdown (All users) -->
-        <li class="nav-item dropdown">
+        <li class="nav-item dropdown"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="{ exact: false }">
             <a class="nav-link dropdown-toggle custom-caret"
                href="#" id="accountDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false"
-               [class.active]="dropdownOpen">
+               [class.active]="dropdownOpen || isAccountSectionActive()">
                 Account
                 <span class="custom-caret-icon" [class.open]="dropdownOpen || isAccountSectionActive()">▼</span>
             </a>
@@ -18,19 +20,21 @@
         </li>
 
         <!-- Admin Link -->
-        <li class="nav-item" *ngIf="account?.role === Role.Admin || account?.role === Role.SuperAdmin">
+        <li class="nav-item" *ngIf="account?.role === Role.Admin || account?.role === Role.SuperAdmin"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="{ exact: false }">
             <a class="nav-link"
-               routerLink="/admin"
-               [class.active]="!dropdownOpen && isActiveRoute('/admin')">
+               routerLink="/admin">
                 Admin
             </a>
         </li>
 
         <!-- Super-Admin Link -->
-        <li class="nav-item" *ngIf="account?.role === Role.SuperAdmin">
+        <li class="nav-item" *ngIf="account?.role === Role.SuperAdmin"
+            routerLinkActive="active"
+            [routerLinkActiveOptions]="{ exact: false }">
             <a class="nav-link"
-               routerLink="/super-admin"
-               [class.active]="!dropdownOpen && isActiveRoute('/super-admin')">
+               routerLink="/super-admin">
                 Super-Admin
             </a>
         </li>

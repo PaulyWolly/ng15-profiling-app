@@ -72,6 +72,10 @@ const followersDir = path.join(__dirname, 'uploads', 'followers');
     }
 });
 
+// Add automatic request logging middleware
+const requestLogger = require('./middleware/logger.middleware');
+app.use(requestLogger);
+
 // ROUTES
 app.use('/uploads/profiles', express.static('uploads/profiles'));
 
@@ -116,7 +120,15 @@ app.get('/config', configController.getPublicConfig);
 // swagger docs route
 app.use('/api-docs', require('./_helpers/swagger'));
 
-// global error handler
+// Add logs routes
+const logsController = require('./logs/logs.controller');
+app.use('/logs', logsController);
+
+// Add custom error handler with logging
+const customErrorHandler = require('./middleware/error-handler.middleware');
+app.use(customErrorHandler);
+
+// global error handler (keep as fallback)
 app.use(errorHandler);
 
 // Add chalk for color-coded logs if available
@@ -139,8 +151,8 @@ app._router.stack
 // Connect to MongoDB with retry logic
 function connectWithRetry() {
   if (mongoose.connection.readyState === 0) { // Only connect if not already connected
-    mongoose.connect(config.connectionString, { 
-      useNewUrlParser: true, 
+    mongoose.connect(config.connectionString, {
+      useNewUrlParser: true,
       useUnifiedTopology: true,
       serverSelectionTimeoutMS: 5000,
       socketTimeoutMS: 45000

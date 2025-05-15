@@ -8,6 +8,7 @@ const path = require('path');
 const fs = require('fs').promises;
 const fsSync = require('fs');
 const UAParser = require('ua-parser-js');
+const logger = require('../logs/logger.service');
 
 module.exports = {
     authenticate,
@@ -28,20 +29,28 @@ module.exports = {
 
 async function authenticate({ email, password, ipAddress, userAgent }) {
     console.log('Authentication attempt:', { email, ipAddress });
-    
+
     try {
         // Trim the email and convert to lowercase for consistent comparison
         const normalizedEmail = email.trim().toLowerCase();
         console.log('Searching for email (normalized):', normalizedEmail);
-        
+
         // Use case-insensitive query
-        const account = await db.Account.findOne({ 
+        const account = await db.Account.findOne({
             email: { $regex: new RegExp('^' + normalizedEmail + '$', 'i') }
         });
         console.log('Database query completed');
 
         if (!account) {
             console.log('No account found for email:', normalizedEmail);
+            // Log failed authentication attempt
+            await logger.createUserLog(
+                normalizedEmail,
+                'Login Attempt',
+                `Failed login attempt - account not found for email: ${normalizedEmail}`,
+                'Error',
+                ipAddress
+            );
             throw 'Email or password is incorrect';
         }
 
@@ -61,12 +70,22 @@ async function authenticate({ email, password, ipAddress, userAgent }) {
                 verified: account.verified,
                 passwordValid
             });
+
+            // Log failed authentication attempt
+            await logger.createUserLog(
+                account.email,
+                'Login Attempt',
+                `Failed login attempt - ${!account.verified ? 'Account not verified' : 'Invalid password'}`,
+                'Error',
+                ipAddress
+            );
+
             throw 'Email or password is incorrect';
         }
 
         // Revoke any existing active sessions for this user
         // await db.RefreshToken.updateMany(
-        //     { 
+        //     {
         //         account: account.id,
         //         revoked: null,
         //         expires: { $gt: new Date() }
@@ -98,6 +117,15 @@ async function authenticate({ email, password, ipAddress, userAgent }) {
         await refreshToken.save();
         console.log('Refresh token saved');
 
+        // Log successful login
+        await logger.createUserLog(
+            account.email,
+            'Login',
+            `User logged in successfully from ${friendlyBrowser}`,
+            'Success',
+            ipAddress
+        );
+
         const response = {
             ...basicDetails(account),
             jwtToken,
@@ -126,6 +154,15 @@ async function refreshToken({ token, ipAddress }) {
     // Only generate a new JWT
     const jwtToken = generateJwtToken(account);
 
+    // Log token refresh
+    await logger.createUserLog(
+        account.email,
+        'Token Refresh',
+        `User refreshed their authentication token`,
+        'Success',
+        ipAddress
+    );
+
     // return basic details and tokens
     return {
         ...basicDetails(account),
@@ -136,17 +173,35 @@ async function refreshToken({ token, ipAddress }) {
 
 async function revokeToken({ token, ipAddress }) {
     const refreshToken = await getRefreshToken(token);
+    const account = await getAccount(refreshToken.account);
 
     // revoke token and save
     refreshToken.revoked = new Date();
     refreshToken.revokedByIp = ipAddress;
     refreshToken.revokedReason = 'User logout';
     await refreshToken.save();
+
+    // Log user logout
+    await logger.createUserLog(
+        account.email,
+        'Logout',
+        `User logged out`,
+        'Success',
+        ipAddress
+    );
 }
 
 async function register(params, origin) {
     // validate
     if (await db.Account.findOne({ email: params.email })) {
+        // Log registration attempt with existing email
+        await logger.createSystemLog(
+            'Registration Attempt',
+            `Registration attempted with existing email: ${params.email}`,
+            'Warning',
+            origin || 'Unknown'
+        );
+
         // Just throw an error instead of sending email
         throw 'Email "' + params.email + '" is already registered';
     }
@@ -198,7 +253,7 @@ async function register(params, origin) {
     }
 
     console.log('Setting account role:', params.role);
-    
+
     account.verificationToken = randomTokenString();
 
     // hash password
@@ -208,6 +263,15 @@ async function register(params, origin) {
     await account.save();
 
     console.log('Account saved with role:', account.role);
+
+    // Log successful registration
+    await logger.createSystemLog(
+        'Registration',
+        `New user registered: ${params.email} with role ${params.role}`,
+        'Success',
+        origin || 'Unknown'
+    );
+
     return account;
 }
 
@@ -419,7 +483,7 @@ async function uploadImage(userId, imagePath) {
     // Update with new image path
     account.profileImage = normalizedPath;
     console.log('[AccountService] Updating account with new image path:', normalizedPath);
-    
+
     await account.save();
     console.log('[AccountService] Account updated successfully');
 
@@ -429,7 +493,7 @@ async function uploadImage(userId, imagePath) {
 async function migrateLegacyImage(account) {
     try {
         console.log('[AccountService] Starting legacy image migration for account:', account.id);
-        
+
         if (!account.profileImage) {
             console.log('[AccountService] No profile image to migrate');
             return;
@@ -450,7 +514,7 @@ async function migrateLegacyImage(account) {
         // Check if old file exists
         if (fsSync.existsSync(oldPath)) {
             console.log('[AccountService] Found old image file, moving to new location');
-            
+
             // Ensure the profiles directory exists
             const profilesDir = path.join(__dirname, '..', 'uploads', 'profiles');
             if (!fsSync.existsSync(profilesDir)) {
@@ -480,7 +544,7 @@ async function migrateLegacyImage(account) {
 // Add this function to migrate all accounts
 async function migrateAllLegacyImages() {
     console.log('[AccountService] Starting migration of all legacy images');
-    
+
     const accounts = await db.Account.find({
         profileImage: { $exists: true, $ne: null }
     });
@@ -501,13 +565,13 @@ async function migrateAllLegacyImages() {
 
 async function logAllImagePaths() {
     console.log('[AccountService] Checking all account image paths');
-    
+
     const accounts = await db.Account.find({
         profileImage: { $exists: true }
     });
 
     console.log('[AccountService] Found accounts:', accounts.length);
-    
+
     accounts.forEach(account => {
         console.log('[AccountService] Account image path:', {
             id: account.id,
@@ -603,7 +667,7 @@ async function cleanupRefreshTokens() {
             { revoked: { $ne: null } }
         ]
     });
-    
+
     return {
         message: `Cleaned up ${result.deletedCount} expired or revoked sessions`
     };
@@ -635,7 +699,7 @@ function generateJwtToken(account) {
         email: account.email,
         role: account.role
     });
-    
+
     // Add the role AND EMAIL to the JWT payload
     const payload = {
         sub: account.id, // Standard subject claim (user ID)
@@ -643,7 +707,7 @@ function generateJwtToken(account) {
         role: account.role, // Add the role claim
         email: account.email // ADDED EMAIL CLAIM
     };
-    
+
     const token = jwt.sign(payload, secret, { expiresIn: '15m' });
     console.log('JWT token generated successfully with payload:', payload);
     return token;
@@ -670,12 +734,12 @@ function basicDetails(account) {
           profileTemplateType, position, company, address, city, state, zipCode, phone, mobile, bio,
           website, github, twitter, instagram, facebook, linkedin,
           followersCount, followingCount, skills, followerImages } = account;
-    
-    return { 
+
+    return {
         id, firstName, lastName, email, role, created, updated, isVerified,
         profileImage: profileImage,
         profileTemplateType, position, company, address, city, state, zipCode, phone, mobile, bio,
         website, github, twitter, instagram, facebook, linkedin,
-        followersCount, followingCount, skills, followerImages 
+        followersCount, followingCount, skills, followerImages
     };
-} 
+}

@@ -1,3 +1,5 @@
+const logger = require('../logs/logger.service');
+
 module.exports = errorHandler;
 
 function errorHandler(err, req, res, next) {
@@ -13,6 +15,23 @@ function errorHandler(err, req, res, next) {
         body: req.body,
         user: req.user
     });
+
+    // Log to our logging system
+    const ipAddress = req.ip || req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+    const user = req.user?.email || req.user?.username;
+    const errorMessage = typeof err === 'string' ? err : err.message || 'Unknown error';
+    const errorDetails = `${req.method} ${req.originalUrl} - ${errorMessage}`;
+
+    // Create an error log
+    logger.createErrorLog(
+        `API Error - ${req.method}`,
+        errorDetails,
+        user,
+        ipAddress
+    ).catch(logErr => {
+        console.error('[GlobalErrorHandler] Failed to create error log:', logErr);
+    });
+
     switch (true) {
         case typeof err === 'string':
             // custom application error
@@ -28,4 +47,4 @@ function errorHandler(err, req, res, next) {
         default:
             return res.status(500).json({ message: err.message });
     }
-} 
+}

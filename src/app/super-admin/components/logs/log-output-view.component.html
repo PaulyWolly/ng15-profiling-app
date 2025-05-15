@@ -1,0 +1,37 @@
+<div class="log-dialog-container">
+  <div class="log-dialog-header">
+    <button class="close-x" (click)="close()" aria-label="Close">&times;</button>
+    <div class="details-grid">
+      <div><strong>Type:</strong> {{data.log.type}}</div>
+      <div><strong>User:</strong> {{data.log.user || '-'}} </div>
+      <div><strong>Action/Event:</strong> {{data.log.action}}</div>
+    </div>
+  </div>
+  <div class="log-dialog-content">
+    <div class="log-entries-controls-row">
+      <div class="controls-left">
+        <input type="checkbox" [checked]="allChecked" (change)="toggleAllChecked($event)"> Check All
+      </div>
+      <div class="controls-right">
+        <button mat-stroked-button color="warn" (click)="deleteChecked()" [disabled]="!anyChecked">Delete Checked</button>
+      </div>
+    </div>
+    <div class="log-entries-list">
+      <div *ngFor="let entry of data.log.entries; let i = index" class="log-entry-row">
+        <div class="message-box">
+          <div class="message-flex-row">
+            <input type="checkbox" [(ngModel)]="checked[i]">
+            <div>
+              <span class="entry-message">{{entry.message}}</span>
+              <div class="entry-meta">
+                <span>Status: {{entry.status}}</span> |
+                <span>Time: {{entry.timestamp | date:'medium'}}</span> |
+                <span>IP: {{entry.ipAddress}}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

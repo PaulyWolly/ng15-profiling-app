@@ -4,6 +4,8 @@ import { filter } from 'rxjs/operators';
 import { AccountService } from '@app/_services';
 import { Subscription } from 'rxjs';
 import { Account, Role } from './_models';
+import { MatDialog } from '@angular/material/dialog';
+import { InactivityDialogComponent } from './shared/components/inactivity-dialog/inactivity-dialog.component';
 
 declare var bootstrap: any;
 
@@ -20,11 +22,17 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     isDropdownOpen = false;
     private initialNavigation = true;
     private subscriptions: Subscription = new Subscription();
+    private inactivityTimeout: any = null;
+    private logoutDialogTimeout: any = null;
+    private readonly INACTIVITY_LIMIT = 5 * 60 * 1000; // 5 minutes
+    private readonly LOGOUT_DIALOG_LIMIT = 3 * 60 * 1000; // 3 minutes
+    private logoutDialogRef: any = null;
 
     constructor(
         private accountService: AccountService,
         private router: Router,
-        private renderer: Renderer2
+        private renderer: Renderer2,
+        private dialog: MatDialog
     ) {
         this.accountService.account.subscribe(x => {
             this.account = x;
@@ -113,6 +121,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     ngOnInit() {
         // Initialize the account service to restore the session
         this.accountService.initialize();
+        this.setupInactivityTracking();
     }
 
     ngOnDestroy() {
@@ -123,6 +132,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
         this.renderer.removeClass(document.documentElement, 'no-scroll');
         this.renderer.removeClass(document.body, 'no-scroll');
         this.renderer.removeClass(document.body, 'account-page');
+        this.clearInactivityTimers();
     }
 
     logout() {
@@ -249,5 +259,56 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
             return 'super-admin';
         }
         return null;
+    }
+
+    setupInactivityTracking() {
+        const activityEvents = ['mousemove', 'mousedown', 'keypress', 'touchstart', 'scroll'];
+        activityEvents.forEach(event => {
+            window.addEventListener(event, this.resetInactivityTimer.bind(this), true);
+        });
+        this.resetInactivityTimer();
+    }
+
+    resetInactivityTimer() {
+        this.clearInactivityTimers();
+        // Only track inactivity if logged in and NOT Super-Admin
+        if (!this.account || this.account.role === Role.SuperAdmin) return;
+        this.inactivityTimeout = setTimeout(() => {
+            this.showLogoutDialog();
+        }, this.INACTIVITY_LIMIT);
+    }
+
+    clearInactivityTimers() {
+        if (this.inactivityTimeout) {
+            clearTimeout(this.inactivityTimeout);
+            this.inactivityTimeout = null;
+        }
+        if (this.logoutDialogTimeout) {
+            clearTimeout(this.logoutDialogTimeout);
+            this.logoutDialogTimeout = null;
+        }
+    }
+
+    showLogoutDialog() {
+        if (this.logoutDialogRef) return; // Prevent multiple dialogs
+        this.logoutDialogRef = this.dialog.open(InactivityDialogComponent, {
+            width: '400px',
+            disableClose: true
+        });
+        // Start 3-minute timer for forced logout
+        this.logoutDialogTimeout = setTimeout(() => {
+            this.logoutDialogRef.close('timeout');
+        }, this.LOGOUT_DIALOG_LIMIT);
+        this.logoutDialogRef.afterClosed().subscribe((result: string) => {
+            this.logoutDialogRef = null;
+            this.clearInactivityTimers();
+            if (result === 'yes') {
+                // User is still there, reset inactivity timer
+                this.resetInactivityTimer();
+            } else {
+                // User chose No or timed out, log out
+                this.logout();
+            }
+        });
     }
 }

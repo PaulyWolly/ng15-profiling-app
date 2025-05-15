@@ -279,4 +279,12 @@ h1 {
 
 .scrollable-container .table-responsive {
     overflow: visible !important;
-} 
+}
+
+.bg-gold {
+  background: linear-gradient(90deg, #FFD700 0%, #FFA500 100%) !important;
+  color: brown !important;
+  font-weight: bold;
+  border: 1px solid #e6b800;
+  box-shadow: 0 0 4px #FFD700;
+}

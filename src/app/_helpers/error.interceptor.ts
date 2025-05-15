@@ -4,10 +4,14 @@ import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
 import { AccountService } from '@app/_services';
+import { LogsService } from '@app/_services/logs.service';
 
 @Injectable()
 export class ErrorInterceptor implements HttpInterceptor {
-    constructor(private accountService: AccountService) { }
+    constructor(
+        private accountService: AccountService,
+        private logsService: LogsService
+    ) { }
 
     intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
         return next.handle(request).pipe(catchError((err: HttpErrorResponse) => {
@@ -58,6 +62,14 @@ export class ErrorInterceptor implements HttpInterceptor {
                 message: errorMessage,
                 originalError: err
             };
+
+            // Log the error to our logging service
+            // Skip logging for log-related endpoints to avoid infinite loops
+            if (!request.url.includes('/logs')) {
+                const user = this.accountService.accountValue?.email;
+                const errorDetails = `${request.method} ${request.url} - ${err.status}: ${errorMessage}`;
+                this.logsService.logError(`HTTP Error`, errorDetails, user);
+            }
 
             console.error(`[ErrorInterceptor] Passing error downstream:`, error);
             return throwError(() => error);

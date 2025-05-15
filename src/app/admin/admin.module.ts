@@ -24,7 +24,7 @@ import { ScriptsComponent } from './scripts/scripts.component';
 import { AdminComponent } from './admin.component';
 import { CommandModalComponent } from './scripts/command-modal.component';
 import { CommandModalInputComponent } from './scripts/command-modal-input.component';
-import { LogsComponent } from './components/logs/logs.component';
+import { LogsComponent } from '../super-admin/components/logs/logs.component';
 
 @NgModule({
     imports: [

@@ -1,4 +1,6 @@
 [
+  { "name": "primeNG-multi-logs.js", "input": false },
+  { "name": "seed-logs.js", "input": false },
   { "name": "check-account.js", "input": false },
   { "name": "cleanup-sessions.js", "input": false },
   { "name": "create-accounts.js", "input": false },
@@ -20,4 +22,4 @@
   { "name": "update-pwelby-password.js", "input": false },
   { "name": "update-role.js", "input": true },
   { "name": "verify-account.js", "input": false }
-] 
+]

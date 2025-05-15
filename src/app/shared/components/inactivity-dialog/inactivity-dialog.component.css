@@ -1,0 +1,11 @@
+.logout-dialog-container {
+  text-align: center;
+  padding: 24px 16px;
+}
+
+.logout-dialog-actions {
+  margin-top: 24px;
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+}

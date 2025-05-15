@@ -16,9 +16,11 @@ import { MatInputModule } from '@angular/material/input';
 
 import { SuperAdminRoutingModule } from './super-admin-routing.module';
 import { SuperAdminLayoutComponent } from './components/super-admin-layout/super-admin-layout.component';
-import { LogsComponent } from './components/logs/logs.component';
+import { LogsComponent } from './components/logs-BKUP/logs.component';
 import { SuperAdminSubnavComponent } from './components/super-admin-subnav/super-admin-subnav.component';
 import { SuperAdminOverviewComponent } from './components/super-admin-overview/super-admin-overview.component';
+import { TreeModule } from 'primeng/tree';
+import { CheckboxModule } from 'primeng/checkbox';
 
 @NgModule({
     imports: [
@@ -39,7 +41,9 @@ import { SuperAdminOverviewComponent } from './components/super-admin-overview/s
       MatInputModule,
       SuperAdminSubnavComponent,
       SuperAdminOverviewComponent,
-      LogsComponent
+      LogsComponent,
+      TreeModule,
+      CheckboxModule
     ],
     declarations: [
       SuperAdminLayoutComponent

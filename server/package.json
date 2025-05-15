@@ -7,6 +7,9 @@
     "start": "nodemon server.js"
   },
   "dependencies": {
+    "@angular/animations": "^19.2.10",
+    "@angular/cdk": "^19.2.16",
+    "@angular/material": "^19.2.16",
     "bcrypt": "^5.1.1",
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.20.2",
@@ -15,6 +18,7 @@
     "cors": "^2.8.5",
     "express": "^4.18.2",
     "express-jwt": "^8.5.1",
+    "geoip-lite": "^1.4.10",
     "joi": "^17.11.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^7.6.3",

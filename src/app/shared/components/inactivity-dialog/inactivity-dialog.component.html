@@ -1,0 +1,9 @@
+<div class="logout-dialog-container">
+  <h2>Are you there?</h2>
+  <p>You will be logged out in <b>{{ countdown | number:'1.0-0' }}</b> seconds.<br>
+    Click <b>Yes</b> to continue or <b>No</b> to be logged out.</p>
+  <div class="logout-dialog-actions">
+    <button mat-raised-button color="primary" (click)="onYes()">Yes</button>
+    <button mat-raised-button color="warn" (click)="onNo()">No</button>
+  </div>
+</div>

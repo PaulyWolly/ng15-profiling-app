@@ -2,7 +2,7 @@
     <!-- Added main page title -->
     <app-title [text]="'Session Monitor'" [level]="1" [marginBottom]="'small'"></app-title>
     <p class="mb-4 mt-0">Monitor and manage active user sessions and tokens.</p>
-    
+
     <!-- Admin Monitor -->
     <div class="card">
         <div class="card-header py-2">
@@ -11,14 +11,14 @@
                     <span class="badge bg-primary">Active Sessions: {{activeSessions.length || 0}}</span>
                 </div>
                 <div>
-                    <button class="btn btn-sm btn-danger me-2" 
-                            (click)="cleanupAllSessions()" 
+                    <button class="btn btn-sm btn-danger me-2"
+                            (click)="cleanupAllSessions()"
                             [disabled]="loading">
                         <i class="fas fa-trash-alt me-1"></i>
                         Clean Up All Sessions
                     </button>
-                    <button class="btn btn-sm btn-danger me-2" 
-                            (click)="deleteSelected()" 
+                    <button class="btn btn-sm btn-danger me-2"
+                            (click)="deleteSelected()"
                             [disabled]="loading || selectedSessions.size === 0">
                         <i class="fas fa-trash-alt me-1"></i>
                         Delete Selected ({{selectedSessions.size}})
@@ -49,8 +49,8 @@
                     <tr *ngFor="let session of activeSessions" [class.table-warning]="session.status === 'Warning'" [class.table-danger]="session.status === 'Revoked'">
                         <td>
                             <div class="form-check">
-                                <input type="checkbox" 
-                                       class="form-check-input" 
+                                <input type="checkbox"
+                                       class="form-check-input"
                                        [checked]="selectedSessions.has(session.id)"
                                        (change)="onSessionSelect($event, session.id)"
                                        [disabled]="loading || isCurrentUserSession(session.id)">
@@ -61,6 +61,7 @@
                                 <strong>{{session.email}}</strong>
                                 <span *ngIf="isCurrentUserSession(session.id)" class="badge bg-primary ms-1">You</span>
                                 <span *ngIf="session.isVerified" class="badge bg-info ms-1">Verified</span>
+                                <span *ngIf="session.role === 'SuperAdmin' || session.role === 'Super-Admin'" class="badge bg-gold ms-1"><i class="fas fa-crown me-1"></i>Super-Admin</span>
                                 <span *ngIf="session.role === 'Admin'" class="badge bg-dark ms-1">Admin</span>
                             </div>
                             <small class="text-muted">{{session.firstName}} {{session.lastName}}</small>
@@ -83,7 +84,7 @@
                             </small>
                         </td>
                         <td>
-                            <button *ngIf="!isCurrentUserSession(session.id)" 
+                            <button *ngIf="!isCurrentUserSession(session.id)"
                                     class="btn btn-sm btn-danger"
                                     (click)="forceLogout(session.id)"
                                     [disabled]="loading">
@@ -105,13 +106,13 @@
         <div *ngIf="totalPages > 1" class="card-footer d-flex justify-content-between align-items-center">
             <span>Page {{currentPage}} of {{totalPages}} (Total: {{totalSessions}})</span>
             <div class="btn-group">
-                <button class="btn btn-outline-secondary" 
-                        (click)="previousPage()" 
+                <button class="btn btn-outline-secondary"
+                        (click)="previousPage()"
                         [disabled]="currentPage <= 1 || loading">
                     <i class="fas fa-chevron-left"></i> Previous
                 </button>
-                <button class="btn btn-outline-secondary" 
-                        (click)="nextPage()" 
+                <button class="btn btn-outline-secondary"
+                        (click)="nextPage()"
                         [disabled]="currentPage >= totalPages || loading">
                     Next <i class="fas fa-chevron-right"></i>
                 </button>
@@ -143,7 +144,9 @@
                     <span class="badge bg-info me-2">Verified</span>
                     <span class="me-4">Email verified</span>
                     <span class="badge bg-dark me-2">Admin</span>
-                    <span>Admin privileges</span>
+                    <span class="me-4">Admin privileges</span>
+                    <span class="badge bg-gold me-2 ms-4"><i class="fas fa-crown me-1"></i>Super-Admin</span>
+                    <span>Super-Admin privileges</span>
                 </div>
             </div>
         </div>
