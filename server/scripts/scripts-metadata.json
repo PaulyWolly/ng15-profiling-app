@@ -1,4 +1,5 @@
 [
+  { "name": "cleanup-ghost-tokens.js", "input": false },
   { "name": "primeNG-multi-logs.js", "input": false },
   { "name": "seed-logs.js", "input": false },
   { "name": "check-account.js", "input": false },
