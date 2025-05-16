@@ -8,6 +8,9 @@ import { TitleComponent } from '@app/shared/components/title/title.component';
 import { Account } from '@app/_models';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { environment } from '@environments/environment';
+import { MatDialog } from '@angular/material/dialog';
+import { ConfirmDialogComponent } from '@app/shared/components/confirm-dialog/confirm-dialog.component';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
     selector: 'app-monitor',
@@ -37,7 +40,9 @@ export class MonitorComponent implements OnInit, OnDestroy {
     constructor(
         private accountService: AccountService,
         private http: HttpClient,
-        private alertService: AlertService
+        private alertService: AlertService,
+        private dialog: MatDialog,
+        private snackBar: MatSnackBar
     ) {}
 
     ngOnInit(): void {
@@ -77,6 +82,12 @@ export class MonitorComponent implements OnInit, OnDestroy {
                         this.totalSessions = this.activeSessions.length;
                         this.totalPages = 1;
                         this.currentPage = 1;
+                    }
+                    // If the current page is empty but there are more pages, go to page 1
+                    if (this.activeSessions.length === 0 && this.totalPages > 1 && this.currentPage !== 1) {
+                        this.currentPage = 1;
+                        this.loadSessions();
+                        return;
                     }
                     this.loading = false;
                     this.selectedSessions.clear(); // Clear selection on page change
@@ -183,10 +194,11 @@ export class MonitorComponent implements OnInit, OnDestroy {
     cleanupTokens(): void {
         this.loading = true;
         this.error = null;
-        this.http.post(`${environment.apiUrl}/sessions/cleanup-tokens`, {})
+        this.http.delete(`${environment.apiUrl}/accounts/refresh-tokens/cleanup`)
             .subscribe({
                 next: (response: any) => {
                     this.alertService.success(`Token cleanup successful: ${response.message}`);
+                    this.currentPage = 1;
                     this.loadSessions();
                     this.loading = false;
                 },
@@ -205,10 +217,11 @@ export class MonitorComponent implements OnInit, OnDestroy {
         }
         this.loading = true;
         this.error = null;
-        this.http.post(`${environment.apiUrl}/sessions/cleanup-all`, {})
+        this.http.post(`${environment.apiUrl}/accounts/cleanup-all-sessions`, {})
             .subscribe({
                 next: (response: any) => {
                     this.alertService.success(`Cleanup successful: ${response.message}`);
+                    this.currentPage = 1;
                     this.loadSessions();
                     this.selectedSessions.clear();
                     this.loading = false;
@@ -220,5 +233,65 @@ export class MonitorComponent implements OnInit, OnDestroy {
                     this.alertService.error(this.error);
                 }
             });
+    }
+
+    async confirmCleanupOutdatedSessions() {
+        const dialogRef = this.dialog.open(ConfirmDialogComponent, {
+            data: {
+                title: '<b>Clean Up Outdated Sessions</b>',
+                message: 'Are you sure you want to delete all sessions except for today and your current session(s)?',
+                confirmText: 'Clean Up',
+                cancelText: 'Cancel'
+            },
+            width: '450px',
+            disableClose: true
+        });
+        const result = await dialogRef.afterClosed().toPromise();
+        if (result) {
+            this.cleanupOutdatedSessions();
+        }
+    }
+
+    cleanupOutdatedSessions() {
+        this.loading = true;
+        this.http.delete<{ message: string, deletedCount: number }>(`${environment.apiUrl}/sessions/cleanup-old`)
+            .subscribe({
+                next: (res) => {
+                    this.loading = false;
+                    this.snackBar.open(res.message, 'Close', { duration: 4000 });
+                    this.currentPage = 1;
+                    this.refresh();
+                },
+                error: (err) => {
+                    this.loading = false;
+                    this.snackBar.open('Cleanup failed: ' + (err.error?.message || err.message), 'Close', { duration: 4000 });
+                }
+            });
+    }
+
+    deleteAllExceptSuperAdmin() {
+        this.http.delete(`${environment.apiUrl}/sessions/delete-all-except-super-admin`).subscribe({
+            next: (response: any) => {
+                this.snackBar.open(response.message, 'Close', { duration: 3000 });
+                this.currentPage = 1;
+                this.refresh();
+            },
+            error: (error) => {
+                this.snackBar.open('Failed to delete sessions: ' + error.message, 'Close', { duration: 3000 });
+            }
+        });
+    }
+
+    deleteAllButMostRecentPerUser() {
+        this.http.delete(`${environment.apiUrl}/sessions/delete-all-but-most-recent`).subscribe({
+            next: (response: any) => {
+                this.snackBar.open(response.message, 'Close', { duration: 3000 });
+                this.currentPage = 1;
+                this.refresh();
+            },
+            error: (error) => {
+                this.snackBar.open('Failed to delete sessions: ' + error.message, 'Close', { duration: 3000 });
+            }
+        });
     }
 }

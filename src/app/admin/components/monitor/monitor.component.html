@@ -11,25 +11,32 @@
                     <span class="badge bg-primary">Active Sessions: {{activeSessions.length || 0}}</span>
                 </div>
                 <div>
-                    <button class="btn btn-sm btn-danger me-2"
-                            (click)="cleanupAllSessions()"
-                            [disabled]="loading">
-                        <i class="fas fa-trash-alt me-1"></i>
-                        Clean Up All Sessions
-                    </button>
-                    <button class="btn btn-sm btn-danger me-2"
-                            (click)="deleteSelected()"
-                            [disabled]="loading || selectedSessions.size === 0">
-                        <i class="fas fa-trash-alt me-1"></i>
-                        Delete Selected ({{selectedSessions.size}})
-                    </button>
-                    <button class="btn btn-sm btn-secondary me-2" (click)="cleanupTokens()" [disabled]="loading">
-                        <span *ngIf="loading" class="spinner-border spinner-border-sm me-1"></span>
-                        Clean Up Old Tokens
-                    </button>
-                    <button class="btn btn-sm btn-primary" (click)="refresh()">
-                        <i class="fas fa-sync-alt me-1"></i> Refresh
-                    </button>
+                    <div class="btn-toolbar" style="gap: 0.5rem; flex-wrap: wrap;">
+                        <button class="btn btn-sm btn-danger"
+                                (click)="cleanupAllSessions()"
+                                [disabled]="loading">
+                            <i class="fas fa-trash-alt me-1"></i>
+                            Clean Up All Sessions
+                        </button>
+                        <button class="btn btn-sm btn-danger"
+                                (click)="deleteSelected()"
+                                [disabled]="loading || selectedSessions.size === 0">
+                            <i class="fas fa-trash-alt me-1"></i>
+                            Delete Selected ({{selectedSessions.size}})
+                        </button>
+                        <button class="btn btn-sm btn-secondary" (click)="cleanupTokens()" [disabled]="loading">
+                            <span *ngIf="loading" class="spinner-border spinner-border-sm me-1"></span>
+                            Clean Up Old Tokens
+                        </button>
+                        <button class="btn btn-secondary" (click)="confirmCleanupOutdatedSessions()" [disabled]="loading">
+                            <i class="fas fa-broom me-1"></i> Clean up Outdated Sessions
+                        </button>
+                        <button class="btn btn-warning" (click)="deleteAllButMostRecentPerUser()">Keep Only Most Recent Session Per User</button>
+                        <button class="btn btn-danger" (click)="deleteAllExceptSuperAdmin()">Delete All Sessions (Except Super-Admin)</button>
+                        <button class="btn btn-sm btn-primary" (click)="refresh()">
+                            <i class="fas fa-sync-alt me-1"></i> Refresh
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
@@ -117,6 +124,9 @@
                     Next <i class="fas fa-chevron-right"></i>
                 </button>
             </div>
+        </div>
+        <div *ngIf="totalPages === 1 && totalSessions > 0" class="card-footer d-flex justify-content-between align-items-center">
+            <span>Page 1 (Total: {{totalSessions}})</span>
         </div>
     </div>
 

@@ -202,4 +202,6 @@ const accountRoutes = require('./routes/accounts');
 // Register routes
 app.use('/api/account', accountRoutes);
 
+app.use('/sessions', require('./routes/sessions'));
+
 
