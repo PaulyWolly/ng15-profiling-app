@@ -6,6 +6,7 @@ import { Subscription } from 'rxjs';
 import { Account, Role } from './_models';
 import { MatDialog } from '@angular/material/dialog';
 import { InactivityDialogComponent } from './shared/components/inactivity-dialog/inactivity-dialog.component';
+import { InactivityLoggerService } from './_services/inactivity-logger.service';
 
 declare var bootstrap: any;
 
@@ -32,7 +33,8 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
         private accountService: AccountService,
         private router: Router,
         private renderer: Renderer2,
-        private dialog: MatDialog
+        private dialog: MatDialog,
+        private inactivityLogger: InactivityLoggerService
     ) {
         this.accountService.account.subscribe(x => {
             this.account = x;
@@ -262,7 +264,7 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
     }
 
     setupInactivityTracking() {
-        const activityEvents = ['mousemove', 'mousedown', 'keypress', 'touchstart', 'scroll'];
+        const activityEvents = ['mousemove', 'mousedown', 'keypress', 'touchstart', 'scroll', 'voiceinput'];
         activityEvents.forEach(event => {
             window.addEventListener(event, this.resetInactivityTimer.bind(this), true);
         });
@@ -291,22 +293,34 @@ export class AppComponent implements OnInit, AfterViewInit, OnDestroy {
 
     showLogoutDialog() {
         if (this.logoutDialogRef) return; // Prevent multiple dialogs
+
+        // Log inactivity warning
+        this.inactivityLogger.logInactivityWarning().subscribe();
+
         this.logoutDialogRef = this.dialog.open(InactivityDialogComponent, {
             width: '400px',
             disableClose: true
         });
+
         // Start 3-minute timer for forced logout
         this.logoutDialogTimeout = setTimeout(() => {
             this.logoutDialogRef.close('timeout');
         }, this.LOGOUT_DIALOG_LIMIT);
+
         this.logoutDialogRef.afterClosed().subscribe((result: string) => {
             this.logoutDialogRef = null;
             this.clearInactivityTimers();
+
             if (result === 'yes') {
                 // User is still there, reset inactivity timer
+                this.inactivityLogger.logInactivityResponse('yes').subscribe();
                 this.resetInactivityTimer();
             } else {
                 // User chose No or timed out, log out
+                this.inactivityLogger.logInactivityResponse('no').subscribe();
+                if (result === 'timeout') {
+                    this.inactivityLogger.logInactivityTimeout().subscribe();
+                }
                 this.logout();
             }
         });

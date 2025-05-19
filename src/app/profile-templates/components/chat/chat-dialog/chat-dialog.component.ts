@@ -43,8 +43,8 @@ interface ChatDialogData {
           <img [src]="data.user.profileImage" [alt]="data.user.name" class="user-avatar">
           <span class="user-name">{{ data.user.name }}</span>
           <span class="online-status online" *ngIf="data.isInitialPopup"></span>
-          <span *ngIf="isMinimized && hasNewMessages" 
-                matBadge="●" 
+          <span *ngIf="isMinimized && hasNewMessages"
+                matBadge="●"
                 matBadgeColor="accent"
                 matBadgeSize="small"
                 class="minimized-badge">
@@ -75,7 +75,7 @@ interface ChatDialogData {
           </button>
         </div>
       </div>
-      
+
       <div class="chat-body" [class.hidden]="isMinimized">
         <div class="messages" #messageContainer>
           <div *ngFor="let message of messages"
@@ -102,8 +102,8 @@ interface ChatDialogData {
         </button>
         <div class="chat-input">
           <mat-form-field appearance="outline">
-            <input matInput 
-                   [(ngModel)]="newMessage" 
+            <input matInput
+                   [(ngModel)]="newMessage"
                    placeholder="Type a message..."
                    (keyup.enter)="sendMessage()">
           </mat-form-field>
@@ -152,14 +152,14 @@ export class ChatDialogComponent implements OnInit, OnDestroy, AfterViewInit, Af
 
   ngOnInit() {
     console.log('[ChatDialog] Initializing with user:', this.data.user);
-    
+
     // Reset state
     this.isMinimized = false;
     this.messages = [];
     this.hasNewMessages = false;
     this.lastSeenMessageId = null;
     this.lastMessageCount = 0;
-    
+
     if (!this.currentUserId) {
       console.error('[ChatDialog] No current user ID available');
       return;
@@ -167,8 +167,8 @@ export class ChatDialogComponent implements OnInit, OnDestroy, AfterViewInit, Af
 
     // Ensure profile image URL is properly formatted
     if (this.data.user.profileImage) {
-      this.data.user.profileImage = this.data.user.profileImage.startsWith('http') 
-        ? this.data.user.profileImage 
+      this.data.user.profileImage = this.data.user.profileImage.startsWith('http')
+        ? this.data.user.profileImage
         : `${environment.apiUrl}/${this.data.user.profileImage}`;
     }
 
@@ -178,10 +178,10 @@ export class ChatDialogComponent implements OnInit, OnDestroy, AfterViewInit, Af
       : 'assets/default-avatar.png';
 
     // Subscribe to messages
-    this.subscribeToMessages();    
+    this.subscribeToMessages();
     // Always fetch latest messages from server when dialog opens
     setTimeout(() => this.refreshMessages({ stopPropagation: () => {} } as Event), 0);
-    
+
     // Add window focus listener
     window.addEventListener('focus', this.onWindowFocus);
 
@@ -213,15 +213,15 @@ export class ChatDialogComponent implements OnInit, OnDestroy, AfterViewInit, Af
 
   ngOnDestroy() {
     console.log('[ChatDialog] Destroying dialog for user:', this.data.user.id);
-    
+
     // Cleanup subscriptions
     if (this.messageSubscription) {
       this.messageSubscription.unsubscribe();
     }
-    
+
     // Remove window focus listener
     window.removeEventListener('focus', this.onWindowFocus);
-    
+
     // Clear any pending timeouts
     if (this.scrollTimeout) {
       clearTimeout(this.scrollTimeout);
@@ -305,7 +305,6 @@ export class ChatDialogComponent implements OnInit, OnDestroy, AfterViewInit, Af
   sendMessage() {
     if (!this.newMessage.trim()) return;
 
-    console.log(`[ChatDebug][Dialog] Sending message from ${this.currentUserId} to ${this.data.user.id}`);
     const message: ChatMessage = {
       content: this.newMessage.trim(),
       senderId: this.currentUserId,
@@ -313,20 +312,27 @@ export class ChatDialogComponent implements OnInit, OnDestroy, AfterViewInit, Af
       timestamp: new Date()
     };
 
-    console.log('[ChatDebug][Dialog] Message object:', message);
+    // Immediately add the message to the messages array for instant UI feedback
+    this.messages.push(message);
+    this.newMessage = '';
+    this.shouldScrollToBottom = true;
+
+    // Then send to backend as before
     this.chatService.sendMessage(message).subscribe({
       next: (sentMessage) => {
-        console.log('[ChatDebug][Dialog] Message sent successfully:', sentMessage);
-        this.newMessage = '';
         setTimeout(() => {
           this.refreshMessages({ stopPropagation: () => {} } as Event);
           this.shouldScrollToBottom = true;
         }, 0);
       },
       error: (error) => {
+        // Optionally: show error, remove the message, or mark as failed
         console.error('[ChatDebug][Dialog] Error sending message:', error);
       }
     });
+
+    // After sending a message, dispatch a custom event to reset inactivity timer
+    window.dispatchEvent(new Event('voiceinput'));
   }
 
   private onScroll() {
@@ -409,4 +415,4 @@ export class ChatDialogComponent implements OnInit, OnDestroy, AfterViewInit, Af
     this.newMessage += event.detail.unicode;
     this.showEmojiPicker = false;
   }
-} 
+}

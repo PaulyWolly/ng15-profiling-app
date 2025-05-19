@@ -12,30 +12,22 @@
                 </div>
                 <div>
                     <div class="btn-toolbar" style="gap: 0.5rem; flex-wrap: wrap;">
-                        <button class="btn btn-sm btn-danger"
-                                (click)="cleanupAllSessions()"
-                                [disabled]="loading">
-                            <i class="fas fa-trash-alt me-1"></i>
-                            Clean Up All Sessions
-                        </button>
-                        <button class="btn btn-sm btn-danger"
-                                (click)="deleteSelected()"
-                                [disabled]="loading || selectedSessions.size === 0">
-                            <i class="fas fa-trash-alt me-1"></i>
-                            Delete Selected ({{selectedSessions.size}})
-                        </button>
-                        <button class="btn btn-sm btn-secondary" (click)="cleanupTokens()" [disabled]="loading">
-                            <span *ngIf="loading" class="spinner-border spinner-border-sm me-1"></span>
-                            Clean Up Old Tokens
-                        </button>
-                        <button class="btn btn-secondary" (click)="confirmCleanupOutdatedSessions()" [disabled]="loading">
-                            <i class="fas fa-broom me-1"></i> Clean up Outdated Sessions
-                        </button>
-                        <button class="btn btn-warning" (click)="deleteAllButMostRecentPerUser()">Keep Only Most Recent Session Per User</button>
-                        <button class="btn btn-danger" (click)="deleteAllExceptSuperAdmin()">Delete All Sessions (Except Super-Admin)</button>
                         <button class="btn btn-sm btn-primary" (click)="refresh()">
                             <i class="fas fa-sync-alt me-1"></i> Refresh
                         </button>
+                        <div class="btn-group">
+                            <button type="button" class="btn btn-more-actions dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                More Actions
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item text-danger" (click)="cleanupAllSessions()">Clean Up All Sessions</a></li>
+                                <li><a class="dropdown-item text-danger" (click)="deleteSelected()" [class.disabled]="selectedSessions.size === 0">Delete Selected ({{selectedSessions.size}})</a></li>
+                                <li><a class="dropdown-item text-secondary" (click)="cleanupTokens()">Clean Up Old Tokens</a></li>
+                                <li><a class="dropdown-item text-secondary" (click)="confirmCleanupOutdatedSessions()">Clean up Outdated Sessions</a></li>
+                                <li><a class="dropdown-item text-warning" (click)="deleteAllButMostRecentPerUser()">Keep Only Most Recent Session Per User</a></li>
+                                <li><a class="dropdown-item text-danger" (click)="deleteAllExceptSuperAdmin()">Delete All Sessions (Except Super-Admin)</a></li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -47,6 +39,7 @@
                         <th><input type="checkbox" (change)="toggleSelectAll()"></th>
                         <th>User</th>
                         <th>IP Address</th>
+                        <th>User Agent</th>
                         <th>Last Activity</th>
                         <th>Status</th>
                         <th>Actions</th>
@@ -77,6 +70,11 @@
                             <div>{{session.createdByIp}}</div>
                         </td>
                         <td>
+                            <div style="max-width: 200px; overflow-x: auto;">
+                                <small class="text-muted">{{session.userAgent || session.browser || 'Unknown'}}</small>
+                            </div>
+                        </td>
+                        <td>
                             <div>{{session.lastActivity | date:'MMM d, yyyy, h:mm:ss a'}}</div>
                             <small class="text-muted">Expires: {{session.expires | date:'MMM d, h:mm a'}}</small>
                         </td>
@@ -98,9 +96,6 @@
                                 Force Logout
                             </button>
                         </td>
-                    </tr>
-                    <tr *ngFor="let i of [1,2,3,4,5]" class="empty-row" [style.display]="activeSessions.length >= 5 ? 'none' : ''">
-                        <td colspan="6">&nbsp;</td>
                     </tr>
                 </tbody>
             </table>

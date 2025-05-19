@@ -271,15 +271,51 @@ router.get('/check-image-paths', authenticate(Role.Admin), async (req, res, next
 });
 
 // Add logout route to revoke current session
-router.post('/logout', authenticate(), async (req, res, next) => {
+router.post('/logout', authenticate(false), async (req, res, next) => {
     try {
         const refreshToken = req.cookies.refreshToken;
         const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.ip;
+        const userAgent = req.headers['user-agent'] || 'Unknown';
+        let userEmail = req.user?.email || 'Unknown';
         if (!refreshToken) {
+            // Log failed logout attempt
+            await logger.createUserLog(
+                userEmail,
+                'Logout',
+                `Logout attempted with no refresh token`,
+                'Warning',
+                ipAddress,
+                '',
+                userAgent
+            );
             return res.status(400).json({ message: 'No refresh token found in cookies.' });
         }
-        await accountService.revokeToken({ token: refreshToken, ipAddress });
+        try {
+            await accountService.revokeToken({ token: refreshToken, ipAddress, userAgent });
+        } catch (err) {
+            // Log failed logout attempt
+            await logger.createUserLog(
+                userEmail,
+                'Logout',
+                `Logout failed: ${err.message || err}`,
+                'Error',
+                ipAddress,
+                '',
+                userAgent
+            );
+            throw err;
+        }
         res.clearCookie('refreshToken');
+        // Log successful logout
+        await logger.createUserLog(
+            userEmail,
+            'Logout',
+            `User logged out (via /logout endpoint)`,
+            'Success',
+            ipAddress,
+            '',
+            userAgent
+        );
         res.json({ message: 'Logged out and session revoked.' });
     } catch (error) {
         next(error);
@@ -358,7 +394,8 @@ function handleAuthenticate(req, res, next) {
 function refreshToken(req, res, next) {
     const token = req.cookies.refreshToken;
     const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.ip;
-    accountService.refreshToken({ token, ipAddress })
+    const userAgent = req.headers['user-agent'] || 'Unknown';
+    accountService.refreshToken({ token, ipAddress, userAgent })
         .then(({ jwtToken, refreshToken, ...account }) => {
             setTokenCookie(res, refreshToken);
             res.json({ jwtToken, refreshToken, ...account });
@@ -376,34 +413,54 @@ function revokeTokenSchema(req, res, next) {
 function revokeToken(req, res, next) {
     const token = req.body.token;
     const ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress || req.ip;
+    const userAgent = req.headers['user-agent'] || 'Unknown';
+    let userEmail = req.user?.email || 'Unknown';
 
-    if (!token) return res.status(400).json({ message: 'Token is required' });
-
-    if (!req.user.ownsToken(token)) {
-        return res.status(401).json({ message: 'Unauthorized' });
+    if (!token) {
+        // Log failed logout attempt
+        logger.createUserLog(
+            userEmail,
+            'Logout',
+            `Logout attempted with no token`,
+            'Warning',
+            ipAddress,
+            '',
+            userAgent
+        );
+        return res.status(400).json({ message: 'Token is required' });
     }
 
-    accountService.revokeToken({ token, ipAddress })
+    accountService.revokeToken({ token, ipAddress, userAgent })
         .then(() => {
             // Log successful logout
-            if (req.user) {
-                const ipAddress = req.ip || req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-                logger.createUserLog(
-                    req.user.email,
-                    'Logout',
-                    `User logged out successfully`,
-                    'Success',
-                    ipAddress,
-                    '',
-                    req.headers['user-agent']
-                ).catch(logErr => {
-                    console.error('[AccountsController] Failed to create logout log:', logErr);
-                });
-            }
-
+            logger.createUserLog(
+                userEmail,
+                'Logout',
+                `User logged out (via /revoke-token endpoint)`,
+                'Success',
+                ipAddress,
+                '',
+                userAgent
+            ).catch(logErr => {
+                console.error('[AccountsController] Failed to create logout log:', logErr);
+            });
             res.json({ message: 'Token revoked' })
         })
-        .catch(err => next(err));
+        .catch(err => {
+            // Log failed logout attempt
+            logger.createUserLog(
+                userEmail,
+                'Logout',
+                `Logout failed: ${err.message || err}`,
+                'Error',
+                ipAddress,
+                '',
+                userAgent
+            ).catch(logErr => {
+                console.error('[AccountsController] Failed to create logout log:', logErr);
+            });
+            next(err);
+        });
 }
 
 function registerSchema(req, res, next) {

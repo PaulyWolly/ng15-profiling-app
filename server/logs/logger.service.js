@@ -44,43 +44,51 @@ class LoggerService {
    * @returns {Promise<Object>} The created log
    */
   async createUserLog(user, action, message, status = 'Info', ipAddress = '', geoLocation = '', userAgent = '', responseTime = 0) {
-    // Generate or retrieve a session ID for the user
-    const sessionId = this.getOrCreateSessionId(user, ipAddress);
+    try {
+      // Generate or retrieve a session ID for the user
+      const sessionId = this.getOrCreateSessionId(user, ipAddress);
 
-    const log = new Log({
-      type: 'User',
-      user,
-      action,
-      sessionId,
-      sessionStartTime: activeSessions.get(sessionId)?.startTime,
-      entries: [{
-        message,
-        status,
-        ipAddress,
-        geoLocation,
-        userAgent,
-        responseTime: responseTime || undefined,
-        timestamp: new Date()
-      }]
-    });
+      const log = new Log({
+        type: 'User',
+        user,
+        action,
+        sessionId,
+        sessionStartTime: activeSessions.get(sessionId)?.startTime,
+        entries: [{
+          message,
+          status,
+          ipAddress,
+          geoLocation,
+          userAgent,
+          responseTime: responseTime || undefined,
+          timestamp: new Date()
+        }]
+      });
 
-    // For login actions, record the session start time
-    if (action === 'Login') {
-      this.startUserSession(user, ipAddress, userAgent);
-      log.sessionStartTime = new Date();
-    }
-
-    // For logout actions, record the session end time and calculate duration
-    if (action === 'Logout') {
-      const sessionInfo = activeSessions.get(sessionId);
-      if (sessionInfo) {
-        const duration = this.endUserSession(sessionId);
-        log.sessionEndTime = new Date();
-        log.entries[0].message += `\nSession Duration: ${this.formatDuration(duration)}`;
+      // For login actions, record the session start time
+      if (action === 'Login') {
+        this.startUserSession(user, ipAddress, userAgent);
+        log.sessionStartTime = new Date();
       }
-    }
 
-    return await log.save();
+      // For logout actions, record the session end time and calculate duration
+      if (action === 'Logout') {
+        const sessionInfo = activeSessions.get(sessionId);
+        if (sessionInfo) {
+          const duration = this.endUserSession(sessionId);
+          log.sessionEndTime = new Date();
+          log.entries[0].message += `\nSession Duration: ${this.formatDuration(duration)}`;
+        }
+      }
+
+      console.log('[LOGGER DEBUG] About to save user log:', JSON.stringify(log, null, 2));
+      return await log.save();
+    } catch (err) {
+      console.error('[LOGGER ERROR] Failed to save user log:', {
+        user, action, message, status, ipAddress, geoLocation, userAgent, responseTime
+      }, err);
+      throw err;
+    }
   }
 
   /**
@@ -247,6 +255,119 @@ class LoggerService {
     } else {
       return `${seconds}s`;
     }
+  }
+
+  /**
+   * Create a security log for authentication and session events
+   * @param {string} user - The username
+   * @param {string} action - The security action (Login, Logout, SessionExpired, etc.)
+   * @param {string} message - The log message
+   * @param {string} status - Log status (Success, Warning, Error, Info)
+   * @param {string} ipAddress - The IP address
+   * @param {string} geoLocation - Geographic location based on IP
+   * @param {string} userAgent - User's browser info
+   * @param {string} reason - Reason for the action (e.g., "inactivity timeout", "token expired")
+   * @returns {Promise<Object>} The created log
+   */
+  async createSecurityLog(user, action, message, status = 'Info', ipAddress = '', geoLocation = '', userAgent = '', reason = '') {
+    const sessionId = this.getOrCreateSessionId(user, ipAddress);
+    const log = new Log({
+      type: 'Security',
+      user,
+      action,
+      sessionId,
+      sessionStartTime: activeSessions.get(sessionId)?.startTime,
+      entries: [{
+        message: `${message}${reason ? `\nReason: ${reason}` : ''}`,
+        status,
+        ipAddress,
+        geoLocation,
+        userAgent,
+        timestamp: new Date()
+      }]
+    });
+
+    // Handle session lifecycle events
+    if (action === 'Login') {
+      this.startUserSession(user, ipAddress, userAgent);
+      log.sessionStartTime = new Date();
+    } else if (action === 'Logout' || action === 'SessionExpired' || action === 'ForceLogout') {
+      const sessionInfo = activeSessions.get(sessionId);
+      if (sessionInfo) {
+        const duration = this.endUserSession(sessionId);
+        log.sessionEndTime = new Date();
+        log.entries[0].message += `\nSession Duration: ${this.formatDuration(duration)}`;
+      }
+    }
+
+    return await log.save();
+  }
+
+  /**
+   * Log a failed login attempt
+   * @param {string} username - The attempted username
+   * @param {string} ipAddress - The IP address
+   * @param {string} geoLocation - Geographic location based on IP
+   * @param {string} userAgent - User's browser info
+   * @param {string} reason - Reason for failure
+   * @returns {Promise<Object>} The created log
+   */
+  async logFailedLogin(username, ipAddress, geoLocation, userAgent, reason) {
+    return await this.createSecurityLog(
+      username,
+      'FailedLogin',
+      `Failed login attempt for user: ${username}`,
+      'Warning',
+      ipAddress,
+      geoLocation,
+      userAgent,
+      reason
+    );
+  }
+
+  /**
+   * Log a session expiration
+   * @param {string} user - The username
+   * @param {string} ipAddress - The IP address
+   * @param {string} geoLocation - Geographic location based on IP
+   * @param {string} userAgent - User's browser info
+   * @param {string} reason - Reason for expiration
+   * @returns {Promise<Object>} The created log
+   */
+  async logSessionExpiration(user, ipAddress, geoLocation, userAgent, reason) {
+    return await this.createSecurityLog(
+      user,
+      'SessionExpired',
+      `Session expired for user: ${user}`,
+      'Info',
+      ipAddress,
+      geoLocation,
+      userAgent,
+      reason
+    );
+  }
+
+  /**
+   * Log an admin-forced logout
+   * @param {string} user - The username
+   * @param {string} adminUser - The admin who performed the action
+   * @param {string} ipAddress - The IP address
+   * @param {string} geoLocation - Geographic location based on IP
+   * @param {string} userAgent - User's browser info
+   * @param {string} reason - Reason for forced logout
+   * @returns {Promise<Object>} The created log
+   */
+  async logForceLogout(user, adminUser, ipAddress, geoLocation, userAgent, reason) {
+    return await this.createSecurityLog(
+      user,
+      'ForceLogout',
+      `User ${user} was forcefully logged out by admin ${adminUser}`,
+      'Warning',
+      ipAddress,
+      geoLocation,
+      userAgent,
+      reason
+    );
   }
 }
 

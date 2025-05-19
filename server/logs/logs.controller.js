@@ -1,6 +1,7 @@
 const express = require('express');
 const Log = require('./log.model');
 const logger = require('./logger.service');
+const auth = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -260,6 +261,33 @@ router.delete('/:logId/entry/:entryIndex', async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
+});
+
+// Route to handle inactivity logs
+router.post('/inactivity', auth.authenticate, async (req, res) => {
+    try {
+        const { type, action, message } = req.body;
+        const ipAddress = req.ip || req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+        const userAgent = req.headers['user-agent'] || 'Unknown';
+        const geoLocation = req.geoLocation || '';
+
+        // Create security log for inactivity event
+        await logger.createSecurityLog(
+            req.user.email,
+            type,
+            message,
+            'Warning',
+            ipAddress,
+            geoLocation,
+            userAgent,
+            `Inactivity ${action}`
+        );
+
+        res.json({ message: 'Inactivity event logged successfully' });
+    } catch (error) {
+        console.error('Error logging inactivity event:', error);
+        res.status(500).json({ message: 'Error logging inactivity event' });
+    }
 });
 
 module.exports = router;

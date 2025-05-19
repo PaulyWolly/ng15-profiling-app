@@ -288,3 +288,15 @@ h1 {
   border: 1px solid #e6b800;
   box-shadow: 0 0 4px #FFD700;
 }
+
+.btn-more-actions {
+  background: #f5e9da !important; /* light beige */
+  color: #7a4f01 !important;     /* dark brown for contrast */
+  border: 1px solid #e6d3b3;
+  font-weight: 600;
+}
+
+.btn-more-actions:focus, .btn-more-actions:hover {
+  background: #f2d7b6 !important;
+  color: #5a3700 !important;
+}

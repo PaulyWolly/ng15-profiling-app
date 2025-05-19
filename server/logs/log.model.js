@@ -13,7 +13,7 @@ const logEntrySchema = new mongoose.Schema({
 });
 
 const logSchema = new mongoose.Schema({
-  type: { type: String, enum: ['User', 'System', 'Error', 'Audit'], required: true },
+  type: { type: String, enum: ['User', 'System', 'Error', 'Audit', 'Security'], required: true },
   user: { type: String },
   action: { type: String, required: true },
   entries: [logEntrySchema],
