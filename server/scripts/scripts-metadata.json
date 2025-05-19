@@ -1,4 +1,7 @@
 [
+  { "name": "logger-debug-user-log.js", "input": false },
+  { "name": "manual-user-log-test.js", "input": false },
+  { "name": "purge-user-logs.js", "input": false },
   { "name": "cleanup-ghost-tokens.js", "input": false },
   { "name": "primeNG-multi-logs.js", "input": false },
   { "name": "seed-logs.js", "input": false },

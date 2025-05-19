@@ -49,7 +49,9 @@ async function authenticate({ email, password, ipAddress, userAgent }) {
                 'Login Attempt',
                 `Failed login attempt - account not found for email: ${normalizedEmail}`,
                 'Error',
-                ipAddress
+                ipAddress,
+                '',
+                userAgent
             );
             throw 'Email or password is incorrect';
         }
@@ -77,7 +79,9 @@ async function authenticate({ email, password, ipAddress, userAgent }) {
                 'Login Attempt',
                 `Failed login attempt - ${!account.verified ? 'Account not verified' : 'Invalid password'}`,
                 'Error',
-                ipAddress
+                ipAddress,
+                '',
+                userAgent
             );
 
             throw 'Email or password is incorrect';
@@ -118,13 +122,21 @@ async function authenticate({ email, password, ipAddress, userAgent }) {
         console.log('Refresh token saved');
 
         // Log successful login
-        await logger.createUserLog(
-            account.email,
-            'Login',
-            `User logged in successfully from ${friendlyBrowser}`,
-            'Success',
-            ipAddress
-        );
+        console.log('[DEBUG] About to log user login:', account.email, account.role, userAgent);
+        try {
+            await logger.createUserLog(
+                account.email,
+                'Login',
+                `User logged in successfully from ${friendlyBrowser}`,
+                'Success',
+                ipAddress,
+                '',
+                userAgent
+            );
+            console.log('[DEBUG] Successfully logged user login:', account.email, account.role);
+        } catch (err) {
+            console.error('[ERROR] Failed to log user login:', account.email, account.role, err);
+        }
 
         const response = {
             ...basicDetails(account),
@@ -146,7 +158,7 @@ async function authenticate({ email, password, ipAddress, userAgent }) {
     }
 }
 
-async function refreshToken({ token, ipAddress }) {
+async function refreshToken({ token, ipAddress, userAgent }) {
     const refreshToken = await getRefreshToken(token);
     const account = await getAccount(refreshToken.account);
 
@@ -160,7 +172,9 @@ async function refreshToken({ token, ipAddress }) {
         'Token Refresh',
         `User refreshed their authentication token`,
         'Success',
-        ipAddress
+        ipAddress,
+        '',
+        userAgent
     );
 
     // return basic details and tokens
@@ -171,7 +185,7 @@ async function refreshToken({ token, ipAddress }) {
     };
 }
 
-async function revokeToken({ token, ipAddress }) {
+async function revokeToken({ token, ipAddress, userAgent }) {
     const refreshToken = await getRefreshToken(token);
     const account = await getAccount(refreshToken.account);
 
@@ -187,7 +201,9 @@ async function revokeToken({ token, ipAddress }) {
         'Logout',
         `User logged out`,
         'Success',
-        ipAddress
+        ipAddress,
+        '',
+        userAgent
     );
 }
 

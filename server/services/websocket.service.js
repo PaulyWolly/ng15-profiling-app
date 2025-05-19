@@ -4,13 +4,17 @@ const jwt = require('jsonwebtoken');
 const config = require('../config.json');
 const Chat = require('../models/chat.model');
 const SessionInfo = require('../models/session-info.model');
+const logger = require('../logs/logger.service');
+const geoip = require('geoip-lite');
 
 class WebSocketService {
     constructor() {
-        this.connections = new Map(); // sessionId -> { ws, userId }
+        this.connections = new Map(); // sessionId -> { ws, userId, lastActivity }
         this.userSessions = new Map(); // userId -> Set of sessionIds
         this.onlineUsers = new Map(); // userId -> user info
         this.sessionStartTimes = new Map(); // sessionId -> Date
+        this.inactivityTimeout = 30 * 60 * 1000; // 30 minutes in milliseconds
+        this.inactivityCheckInterval = 5 * 60 * 1000; // Check every 5 minutes
     }
 
     formatImageUrl(imagePath) {
@@ -41,6 +45,9 @@ class WebSocketService {
             this.wss = new WebSocket.Server({ server });
             console.log(yellow('WebSocket server created'));
 
+            // Start inactivity check interval
+            this.startInactivityChecks();
+
             this.wss.on('connection', async (ws, req) => {
                 try {
                     // Extract token and session ID from query params
@@ -48,7 +55,7 @@ class WebSocketService {
                     const token = url.searchParams.get('token');
                     const sessionId = url.searchParams.get('sessionId');
                     console.log('Token received:', token ? 'Yes' : 'No', 'SessionId:', sessionId);
-                    
+
                     if (!sessionId) {
                         console.log('No session ID provided, closing connection');
                         ws.close();
@@ -65,9 +72,14 @@ class WebSocketService {
 
                     console.log('User authenticated:', user.email, 'Session:', sessionId);
 
-                    // Store connection with session ID
-                    this.connections.set(sessionId, { ws, userId: user.id });
-                    
+                    // Store connection with session ID and last activity time
+                    this.connections.set(sessionId, {
+                        ws,
+                        userId: user.id,
+                        lastActivity: new Date(),
+                        ipAddress: req.socket.remoteAddress
+                    });
+
                     // Track session for this user
                     if (!this.userSessions.has(user.id)) {
                         this.userSessions.set(user.id, new Set());
@@ -102,7 +114,7 @@ class WebSocketService {
                         sessionId: sessionId // Include session ID in user info
                     });
 
-                    console.log('User sessions after adding:', 
+                    console.log('User sessions after adding:',
                         Array.from(this.userSessions.get(user.id) || []));
 
                     // Broadcast updated online users list
@@ -111,6 +123,12 @@ class WebSocketService {
                     // Handle messages
                     ws.on('message', async (data) => {
                         try {
+                            // Update last activity time
+                            const connection = this.connections.get(sessionId);
+                            if (connection) {
+                                connection.lastActivity = new Date();
+                            }
+
                             const message = JSON.parse(data.toString());
                             console.log('Received message from', user.email, 'Session:', sessionId);
                             await this.handleMessage(user.id, sessionId, message);
@@ -188,7 +206,7 @@ class WebSocketService {
             // Use your existing JWT validation logic
             const Account = db.Account;
             const decoded = jwt.verify(token, config.secret);
-            
+
             if (!decoded || !decoded.id) {
                 console.error('Invalid token format - missing user ID');
                 return null;
@@ -211,7 +229,7 @@ class WebSocketService {
     broadcastOnlineUsers() {
         const onlineUsersList = Array.from(this.onlineUsers.values());
         console.log('Broadcasting online users list:', onlineUsersList);
-        
+
         const message = JSON.stringify({
             type: 'online_users',
             users: onlineUsersList
@@ -229,7 +247,7 @@ class WebSocketService {
 
     async handleMessage(senderId, sessionId, message) {
         console.log('[WebSocket] Handling message:', { type: message.type, senderId, sessionId });
-        
+
         switch (message.type) {
             case 'chat_message':
                 await this.handleChatMessage(senderId, sessionId, message);
@@ -245,7 +263,7 @@ class WebSocketService {
     async handleChatMessage(senderId, sessionId, message) {
         const { recipientId, content } = message;
         console.log('[WebSocket] Processing chat message:', { senderId, recipientId, content, sessionId });
-        
+
         // Save message to database
         const savedMessage = await Chat.create({
             senderId,
@@ -303,7 +321,7 @@ class WebSocketService {
         });
 
         const sender = await db.Account.findById(senderId);
-        
+
         if (!sender) {
             console.error('Sender not found:', senderId);
             return;
@@ -376,6 +394,72 @@ class WebSocketService {
             });
         }
     }
+
+    /**
+     * Start the inactivity check interval
+     */
+    startInactivityChecks() {
+        setInterval(() => {
+            this.checkInactiveSessions();
+        }, this.inactivityCheckInterval);
+    }
+
+    /**
+     * Check for and handle inactive sessions
+     */
+    async checkInactiveSessions() {
+        const now = new Date();
+
+        for (const [sessionId, connection] of this.connections.entries()) {
+            const timeSinceLastActivity = now - connection.lastActivity;
+
+            if (timeSinceLastActivity >= this.inactivityTimeout) {
+                try {
+                    const user = await db.Account.findById(connection.userId);
+                    if (!user) continue;
+
+                    const ipAddress = connection.ipAddress;
+                    const geoLocation = this.getGeoLocation(ipAddress);
+                    const userAgent = 'WebSocket Client';
+
+                    // Log the inactivity timeout
+                    await logger.createSecurityLog(
+                        user.email,
+                        'SessionExpired',
+                        `Session expired due to inactivity`,
+                        'Warning',
+                        ipAddress,
+                        geoLocation,
+                        userAgent,
+                        `No activity for ${Math.round(timeSinceLastActivity / 60000)} minutes`
+                    );
+
+                    // Close the WebSocket connection
+                    connection.ws.close(1000, 'Session expired due to inactivity');
+
+                    // Clean up the session
+                    this.handleDisconnection(sessionId, connection.userId);
+
+                    console.log(`[${now.toISOString()}] [INACTIVITY] User: ${user.email} (ID: ${user.id}) session expired due to inactivity. Session: ${sessionId}`);
+                } catch (error) {
+                    console.error('Error handling inactive session:', error);
+                }
+            }
+        }
+    }
+
+    /**
+     * Get geolocation from IP address
+     */
+    getGeoLocation(ipAddress) {
+        try {
+            const geo = geoip.lookup(ipAddress);
+            return geo ? `${geo.city}, ${geo.region}, ${geo.country}` : '';
+        } catch (err) {
+            console.error('Error determining geolocation:', err);
+            return '';
+        }
+    }
 }
 
-module.exports = new WebSocketService(); 
+module.exports = new WebSocketService();

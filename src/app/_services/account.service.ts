@@ -90,21 +90,21 @@ export class AccountService {
     // Initialize at app startup - call this from app component, not constructor
     public initialize() {
         if (this.initialized) return;
-        
+
         console.log('[AccountService] Initializing service for tab:', this.currentTabId);
-        
+
         // Check if this tab's ID matches the stored ID
         const storedTabId = localStorage.getItem(this.TAB_ID_KEY);
         const jwtToken = this.getStoredToken();
         const refreshToken = this.getStoredRefreshToken();
-        
+
         console.log('[AccountService] Initialization state:', {
             storedTabId,
             currentTabId: this.currentTabId,
             hasJwtToken: !!jwtToken,
             hasRefreshToken: !!refreshToken
         });
-        
+
         // Always try to restore the session if we have tokens
         if (jwtToken || refreshToken) {
             this.initializeFromStorage();
@@ -112,7 +112,7 @@ export class AccountService {
             console.log('[AccountService] No tokens found during initialization');
             this.accountSubject.next(null);
         }
-        
+
         // Store this tab's ID
         localStorage.setItem(this.TAB_ID_KEY, this.currentTabId);
         this.initialized = true;
@@ -140,7 +140,7 @@ export class AccountService {
     // Helper method to format image URLs
     private formatImageUrl(imagePath: string | undefined): string | undefined {
         if (!imagePath) return undefined;
-        
+
         // If it's already a full URL, return it as is
         if (imagePath.startsWith('http')) {
             return imagePath;
@@ -148,10 +148,10 @@ export class AccountService {
 
         // Remove any leading slash from the image path
         const cleanPath = imagePath.startsWith('/') ? imagePath.substring(1) : imagePath;
-        
+
         // Remove any trailing slashes from the base URL
         const baseUrl = environment.apiUrl.replace(/\/+$/, '');
-        
+
         // Construct the full URL
         const fullUrl = `${baseUrl}/${cleanPath}`;
         console.log('[AccountService] Formatted image URL:', {
@@ -160,7 +160,7 @@ export class AccountService {
             baseUrl,
             fullUrl
         });
-        
+
         return fullUrl;
     }
 
@@ -171,18 +171,18 @@ export class AccountService {
             .pipe(
                 map(account => {
                     console.log('[AccountService] Login successful:', account);
-                    
+
                     // Format profile image URL if needed
                     if (account.profileImage) {
                         account.profileImage = this.formatImageUrl(account.profileImage);
                     }
-                    
+
                     // Store auth data based on rememberMe preference
                     this.storeAuthData(account, rememberMe, email);
-                    
+
                     this.accountSubject.next(account);
                     this.startRefreshTokenTimer();
-                    
+
                     return account;
                 })
             );
@@ -190,8 +190,9 @@ export class AccountService {
 
     logout() {
         console.log('[AccountService] Logging out');
+        // Call the new /accounts/logout endpoint which handles missing tokens gracefully
+        this.http.post<any>(`${environment.apiUrl}/accounts/logout`, {}, { withCredentials: true }).subscribe();
         this.clearAuthData(); // Ensure all tokens and session data are removed
-        this.http.post<any>(`${environment.apiUrl}/accounts/revoke-token`, {}, { withCredentials: true }).subscribe();
         this.stopRefreshTokenTimer();
         this.accountSubject.next(null);
         this.router.navigate(['/account/login']);
@@ -267,7 +268,7 @@ export class AccountService {
             sessionStorage.setItem(this.REFRESH_TOKEN_KEY, account.refreshToken);
         }
     }
-    
+
     // Clear all authentication data from storage
     private clearAuthData() {
         console.log('[AccountService] Clearing authentication data for tab:', this.currentTabId);
@@ -287,8 +288,8 @@ export class AccountService {
                 tap(account => {
                     console.log('[AccountService] Token refresh successful', account);
                     if (account.profileImage && !account.profileImage.startsWith('http')) {
-                        const imagePath = account.profileImage.startsWith('/') 
-                            ? account.profileImage.substring(1) 
+                        const imagePath = account.profileImage.startsWith('/')
+                            ? account.profileImage.substring(1)
                             : account.profileImage;
                         account.profileImage = `${environment.apiUrl}/${imagePath}`;
                     }
@@ -343,12 +344,12 @@ export class AccountService {
         return this.getHttp().get<Account>(`${baseUrl}/${id}`)
             .pipe(map(account => {
                 console.log('[AccountService] Raw account data received:', account);
-                
+
                 // Format profile image URL if it exists
                 if (account.profileImage) {
                     account.profileImage = this.formatImageUrl(account.profileImage);
                 }
-                
+
                 // Format follower image URLs if they exist
                 if (account.followerImages) {
                     console.log('[AccountService] Processing follower images:', account.followerImages);
@@ -361,7 +362,7 @@ export class AccountService {
                         return formattedFollower;
                     });
                 }
-                
+
                 console.log('[AccountService] Final formatted account data:', account);
                 return account;
             }));
@@ -383,7 +384,7 @@ export class AccountService {
                         if (account.profileImage && !account.profileImage.startsWith('http')) {
                             account.profileImage = this.formatImageUrl(account.profileImage);
                         }
-                        
+
                         // Format follower image URLs if they exist
                         if (account.followerImages) {
                             account.followerImages = account.followerImages.map(follower => ({
@@ -391,11 +392,11 @@ export class AccountService {
                                 imageUrl: follower.imageUrl ? this.formatImageUrl(follower.imageUrl) : undefined
                             }));
                         }
-                        
+
                         // Update account in subject
                         account = { ...this.accountValue, ...account };
                         this.accountSubject.next(account);
-                        
+
                         // Store authentication data based on whether this was a remembered login
                         const isRemembered = !!localStorage.getItem(this.REMEMBER_ME_KEY);
                         if (isRemembered && account.jwtToken) {
@@ -404,7 +405,7 @@ export class AccountService {
                             sessionStorage.setItem(this.JWT_TOKEN_KEY, account.jwtToken);
                         }
                     }
-                    
+
                     return account;
                 })
             );
@@ -444,14 +445,14 @@ export class AccountService {
     // Timer methods
     private startRefreshTokenTimer() {
         console.log('[AccountService] Starting refresh token timer');
-        
+
         // Get the current JWT token
         const token = this.getJwtToken();
         if (!token) {
             console.warn('[AccountService] No JWT token found, skipping refresh timer');
             return;
         }
-        
+
         try {
             // Parse the token expiration time
             const expires = this.jwtHelper.getTokenExpirationDate(token);
@@ -459,7 +460,7 @@ export class AccountService {
                 console.warn('[AccountService] Could not determine token expiration, skipping refresh timer');
                 return;
             }
-            
+
             // Calculate time until expiration (subtract 60 seconds to refresh slightly early)
             const timeout = expires.getTime() - Date.now() - (60 * 1000);
             if (timeout <= 0) {
@@ -469,13 +470,13 @@ export class AccountService {
                 this.router.navigate(['/account/login']);
                 return;
             }
-            
+
             console.log(`[AccountService] Setting refresh timer for ${Math.round(timeout / 1000)} seconds`);
             this.refreshTokenTimeout = setTimeout(() => {
                 console.log('[AccountService] Refresh timer triggered');
                 this.refreshToken().subscribe();
             }, timeout);
-            
+
         } catch (error) {
             console.error('[AccountService] Error starting refresh timer:', error);
             this.clearAuthData();
@@ -499,12 +500,12 @@ export class AccountService {
             }
 
             const decodedToken = this.jwtHelper.decodeToken(jwtToken);
-            console.log('[DEBUG] Raw Decoded Token:', decodedToken); 
-            console.log('[DEBUG] Checking for claims:', { 
-                id: decodedToken.id, 
-                sub: decodedToken.sub, 
-                role: decodedToken.role, 
-                email: decodedToken.email 
+            console.log('[DEBUG] Raw Decoded Token:', decodedToken);
+            console.log('[DEBUG] Checking for claims:', {
+                id: decodedToken.id,
+                sub: decodedToken.sub,
+                role: decodedToken.role,
+                email: decodedToken.email
             });
 
             // Extract user data from token
@@ -562,7 +563,7 @@ export class AccountService {
         this.getHttp().get<Account>(`${baseUrl}/${accountId}`).subscribe({
             next: (fullAccount) => {
                 console.log('[AccountService] Successfully fetched full account details:', fullAccount);
-                
+
                 // Format profile image URL
                 if (fullAccount.profileImage) {
                     fullAccount.profileImage = this.formatImageUrl(fullAccount.profileImage);
@@ -579,8 +580,8 @@ export class AccountService {
                 // Merge full details with existing minimal account state
                 const currentAccount = this.accountValue;
                 if (currentAccount && currentAccount.id === accountId) {
-                    const updatedAccount = { 
-                        ...currentAccount, 
+                    const updatedAccount = {
+                        ...currentAccount,
                         ...fullAccount,
                         jwtToken: currentAccount.jwtToken,
                         refreshToken: currentAccount.refreshToken
@@ -630,7 +631,7 @@ export class AccountService {
                     if (response.profileImage && !response.profileImage.startsWith('http')) {
                         response.profileImage = `${environment.apiUrl}/${response.profileImage}`;
                     }
-                    
+
                     const currentAccount = this.accountValue;
                     if (currentAccount && currentAccount.id === id) {
                         currentAccount.profileImage = response.profileImage;
@@ -655,14 +656,14 @@ export class AccountService {
                     if (response.profileImage) {
                         response.profileImage = this.formatImageUrl(response.profileImage);
                     }
-                    
+
                     // Update the current account if this is the logged-in user's image
                     const currentAccount = this.accountValue;
                     if (currentAccount && currentAccount.id === id) {
                         currentAccount.profileImage = response.profileImage;
                         this.accountSubject.next(currentAccount);
                     }
-                    
+
                     return {
                         ...response,
                         message: response.message || 'Profile image uploaded successfully'

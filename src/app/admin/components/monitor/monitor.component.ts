@@ -33,7 +33,7 @@ export class MonitorComponent implements OnInit, OnDestroy {
 
     // Pagination state
     currentPage = 1;
-    pageSize = 5; // Set default page size to 5
+    pageSize = 4; // Set default page size to 4
     totalSessions = 0;
     totalPages = 0;
 

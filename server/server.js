@@ -47,12 +47,12 @@ app.use(cookieParser());
 
 // Configure CORS
 const corsOptions = {
-    origin: (origin, callback) => callback(null, true),
+    origin: 'http://localhost:5000', // or '*'
     credentials: true,
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    exposedHeaders: ['Content-Range', 'X-Content-Range'],
-    maxAge: 600 // 10 minutes
+    allowedHeaders: [
+        'Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Authorization', 'x-session-id'
+    ],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
 };
 
 app.use(cors(corsOptions));
@@ -105,13 +105,19 @@ app.use('/assets', express.static(path.join(__dirname, '../src/assets')));
 // Mount the upload routes
 app.use('/upload', require('./uploads/upload.routes'));
 
+// Add authentication middleware
+const auth = require('./middleware/auth');
+
+// Add session expiration handler before routes
+app.use(auth.handleSessionExpiration);
+
 // api routes
 app.use('/accounts', require('./accounts/accounts.controller'));
-app.use('/api/admin/scripts', adminScriptsRouter);
+app.use('/api/admin/scripts', auth.isAdmin, adminScriptsRouter);
 
-app.use('/admin', require('./controllers/admin.controller'));
-app.use('/api/posts', require('./controllers/posts.controller'));
-app.use('/api/chat', chatApi);
+app.use('/admin', auth.isAdmin, require('./controllers/admin.controller'));
+app.use('/api/posts', auth.authenticate, require('./controllers/posts.controller'));
+app.use('/api/chat', auth.authenticate, chatApi);
 
 // Add config route - use the specific function as middleware
 const configController = require('./config/config.controller');
@@ -204,4 +210,23 @@ app.use('/api/account', accountRoutes);
 
 app.use('/sessions', require('./routes/sessions'));
 
+const logger = require('./logs/logger.service');
+
+// Add the test logger route directly to the app
+app.post('/api/test-logger', async (req, res) => {
+  try {
+    const log = await logger.createUserLog(
+      'apitestuser@example.com',
+      'Login',
+      'API test login event',
+      'Success',
+      '127.0.0.1',
+      '',
+      'ApiTestAgent/1.0'
+    );
+    res.json({ message: 'Log created', log });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
